@@ -1,4 +1,3 @@
-import { AuthModalHost } from '@/components/auth/AuthModalHost'
 import { HeroSection } from '@/components/landing/HeroSection'
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection'
 import { IntelligenceSection } from '@/components/landing/IntelligenceSection'
@@ -11,8 +10,11 @@ import { PrivacySection } from '@/components/landing/PrivacySection'
 import { ProblemSection } from '@/components/landing/ProblemSection'
 import { RolesSection } from '@/components/landing/RolesSection'
 import { TeamSection } from '@/components/landing/TeamSection'
+import { useLoginRedirectPrompt } from '@/controllers/useLoginRedirectPrompt'
 
 export default function LandingView() {
+  useLoginRedirectPrompt()
+
   return (
     <div className="relative isolate min-h-dvh overflow-x-clip">
       <LandingBackground />
@@ -35,7 +37,6 @@ export default function LandingView() {
         <TeamSection />
       </main>
       <LandingFooter />
-      <AuthModalHost />
     </div>
   )
 }

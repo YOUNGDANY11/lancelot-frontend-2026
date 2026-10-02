@@ -17,6 +17,14 @@ export const ROLE_CODES = [
 
 export type RoleCode = (typeof ROLE_CODES)[number]
 
+export const ROLE_CODE_BY_ID: Record<number, RoleCode> = {
+  1: 'ADMIN',
+  2: 'ENTRENADOR',
+  3: 'DEPORTISTA',
+  4: 'DIRECTOR_TECNICO',
+  5: 'ENCARGADO_SALUD',
+}
+
 export const ROLE_LABELS: Record<RoleCode, string> = {
   ADMIN: 'Administrador',
   ENTRENADOR: 'Entrenador',

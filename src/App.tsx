@@ -1,18 +1,20 @@
+import { QueryClientProvider } from '@tanstack/react-query'
 import { domAnimation, LazyMotion, MotionConfig } from 'motion/react'
-import { AuthModalProvider } from '@/context/AuthModalProvider'
+import { RouterProvider } from 'react-router'
 import { ThemeProvider } from '@/context/ThemeProvider'
-import LandingView from '@/views/landing/LandingView'
+import { queryClient } from '@/lib/queryClient'
+import { router } from '@/routes/router'
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <LazyMotion features={domAnimation} strict>
-        <MotionConfig reducedMotion="user">
-          <AuthModalProvider>
-            <LandingView />
-          </AuthModalProvider>
-        </MotionConfig>
-      </LazyMotion>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <LazyMotion features={domAnimation} strict>
+          <MotionConfig reducedMotion="user">
+            <RouterProvider router={router} />
+          </MotionConfig>
+        </LazyMotion>
+      </ThemeProvider>
+    </QueryClientProvider>
   )
 }

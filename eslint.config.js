@@ -58,7 +58,12 @@ export default defineConfig([
     },
   },
   {
-    files: ['src/lib/apiClient.ts', 'src/utils/parseApiError.ts', 'src/**/*.test.{ts,tsx}'],
+    files: [
+      'src/lib/apiClient.ts',
+      'src/utils/parseApiError.ts',
+      'src/test/**/*.{ts,tsx}',
+      'src/**/*.test.{ts,tsx}',
+    ],
     rules: {
       'no-restricted-imports': 'off',
     },

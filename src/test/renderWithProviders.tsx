@@ -1,21 +1,26 @@
-import { render, type RenderOptions } from '@testing-library/react'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { render } from '@testing-library/react'
 import { domAnimation, LazyMotion, MotionConfig } from 'motion/react'
-import type { ReactElement, ReactNode } from 'react'
-import { AuthModalProvider } from '@/context/AuthModalProvider'
+import { createMemoryRouter, RouterProvider } from 'react-router'
 import { ThemeProvider } from '@/context/ThemeProvider'
+import { createQueryClient } from '@/lib/queryClient'
+import { appRoutes } from '@/routes/appRoutes'
 
-function TestProviders({ children }: { children: ReactNode }) {
-  return (
-    <ThemeProvider>
-      <LazyMotion features={domAnimation} strict>
-        <MotionConfig reducedMotion="always">
-          <AuthModalProvider>{children}</AuthModalProvider>
-        </MotionConfig>
-      </LazyMotion>
-    </ThemeProvider>
+export function renderAppAt(path: string) {
+  const queryClient = createQueryClient()
+  const router = createMemoryRouter(appRoutes, { initialEntries: [path] })
+
+  const view = render(
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <LazyMotion features={domAnimation} strict>
+          <MotionConfig reducedMotion="always">
+            <RouterProvider router={router} />
+          </MotionConfig>
+        </LazyMotion>
+      </ThemeProvider>
+    </QueryClientProvider>,
   )
-}
 
-export function renderWithProviders(ui: ReactElement, options?: Omit<RenderOptions, 'wrapper'>) {
-  return render(ui, { wrapper: TestProviders, ...options })
+  return { ...view, router, queryClient }
 }

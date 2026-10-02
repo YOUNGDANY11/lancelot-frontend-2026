@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Lancelot">
+  <defs>
+    <linearGradient id="lancelot-edge" x1="8" y1="4" x2="56" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22D3EE"/>
+      <stop offset="0.55" stop-color="#8B5CF6"/>
+      <stop offset="1" stop-color="#4ADE80"/>
+    </linearGradient>
+    <linearGradient id="lancelot-mark" x1="20" y1="16" x2="46" y2="46" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22D3EE"/>
+      <stop offset="1" stop-color="#4ADE80"/>
+    </linearGradient>
+  </defs>
+  <path d="M32 4 56 12v18c0 15-10 25-24 30C18 55 8 45 8 30V12L32 4Z" fill="#070B14" stroke="url(#lancelot-edge)" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M22 18h6v20h14v6H22V18Z" fill="url(#lancelot-mark)"/>
+  <circle cx="42" cy="23" r="5" fill="#4ADE80"/>
+</svg>

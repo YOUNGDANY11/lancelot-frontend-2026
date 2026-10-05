@@ -13,6 +13,7 @@ import {
   ModulePlaceholderView,
   NotFoundView,
   ProfileView,
+  TrainingView,
 } from '@/routes/lazyViews'
 import { ProtectedRoute } from '@/routes/ProtectedRoute'
 import { RoleGuard } from '@/routes/RoleGuard'
@@ -53,7 +54,7 @@ export const appRoutes: RouteObject[] = [
                 { index: true, element: <AthleteDirectoryView /> },
                 { path: ':id_user', element: <AthleteProfileView /> },
               ]),
-              moduleRoute('training', [{ index: true, element: placeholder('training') }]),
+              moduleRoute('training', [{ index: true, element: <TrainingView /> }]),
               moduleRoute('health', [{ index: true, element: placeholder('health') }]),
               moduleRoute('talent', [{ index: true, element: placeholder('talent') }]),
               moduleRoute('analytics', [{ index: true, element: placeholder('analytics') }]),

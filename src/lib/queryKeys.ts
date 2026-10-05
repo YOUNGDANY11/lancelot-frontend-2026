@@ -48,6 +48,16 @@ export const queryKeys = {
     all: ['alerts'] as const,
     openCount: () => [...queryKeys.alerts.all, 'open-count'] as const,
   },
+  training: {
+    all: ['training'] as const,
+    sessions: (filters: QueryParams) => [...queryKeys.training.all, 'sessions', filters] as const,
+    sessionLoads: (idSession: number) =>
+      [...queryKeys.training.all, 'session-loads', idSession] as const,
+    matchStats: (idMatch: number) => [...queryKeys.training.all, 'match-stats', idMatch] as const,
+    teamAcwr: (idCategory: number, date: string) =>
+      [...queryKeys.training.all, 'team-acwr', idCategory, date] as const,
+    myLoads: (idUser: number) => [...queryKeys.training.all, 'my-loads', idUser] as const,
+  },
   athlete: {
     all: (idUser: number) => ['athlete', idUser] as const,
     physical: (idUser: number) => [...queryKeys.athlete.all(idUser), 'physical'] as const,

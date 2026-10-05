@@ -1,11 +1,21 @@
 import { apiClient } from '@/lib/apiClient'
+import { fetchAllPages, fetchList, type QueryParams } from '@/lib/listRequest'
 import type { ApiMessage } from '@/types/api'
 import type {
+  AdminCreateUserRequest,
   ChangePasswordRequest,
   UpdateMyProfileRequest,
   User,
   UserResponse,
 } from '@/types/user'
+
+export interface UserSearchFilters extends QueryParams {
+  name?: string
+  lastname?: string
+  email?: string
+  page?: number
+  limit?: number
+}
 
 export const usersService = {
   async getMe(): Promise<User> {
@@ -21,5 +31,22 @@ export const usersService = {
   async changeMyPassword(payload: ChangePasswordRequest): Promise<ApiMessage> {
     const { data } = await apiClient.http.put<ApiMessage>('/users/me/password', payload)
     return data
+  },
+
+  listAll(): Promise<User[]> {
+    return fetchAllPages<User>('/users', 'users')
+  },
+
+  searchAthletes(filters: UserSearchFilters) {
+    return fetchList<User>('/users/athletes', 'users', filters)
+  },
+
+  listAllAthletes(): Promise<User[]> {
+    return fetchAllPages<User>('/users/athletes', 'users')
+  },
+
+  async createByAdmin(payload: AdminCreateUserRequest): Promise<User> {
+    const { data } = await apiClient.http.post<UserResponse>('/users', payload)
+    return data.user
   },
 }

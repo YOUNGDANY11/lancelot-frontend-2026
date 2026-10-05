@@ -22,6 +22,15 @@ export interface UpdateMyProfileRequest {
   birth_date?: string
 }
 
+export interface AdminCreateUserRequest {
+  name: string
+  lastname: string
+  email: string
+  password: string
+  birth_date?: string
+  id_role: number
+}
+
 export interface ChangePasswordRequest {
   current_password: string
   new_password: string

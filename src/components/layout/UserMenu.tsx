@@ -14,12 +14,14 @@ import {
 import { USER_MENU_TEXTS } from '@/constants/authTexts'
 import { APP_ROUTES } from '@/constants/routes'
 import { THEME_LABELS } from '@/constants/theme'
+import { useNavigationController } from '@/controllers/useNavigationController'
 import { useSessionController } from '@/controllers/useSessionController'
 import { useTheme } from '@/hooks/useTheme'
 
 export function UserMenu() {
   const { user, fullName, initials, roleLabel, logout, isLoggingOut } = useSessionController()
   const { theme, toggleTheme } = useTheme()
+  const { settingsItem } = useNavigationController()
   const nextTheme = theme === 'dark' ? 'light' : 'dark'
 
   return (
@@ -57,6 +59,14 @@ export function UserMenu() {
               {USER_MENU_TEXTS.profile}
             </Link>
           </DropdownMenuItem>
+          {settingsItem && (
+            <DropdownMenuItem asChild>
+              <Link to={settingsItem.path}>
+                <settingsItem.icon aria-hidden="true" />
+                {settingsItem.label}
+              </Link>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onSelect={toggleTheme}>
             {nextTheme === 'light' ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
             {`Cambiar a ${THEME_LABELS[nextTheme].toLowerCase()}`}

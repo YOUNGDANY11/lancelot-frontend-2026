@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { authService } from '@/services/authService'
 import { usersService } from '@/services/usersService'
 import { createApiError } from '@/test/apiErrors'
+import { primeAppDataMocks } from '@/test/appDataMocks'
 import { ATHLETE_USER, COACH_USER, LOGIN_SUCCESS } from '@/test/fixtures'
 import { renderAppAt } from '@/test/renderWithProviders'
 import { REFRESH_TOKEN_STORAGE_KEY } from '@/utils/tokenStorage'
@@ -23,7 +24,41 @@ vi.mock('@/services/usersService', () => ({
     getMe: vi.fn(),
     updateMe: vi.fn(),
     changeMyPassword: vi.fn(),
+    listAll: vi.fn(),
+    listAllAthletes: vi.fn(),
+    searchAthletes: vi.fn(),
+    createByAdmin: vi.fn(),
   },
+}))
+
+vi.mock('@/services/seasonsService', () => ({
+  seasonsService: { listAll: vi.fn(), create: vi.fn(), update: vi.fn() },
+}))
+
+vi.mock('@/services/categoriesService', () => ({
+  categoriesService: { listAll: vi.fn(), create: vi.fn() },
+}))
+
+vi.mock('@/services/athleteAssignmentsService', () => ({
+  athleteAssignmentsService: {
+    list: vi.fn(),
+    listAll: vi.fn(),
+    count: vi.fn(),
+    getMine: vi.fn(),
+    create: vi.fn(),
+  },
+}))
+
+vi.mock('@/services/alertsService', () => ({
+  alertsService: { countOpen: vi.fn() },
+}))
+
+vi.mock('@/services/weightProfilesService', () => ({
+  weightProfilesService: { listAll: vi.fn(), count: vi.fn(), create: vi.fn() },
+}))
+
+vi.mock('@/services/parentalConsentsService', () => ({
+  parentalConsentsService: { listAll: vi.fn(), create: vi.fn() },
 }))
 
 async function fillLogin(email: string, password: string) {
@@ -46,6 +81,7 @@ async function openLoginFromNavbar() {
 
 describe('flujos de sesión', () => {
   beforeEach(() => {
+    primeAppDataMocks()
     vi.mocked(authService.login).mockResolvedValue(LOGIN_SUCCESS)
     vi.mocked(authService.logout).mockResolvedValue({ status: 'Success', mensaje: 'ok' })
     vi.mocked(usersService.getMe).mockResolvedValue(ATHLETE_USER)
@@ -211,6 +247,7 @@ describe('registro', () => {
 
 describe('mi perfil', () => {
   beforeEach(() => {
+    primeAppDataMocks()
     window.localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, 'refresh-guardado')
     vi.mocked(authService.refreshSession).mockResolvedValue('access-renovado')
     vi.mocked(usersService.getMe).mockResolvedValue(ATHLETE_USER)

@@ -1,4 +1,5 @@
 import { PageHeader } from '@/components/common/PageHeader'
+import { SetupChecklist } from '@/components/common/SetupChecklist'
 import { Card, CardContent } from '@/components/ui/card'
 import { useHomeController } from '@/controllers/useHomeController'
 
@@ -8,6 +9,7 @@ export default function HomeView() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title={`Hola, ${firstName}`} description="Este es tu inicio en Lancelot." />
+      <SetupChecklist />
       <Card className="glass-subtle">
         <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-start">
           {RoleIcon && (

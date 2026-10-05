@@ -1,9 +1,13 @@
 import '@testing-library/jest-dom/vitest'
 import { cleanup, configure } from '@testing-library/react'
 import { afterEach } from 'vitest'
+import { apiClient } from '@/lib/apiClient'
 import { tokenStorage } from '@/utils/tokenStorage'
 
 configure({ asyncUtilTimeout: 3000 })
+
+apiClient.http.defaults.adapter = (config) =>
+  Promise.reject(new Error(`Red deshabilitada en pruebas: ${config.method} ${config.url}`))
 
 afterEach(() => {
   cleanup()
@@ -39,6 +43,17 @@ class IntersectionObserverStub implements IntersectionObserver {
   disconnect = noop
   takeRecords = () => []
 }
+
+class ResizeObserverStub implements ResizeObserver {
+  observe = noop
+  unobserve = noop
+  disconnect = noop
+}
+
+Object.defineProperty(window, 'ResizeObserver', {
+  writable: true,
+  value: ResizeObserverStub,
+})
 
 Object.defineProperty(window, 'IntersectionObserver', {
   writable: true,

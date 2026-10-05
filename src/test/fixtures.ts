@@ -22,6 +22,16 @@ export const COACH_USER: User = {
   role_name: 'ENTRENADOR',
 }
 
+export const ADMIN_USER: User = {
+  id_user: 1,
+  id_role: 1,
+  name: 'Laura',
+  lastname: 'Gómez',
+  email: 'laura.gomez@club.com',
+  birth_date: null,
+  role_name: 'ADMIN',
+}
+
 export const LOGIN_SUCCESS: LoginResponse = {
   status: 'Success',
   mensaje: 'Inicio de sesion exitoso',

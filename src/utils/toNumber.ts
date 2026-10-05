@@ -7,3 +7,14 @@ export function toNumber(value: unknown): number | null {
 export function toNumberOr(value: unknown, fallback: number): number {
   return toNumber(value) ?? fallback
 }
+
+export function withNumbers<T extends object>(item: T, keys: (keyof T)[]): T {
+  const copy = { ...item }
+  for (const key of keys) {
+    const value = copy[key]
+    if (value !== null && value !== undefined) {
+      copy[key] = toNumber(value) as T[keyof T]
+    }
+  }
+  return copy
+}

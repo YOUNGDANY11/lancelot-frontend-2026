@@ -7,14 +7,19 @@ import { SelectInput } from '@/components/common/SelectInput'
 import { FieldGroup } from '@/components/ui/field'
 import { POSITION_HINT } from '@/constants/positions'
 import { useAthleteAssignmentFormController } from '@/controllers/forms/useAthleteAssignmentFormController'
+import type { Season } from '@/types/club'
 
 interface DialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  season?: Season | null
 }
 
-function AthleteAssignmentContent({ onOpenChange }: Omit<DialogProps, 'open'>) {
-  const controller = useAthleteAssignmentFormController({ onDone: () => onOpenChange(false) })
+function AthleteAssignmentContent({ onOpenChange, season }: Omit<DialogProps, 'open'>) {
+  const controller = useAthleteAssignmentFormController({
+    onDone: () => onOpenChange(false),
+    season,
+  })
   const { form } = controller
 
   return (
@@ -101,6 +106,6 @@ function AthleteAssignmentContent({ onOpenChange }: Omit<DialogProps, 'open'>) {
   )
 }
 
-export function AthleteAssignmentFormDialog({ open, onOpenChange }: DialogProps) {
-  return open ? <AthleteAssignmentContent onOpenChange={onOpenChange} /> : null
+export function AthleteAssignmentFormDialog({ open, onOpenChange, season }: DialogProps) {
+  return open ? <AthleteAssignmentContent onOpenChange={onOpenChange} season={season} /> : null
 }

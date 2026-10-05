@@ -1,7 +1,4 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useForm } from 'react-hook-form'
-import { toast } from 'sonner'
+import { useEntityFormController } from '@/controllers/shared/useEntityFormController'
 import { queryKeys } from '@/lib/queryKeys'
 import {
   categorySchema,
@@ -9,34 +6,36 @@ import {
   type CategoryFormValues,
 } from '@/schemas/clubSchemas'
 import { categoriesService } from '@/services/categoriesService'
-import { applyServerError, serverErrorOf } from '@/utils/formErrors'
+import type { Category } from '@/types/club'
 
-const EMPTY_CATEGORY: CategoryFormValues = { name: '', min_age: '', max_age: '' }
+interface CategoryFormOptions {
+  onDone: () => void
+  category?: Category | null
+}
 
-export function useCategoryFormController({ onDone }: { onDone: () => void }) {
-  const queryClient = useQueryClient()
-  const form = useForm<CategoryFormValues>({
-    resolver: zodResolver(categorySchema),
-    defaultValues: EMPTY_CATEGORY,
-    mode: 'onTouched',
-  })
-
-  const mutation = useMutation({
-    mutationFn: (values: CategoryFormValues) =>
-      categoriesService.create(toCreateCategoryRequest(values)),
-    onSuccess: async (category) => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.categories.all })
-      toast.success(`Categoría ${category.name} creada.`)
-      form.reset(EMPTY_CATEGORY)
-      onDone()
-    },
-    onError: (error) => applyServerError(form, error, [{ field: 'name', pattern: /nombre/i }]),
-  })
+export function useCategoryFormController({ onDone, category }: CategoryFormOptions) {
+  const isEditing = Boolean(category)
 
   return {
-    form,
-    onSubmit: form.handleSubmit((values) => mutation.mutate(values)),
-    isSubmitting: mutation.isPending,
-    serverError: serverErrorOf(form),
+    isEditing,
+    ...useEntityFormController<CategoryFormValues>({
+      schema: categorySchema,
+      defaultValues: category
+        ? {
+            name: category.name,
+            min_age: String(category.min_age),
+            max_age: String(category.max_age),
+          }
+        : { name: '', min_age: '', max_age: '' },
+      submit: (values) =>
+        category
+          ? categoriesService.update(category.id_category, toCreateCategoryRequest(values))
+          : categoriesService.create(toCreateCategoryRequest(values)),
+      invalidate: [queryKeys.categories.all],
+      successMessage: (values) =>
+        isEditing ? `Categoría ${values.name} actualizada.` : `Categoría ${values.name} creada.`,
+      onDone,
+      fieldMatchers: [{ field: 'name', pattern: /nombre/i }],
+    }),
   }
 }

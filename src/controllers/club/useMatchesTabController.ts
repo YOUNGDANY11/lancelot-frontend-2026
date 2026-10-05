@@ -1,0 +1,71 @@
+import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+import { useResourceMutation } from '@/controllers/shared/useResourceMutation'
+import { useAppContext } from '@/hooks/useAppContext'
+import { useCrudDialogs } from '@/hooks/useCrudDialogs'
+import { useRole } from '@/hooks/useRole'
+import { queryKeys } from '@/lib/queryKeys'
+import { competitionService } from '@/services/competitionService'
+import type { Match } from '@/types/competition'
+import { parseApiError } from '@/utils/parseApiError'
+
+const PAGE_SIZE = 10
+
+export function useMatchesTabController() {
+  const { season, category } = useAppContext()
+  const { can } = useRole()
+  const dialogs = useCrudDialogs<Match>()
+  const [page, setPage] = useState(1)
+  const idSeason = season?.id_season
+
+  const competenciesQuery = useQuery({
+    queryKey: queryKeys.competencies.list(idSeason),
+    queryFn: () => competitionService.listCompetencies(idSeason),
+    enabled: idSeason !== undefined,
+  })
+  const matchFilters = { id_category: category?.id_category, scope: 'all' }
+  const matchesQuery = useQuery({
+    queryKey: queryKeys.matches.list(matchFilters),
+    queryFn: () => competitionService.listAllMatches({ id_category: category?.id_category }),
+    enabled: idSeason !== undefined,
+  })
+
+  const seasonCompetencyIds = new Set(
+    (competenciesQuery.data ?? []).map((item) => item.id_competency),
+  )
+  const matches = (matchesQuery.data ?? [])
+    .filter((match) => seasonCompetencyIds.has(match.id_competency))
+    .sort((first, second) =>
+      `${second.date}${second.time}`.localeCompare(`${first.date}${first.time}`),
+    )
+  const totalPages = Math.max(1, Math.ceil(matches.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+
+  const deleteMutation = useResourceMutation({
+    mutationFn: (match: Match) => competitionService.removeMatch(match.id_match),
+    invalidate: [queryKeys.matches.all],
+    successMessage: () => 'Partido eliminado.',
+    onSuccess: dialogs.close,
+  })
+
+  const failed = competenciesQuery.isError ? competenciesQuery.error : matchesQuery.error
+
+  return {
+    season,
+    hasSeason: idSeason !== undefined,
+    hasCompetencies: (competenciesQuery.data ?? []).length > 0,
+    matches: matches.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
+    pagination: { page: currentPage, limit: PAGE_SIZE, total: matches.length, totalPages },
+    setPage,
+    isLoading: idSeason !== undefined && (competenciesQuery.isPending || matchesQuery.isPending),
+    errorMessage: failed ? parseApiError(failed) : undefined,
+    retry: () => {
+      void competenciesQuery.refetch()
+      void matchesQuery.refetch()
+    },
+    canManage: can('manageClub'),
+    dialogs,
+    confirmDelete: () => dialogs.deleting && deleteMutation.mutate(dialogs.deleting),
+    isDeleting: deleteMutation.isPending,
+  }
+}

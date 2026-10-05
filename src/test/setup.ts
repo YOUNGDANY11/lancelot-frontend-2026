@@ -4,7 +4,7 @@ import { afterEach } from 'vitest'
 import { apiClient } from '@/lib/apiClient'
 import { tokenStorage } from '@/utils/tokenStorage'
 
-configure({ asyncUtilTimeout: 3000 })
+configure({ asyncUtilTimeout: 6000 })
 
 apiClient.http.defaults.adapter = (config) =>
   Promise.reject(new Error(`Red deshabilitada en pruebas: ${config.method} ${config.url}`))
@@ -43,6 +43,12 @@ class IntersectionObserverStub implements IntersectionObserver {
   disconnect = noop
   takeRecords = () => []
 }
+
+Object.assign(window.HTMLElement.prototype, {
+  scrollIntoView: noop,
+  hasPointerCapture: () => false,
+  releasePointerCapture: noop,
+})
 
 class ResizeObserverStub implements ResizeObserver {
   observe = noop

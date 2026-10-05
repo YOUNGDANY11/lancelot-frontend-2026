@@ -12,15 +12,23 @@ import {
   type AthleteAssignmentFormValues,
 } from '@/schemas/clubSchemas'
 import { athleteAssignmentsService } from '@/services/athleteAssignmentsService'
+import type { Season } from '@/types/club'
 import { usersService } from '@/services/usersService'
 import { calculateAge } from '@/utils/age'
 import { applyServerError, ROOT_SERVER_ERROR, serverErrorOf } from '@/utils/formErrors'
 import { fullName } from '@/utils/text'
 
-export function useAthleteAssignmentFormController({ onDone }: { onDone: () => void }) {
+export function useAthleteAssignmentFormController({
+  onDone,
+  season,
+}: {
+  onDone: () => void
+  season?: Season | null
+}) {
   const queryClient = useQueryClient()
   const { activeSeason, categories } = useAppContext()
-  const idSeason = activeSeason?.id_season
+  const targetSeason = season ?? activeSeason
+  const idSeason = targetSeason?.id_season
 
   const form = useForm<AthleteAssignmentFormValues>({
     resolver: zodResolver(athleteAssignmentSchema),
@@ -74,7 +82,7 @@ export function useAthleteAssignmentFormController({ onDone }: { onDone: () => v
 
   return {
     form,
-    seasonName: activeSeason?.name,
+    seasonName: targetSeason?.name,
     athleteOptions,
     isLoadingAthletes: athletesQuery.isPending || assignmentsQuery.isPending,
     categoryOptions: categories.map((category) => ({

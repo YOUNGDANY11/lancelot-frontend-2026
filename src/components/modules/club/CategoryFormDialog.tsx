@@ -5,15 +5,18 @@ import { HelpHint } from '@/components/common/HelpHint'
 import { FieldGroup } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { useCategoryFormController } from '@/controllers/forms/useCategoryFormController'
+import type { Category } from '@/types/club'
 
 interface DialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  category?: Category | null
 }
 
-function CategoryFormContent({ onOpenChange }: Omit<DialogProps, 'open'>) {
-  const { form, onSubmit, isSubmitting, serverError } = useCategoryFormController({
+function CategoryFormContent({ onOpenChange, category }: Omit<DialogProps, 'open'>) {
+  const { form, onSubmit, isSubmitting, serverError, isEditing } = useCategoryFormController({
     onDone: () => onOpenChange(false),
+    category,
   })
   const { errors } = form.formState
 
@@ -21,10 +24,10 @@ function CategoryFormContent({ onOpenChange }: Omit<DialogProps, 'open'>) {
     <FormModal
       open
       onOpenChange={onOpenChange}
-      title="Crear categoría"
+      title={isEditing ? `Editar ${category?.name}` : 'Crear categoría'}
       description="Agrupa a los deportistas por rango de edad."
-      submitLabel="Crear categoría"
-      pendingLabel="Creando…"
+      submitLabel={isEditing ? 'Guardar' : 'Crear categoría'}
+      pendingLabel={isEditing ? 'Guardando…' : 'Creando…'}
       isSubmitting={isSubmitting}
       onSubmit={onSubmit}
     >
@@ -35,6 +38,12 @@ function CategoryFormContent({ onOpenChange }: Omit<DialogProps, 'open'>) {
             <Input {...controlProps} placeholder="Sub-15" autoFocus {...form.register('name')} />
           )}
         </FormField>
+        {isEditing && (
+          <p className="text-sm text-muted-foreground">
+            Si cambias el nombre, revisa los perfiles de pesos de esta categoría: se emparejan por
+            nombre exacto.
+          </p>
+        )}
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
           Rango de edades
           <HelpHint term="multiAgeCategory" />
@@ -66,6 +75,12 @@ function CategoryFormContent({ onOpenChange }: Omit<DialogProps, 'open'>) {
   )
 }
 
-export function CategoryFormDialog({ open, onOpenChange }: DialogProps) {
-  return open ? <CategoryFormContent onOpenChange={onOpenChange} /> : null
+export function CategoryFormDialog({ open, onOpenChange, category }: DialogProps) {
+  return open ? (
+    <CategoryFormContent
+      key={category?.id_category ?? 'nueva'}
+      onOpenChange={onOpenChange}
+      category={category}
+    />
+  ) : null
 }

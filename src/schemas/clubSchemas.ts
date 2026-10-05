@@ -82,3 +82,84 @@ export function toCreateAthleteAssignmentRequest(
     position: values.position,
   }
 }
+
+export const seasonEditSchema = z
+  .object({
+    name: textField('el nombre de la temporada', 1, 50),
+    start_date: apiDateField('Indica la fecha de inicio.'),
+    end_date: optionalApiDateField,
+    status: z.enum(['planned', 'active', 'closed']),
+  })
+  .refine((values) => !values.end_date || values.end_date >= values.start_date, {
+    message: 'La fecha de finalización no puede ser anterior a la de inicio.',
+    path: ['end_date'],
+  })
+
+export type SeasonEditFormValues = z.infer<typeof seasonEditSchema>
+
+export function toUpdateSeasonRequest(values: SeasonEditFormValues) {
+  return {
+    name: values.name,
+    start_date: values.start_date,
+    status: values.status,
+    ...(values.end_date ? { end_date: values.end_date } : {}),
+  }
+}
+
+export const competencySchema = z
+  .object({
+    name: textField('el nombre de la competencia', 2, 100),
+    description: z.string().trim().max(500, 'No puede superar 500 caracteres.'),
+    id_category: requiredChoice('Elige la categoría.'),
+    start_date: apiDateField('Indica la fecha de inicio.'),
+    finish: optionalApiDateField,
+  })
+  .refine((values) => !values.finish || values.finish >= values.start_date, {
+    message: 'La fecha de fin no puede ser anterior a la de inicio.',
+    path: ['finish'],
+  })
+
+export type CompetencyFormValues = z.infer<typeof competencySchema>
+
+export function toCompetencyRequest(values: CompetencyFormValues, idSeason: number) {
+  return {
+    name: values.name,
+    id_category: Number(values.id_category),
+    start_date: values.start_date,
+    id_season: idSeason,
+    ...(values.description ? { description: values.description } : {}),
+    ...(values.finish ? { finish: values.finish } : {}),
+  }
+}
+
+export const matchSchema = z.object({
+  id_competency: requiredChoice('Elige la competencia.'),
+  date: apiDateField('Indica la fecha del partido.'),
+  time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Indica la hora, por ejemplo 15:30.'),
+  location: textField('el lugar del partido', 4, 100),
+})
+
+export type MatchFormValues = z.infer<typeof matchSchema>
+
+export function toMatchRequest(values: MatchFormValues, idCategory: number) {
+  return {
+    id_competency: Number(values.id_competency),
+    id_category: idCategory,
+    date: values.date,
+    time: values.time,
+    location: values.location,
+  }
+}
+
+export const callUpSchema = z.object({
+  id_user: z.number({ error: 'Elige un deportista.' }).int().positive('Elige un deportista.'),
+})
+
+export type CallUpFormValues = z.infer<typeof callUpSchema>
+
+export const assignmentChangeSchema = z.object({
+  id_category: requiredChoice('Elige la categoría.'),
+  position: z.string().refine((value) => ALL_POSITIONS.includes(value), 'Elige la posición.'),
+})
+
+export type AssignmentChangeFormValues = z.infer<typeof assignmentChangeSchema>

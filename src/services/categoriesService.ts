@@ -1,14 +1,11 @@
 import { apiClient } from '@/lib/apiClient'
 import { fetchAllPages } from '@/lib/listRequest'
+import type { ApiMessage } from '@/types/api'
 import type { Category, CreateCategoryRequest } from '@/types/club'
-import { toNumberOr } from '@/utils/toNumber'
+import { withNumbers } from '@/utils/toNumber'
 
 function normalizeCategory(category: Category): Category {
-  return {
-    ...category,
-    min_age: toNumberOr(category.min_age, 0),
-    max_age: toNumberOr(category.max_age, 0),
-  }
+  return withNumbers(category, ['min_age', 'max_age'])
 }
 
 export const categoriesService = {
@@ -19,5 +16,15 @@ export const categoriesService = {
   async create(payload: CreateCategoryRequest): Promise<Category> {
     const { data } = await apiClient.http.post<{ category: Category }>('/categories', payload)
     return normalizeCategory(data.category)
+  },
+
+  async update(idCategory: number, payload: Partial<CreateCategoryRequest>): Promise<ApiMessage> {
+    const { data } = await apiClient.http.put<ApiMessage>(`/categories/id/${idCategory}`, payload)
+    return data
+  },
+
+  async remove(idCategory: number): Promise<ApiMessage> {
+    const { data } = await apiClient.http.delete<ApiMessage>(`/categories/id/${idCategory}`)
+    return data
   },
 }

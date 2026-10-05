@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { hasPermission, type Permission } from '@/constants/permissions'
 import type { RoleCode } from '@/constants/roles'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -10,5 +11,7 @@ export function useRole() {
     [role],
   )
 
-  return { role, hasRole }
+  const can = useCallback((permission: Permission) => hasPermission(role, permission), [role])
+
+  return { role, hasRole, can }
 }

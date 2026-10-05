@@ -4,6 +4,9 @@ import { AppShell } from '@/components/layout/AppShell'
 import { RootLayout } from '@/components/layout/RootLayout'
 import { APP_MODULES, type ModuleKey } from '@/constants/navigation'
 import {
+  AthleteDirectoryView,
+  AthleteProfileView,
+  ClubView,
   ForbiddenView,
   HomeView,
   LandingView,
@@ -45,10 +48,10 @@ export const appRoutes: RouteObject[] = [
               { index: true, element: <RoleHomeRedirect /> },
               { path: 'inicio', element: <HomeView /> },
               { path: 'perfil', element: <ProfileView /> },
-              moduleRoute('club', [{ index: true, element: placeholder('club') }]),
+              moduleRoute('club', [{ index: true, element: <ClubView /> }]),
               moduleRoute('athletes', [
-                { index: true, element: placeholder('athletes') },
-                { path: ':id_user', element: placeholder('athletes') },
+                { index: true, element: <AthleteDirectoryView /> },
+                { path: ':id_user', element: <AthleteProfileView /> },
               ]),
               moduleRoute('training', [{ index: true, element: placeholder('training') }]),
               moduleRoute('health', [{ index: true, element: placeholder('health') }]),

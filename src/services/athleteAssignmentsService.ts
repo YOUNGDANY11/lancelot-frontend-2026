@@ -1,6 +1,7 @@
 import { apiClient } from '@/lib/apiClient'
 import { fetchAllPages, fetchList, fetchTotal, type QueryParams } from '@/lib/listRequest'
 import type { ApiMessage } from '@/types/api'
+import type { AssignmentHistoryItem } from '@/types/athlete'
 import type { AthleteAssignment, CreateAthleteAssignmentRequest } from '@/types/club'
 import { getApiErrorStatus } from '@/utils/parseApiError'
 
@@ -10,6 +11,11 @@ export interface AthleteAssignmentFilters extends QueryParams {
   name?: string
   page?: number
   limit?: number
+}
+
+export interface UpdateAthleteAssignmentRequest {
+  id_category?: number
+  position?: string
 }
 
 export const athleteAssignmentsService = {
@@ -37,8 +43,35 @@ export const athleteAssignmentsService = {
     }
   },
 
+  async history(idUser: number): Promise<AssignmentHistoryItem[]> {
+    try {
+      const { data } = await apiClient.http.get<{ history: AssignmentHistoryItem[] }>(
+        `/athletes-in-categories/history/${idUser}`,
+      )
+      return data.history ?? []
+    } catch (error) {
+      if (getApiErrorStatus(error) === 404) return []
+      throw error
+    }
+  },
+
   async create(payload: CreateAthleteAssignmentRequest): Promise<ApiMessage> {
     const { data } = await apiClient.http.post<ApiMessage>('/athletes-in-categories', payload)
+    return data
+  },
+
+  async update(idAssignment: number, payload: UpdateAthleteAssignmentRequest): Promise<ApiMessage> {
+    const { data } = await apiClient.http.put<ApiMessage>(
+      `/athletes-in-categories/id/${idAssignment}`,
+      payload,
+    )
+    return data
+  },
+
+  async remove(idAssignment: number): Promise<ApiMessage> {
+    const { data } = await apiClient.http.delete<ApiMessage>(
+      `/athletes-in-categories/id/${idAssignment}`,
+    )
     return data
   },
 }

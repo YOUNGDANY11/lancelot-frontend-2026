@@ -27,3 +27,9 @@ export function formatDate(value: string | null | undefined, pattern = 'dd/MM/yy
   const parsed = parseApiDate(value)
   return parsed ? format(parsed, pattern, { locale: es }) : ''
 }
+
+export function formatDateTime(value: string | null | undefined): string {
+  if (!value) return ''
+  const parsed = parseISO(value)
+  return isValid(parsed) ? format(parsed, 'dd/MM/yyyy, HH:mm', { locale: es }) : ''
+}

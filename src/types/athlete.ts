@@ -124,15 +124,21 @@ export interface Injury {
   status: InjuryStatus
   mechanism?: InjuryMechanism | null
   time_loss_days?: number | null
+  registered_by?: number
+  registered_by_name?: string
 }
 
 export interface HealthRecord {
   id_health: number
   id_user: number
+  athlete_name?: string
   condition_type: string
   description?: string
   restriction: boolean
   status: HealthRecordStatus
+  registered_by?: number
+  registered_by_name?: string
+  created_at?: string
 }
 
 export interface ProgressIndex {

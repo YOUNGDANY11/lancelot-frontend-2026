@@ -12,6 +12,7 @@ export const PERMISSIONS = {
   viewInjuries: ['ADMIN', 'ENTRENADOR', 'ENCARGADO_SALUD'],
   viewHealthRecords: ['ADMIN', 'ENCARGADO_SALUD'],
   viewConsents: ['ADMIN', 'ENCARGADO_SALUD'],
+  viewHealthAudit: ['ADMIN'],
   createAthleteAccounts: ['ADMIN'],
 } satisfies Record<string, RoleCode[]>
 

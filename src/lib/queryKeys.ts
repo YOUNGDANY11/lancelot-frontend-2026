@@ -47,6 +47,16 @@ export const queryKeys = {
   alerts: {
     all: ['alerts'] as const,
     openCount: () => [...queryKeys.alerts.all, 'open-count'] as const,
+    inbox: () => [...queryKeys.alerts.all, 'inbox'] as const,
+    reviewTotals: () => [...queryKeys.alerts.all, 'review-totals'] as const,
+  },
+  health: {
+    all: ['health'] as const,
+    injuries: (filters: QueryParams) => [...queryKeys.health.all, 'injuries', filters] as const,
+    injuryMechanism: () => [...queryKeys.health.all, 'injury-mechanism'] as const,
+    missingMechanism: () => [...queryKeys.health.all, 'missing-mechanism'] as const,
+    records: (filters: QueryParams) => [...queryKeys.health.all, 'records', filters] as const,
+    audit: (filters: QueryParams) => [...queryKeys.health.all, 'audit', filters] as const,
   },
   training: {
     all: ['training'] as const,
@@ -59,6 +69,7 @@ export const queryKeys = {
     myLoads: (idUser: number) => [...queryKeys.training.all, 'my-loads', idUser] as const,
   },
   athlete: {
+    root: ['athlete'] as const,
     all: (idUser: number) => ['athlete', idUser] as const,
     physical: (idUser: number) => [...queryKeys.athlete.all(idUser), 'physical'] as const,
     technical: (idUser: number) => [...queryKeys.athlete.all(idUser), 'technical'] as const,

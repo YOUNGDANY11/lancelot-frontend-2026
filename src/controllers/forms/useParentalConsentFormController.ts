@@ -4,22 +4,39 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import type { AthleteOption } from '@/components/common/AthletePicker'
 import { queryKeys } from '@/lib/queryKeys'
+import { PARENTAL_CONSENT_STATUS } from '@/constants/enums'
 import {
   GUARDIAN_RELATIONSHIPS,
   parentalConsentSchema,
   toCreateParentalConsentRequest,
+  toUpdateParentalConsentRequest,
   type ParentalConsentFormValues,
 } from '@/schemas/healthSchemas'
 import { parentalConsentsService } from '@/services/parentalConsentsService'
 import { usersService } from '@/services/usersService'
+import type { ParentalConsent } from '@/types/club'
 import { calculateAge, isMinor } from '@/utils/age'
 import { todayApiDate } from '@/utils/formatDate'
 import { applyServerError, serverErrorOf } from '@/utils/formErrors'
 import { fullName } from '@/utils/text'
 
-function emptyConsent(): ParentalConsentFormValues {
+function defaultsFor(
+  consent: ParentalConsent | null | undefined,
+  initialAthleteId: number | undefined,
+): ParentalConsentFormValues {
+  if (consent) {
+    return {
+      id_user: consent.id_user,
+      guardian_name: consent.guardian_name,
+      guardian_document: consent.guardian_document,
+      guardian_relationship: consent.guardian_relationship,
+      signed_at: consent.signed_at,
+      document_url: consent.document_url ?? '',
+      status: consent.status,
+    }
+  }
   return {
-    id_user: 0,
+    id_user: initialAthleteId ?? 0,
     guardian_name: '',
     guardian_document: '',
     guardian_relationship: '',
@@ -29,17 +46,27 @@ function emptyConsent(): ParentalConsentFormValues {
   }
 }
 
-export function useParentalConsentFormController({ onDone }: { onDone: () => void }) {
+export function useParentalConsentFormController({
+  consent,
+  initialAthleteId,
+  onDone,
+}: {
+  consent?: ParentalConsent | null
+  initialAthleteId?: number
+  onDone: () => void
+}) {
   const queryClient = useQueryClient()
+  const isEditing = Boolean(consent)
   const form = useForm<ParentalConsentFormValues>({
     resolver: zodResolver(parentalConsentSchema),
-    defaultValues: emptyConsent(),
+    defaultValues: defaultsFor(consent, initialAthleteId),
     mode: 'onTouched',
   })
 
   const athletesQuery = useQuery({
     queryKey: queryKeys.users.athletes(),
     queryFn: usersService.listAllAthletes,
+    enabled: !isEditing,
   })
 
   const grantedQuery = useQuery({
@@ -58,11 +85,15 @@ export function useParentalConsentFormController({ onDone }: { onDone: () => voi
 
   const mutation = useMutation({
     mutationFn: (values: ParentalConsentFormValues) =>
-      parentalConsentsService.create(toCreateParentalConsentRequest(values)),
+      consent
+        ? parentalConsentsService.update(consent.id_consent, toUpdateParentalConsentRequest(values))
+        : parentalConsentsService.create(toCreateParentalConsentRequest(values)),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.parentalConsents.all })
-      toast.success('Consentimiento registrado.')
-      form.reset(emptyConsent())
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.parentalConsents.all }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.athlete.root }),
+      ])
+      toast.success(consent ? 'Consentimiento actualizado.' : 'Consentimiento registrado.')
       onDone()
     },
     onError: (error) =>
@@ -74,12 +105,16 @@ export function useParentalConsentFormController({ onDone }: { onDone: () => voi
   return {
     form,
     minorOptions,
-    isLoadingAthletes: athletesQuery.isPending || grantedQuery.isPending,
+    isLoadingAthletes: !isEditing && (athletesQuery.isPending || grantedQuery.isPending),
     relationshipOptions: GUARDIAN_RELATIONSHIPS.map((value) => ({ value, label: value })),
-    statusOptions: [
-      { value: 'granted', label: 'Otorgado' },
-      { value: 'pending', label: 'Pendiente de firma' },
-    ],
+    isEditing,
+    athleteName: consent?.athlete_name,
+    statusOptions: isEditing
+      ? PARENTAL_CONSENT_STATUS.options.map(({ value, label }) => ({ value, label }))
+      : [
+          { value: 'granted', label: 'Otorgado' },
+          { value: 'pending', label: 'Pendiente de firma' },
+        ],
     onSubmit: form.handleSubmit((values) => mutation.mutate(values)),
     isSubmitting: mutation.isPending,
     serverError: serverErrorOf(form),

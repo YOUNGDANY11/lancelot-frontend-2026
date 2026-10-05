@@ -77,7 +77,7 @@ export function useMyRpeController() {
     onSuccess: async (_data, { session }) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.training.all }),
-        queryClient.invalidateQueries({ queryKey: ['athlete'] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.athlete.root }),
       ])
       setDrafts((current) => {
         const next = { ...current }

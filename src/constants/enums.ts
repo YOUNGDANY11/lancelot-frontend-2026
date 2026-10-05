@@ -89,6 +89,12 @@ export const INJURY_RISK_RULE = defineEnum<InjuryRiskRuleCode>([
   { value: 'prediccion_ml', label: 'Predicción del modelo', tone: 'info' },
 ])
 
+export type RiskAssessmentMethod = 'rules' | 'ml_model'
+export const RISK_ASSESSMENT_METHOD = defineEnum<RiskAssessmentMethod>([
+  { value: 'rules', label: 'Reglas', tone: 'neutral' },
+  { value: 'ml_model', label: 'Modelo de ML', tone: 'info' },
+])
+
 export type TalentFlagSource = 'manual' | 'rules' | 'ml'
 export const TALENT_FLAG_SOURCE = defineEnum<TalentFlagSource>([
   { value: 'manual', label: 'Manual', tone: 'neutral' },
@@ -114,6 +120,15 @@ export const PARENTAL_CONSENT_STATUS = defineEnum<ParentalConsentStatus>([
   { value: 'pending', label: 'Pendiente', tone: 'warning' },
   { value: 'granted', label: 'Otorgado', tone: 'success' },
   { value: 'revoked', label: 'Revocado', tone: 'danger' },
+])
+
+export type HealthAccessAction = 'list' | 'read' | 'create' | 'update' | 'delete'
+export const HEALTH_ACCESS_ACTION = defineEnum<HealthAccessAction>([
+  { value: 'list', label: 'Consultó el listado', tone: 'neutral' },
+  { value: 'read', label: 'Abrió un registro', tone: 'info' },
+  { value: 'create', label: 'Creó un registro', tone: 'success' },
+  { value: 'update', label: 'Editó un registro', tone: 'warning' },
+  { value: 'delete', label: 'Eliminó un registro', tone: 'danger' },
 ])
 
 export type MlEngineMode = 'rules' | 'shadow' | 'ml'

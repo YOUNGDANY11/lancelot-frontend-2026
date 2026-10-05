@@ -151,7 +151,7 @@ export function useMatchStatsForm(match: Match, initialRows: MatchStatRow[]) {
     const savedCount = outcomes.length - failedCount
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: queryKeys.training.all }),
-      queryClient.invalidateQueries({ queryKey: ['athlete'] }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.athlete.root }),
     ])
     if (failedCount === 0) {
       toast.success(

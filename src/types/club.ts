@@ -1,6 +1,8 @@
 import type {
+  InjuryRiskRuleCode,
   ParentalConsentStatus,
   ReviewStatus,
+  RiskAssessmentMethod,
   RiskLevelValue,
   SeasonStatus,
 } from '@/constants/enums'
@@ -92,6 +94,15 @@ export interface CreateParentalConsentRequest {
   status?: ParentalConsentStatus
 }
 
+export interface UpdateParentalConsentRequest {
+  guardian_name?: string
+  guardian_document?: string
+  guardian_relationship?: string
+  signed_at?: string
+  document_url?: string | null
+  status?: ParentalConsentStatus
+}
+
 export interface FatigueAlert {
   id_alert: number
   id_user: number
@@ -113,4 +124,7 @@ export interface InjuryRiskAssessment {
   risk_level: RiskLevelValue
   status: ReviewStatus
   acwr_value?: number | null
+  method?: RiskAssessmentMethod
+  triggered_rules?: InjuryRiskRuleCode[]
+  details?: string | null
 }

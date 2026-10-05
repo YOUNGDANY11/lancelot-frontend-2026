@@ -20,21 +20,27 @@ export interface MyRpeDraft {
 
 export function useMyRpeController() {
   const { user } = useAuth()
-  const { season, category } = useAppContext()
+  const { season, categories } = useAppContext()
   const queryClient = useQueryClient()
   const [drafts, setDrafts] = useState<Record<number, MyRpeDraft>>({})
   const idUser = user?.id_user
-  const idCategory = category?.id_category
+  const categoryIds = categories.map((item) => item.id_category)
   const idSeason = season?.id_season
   const today = todayApiDate()
   const windowStart = toApiDate(subDays(new Date(), REPORT_WINDOW_DAYS - 1))
 
-  const sessionFilters = { id_category: idCategory, id_season: idSeason, scope: 'all' }
+  const sessionFilters = { categories: categoryIds.join(','), id_season: idSeason, scope: 'mine' }
   const sessionsQuery = useQuery({
     queryKey: queryKeys.training.sessions(sessionFilters),
-    queryFn: () =>
-      trainingService.listAllSessions({ id_category: idCategory, id_season: idSeason }),
-    enabled: idCategory !== undefined && idSeason !== undefined,
+    queryFn: async () => {
+      const lists = await Promise.all(
+        categoryIds.map((idCategory) =>
+          trainingService.listAllSessions({ id_category: idCategory, id_season: idSeason }),
+        ),
+      )
+      return lists.flat()
+    },
+    enabled: categoryIds.length > 0 && idSeason !== undefined,
   })
   const loadsQuery = useQuery({
     queryKey: queryKeys.training.myLoads(idUser ?? 0),
@@ -95,11 +101,11 @@ export function useMyRpeController() {
   const failed = sessionsQuery.error ?? loadsQuery.error
 
   return {
-    hasCategory: idCategory !== undefined,
+    hasCategory: categoryIds.length > 0,
     hasSeason: idSeason !== undefined,
     sessions,
     isLoading:
-      idCategory !== undefined &&
+      categoryIds.length > 0 &&
       idSeason !== undefined &&
       (sessionsQuery.isPending || loadsQuery.isPending),
     errorMessage: failed ? parseApiError(failed) : undefined,

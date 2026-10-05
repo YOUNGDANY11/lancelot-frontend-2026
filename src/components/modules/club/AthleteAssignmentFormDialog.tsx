@@ -26,7 +26,7 @@ function AthleteAssignmentContent({ onOpenChange, season }: Omit<DialogProps, 'o
     <FormModal
       open
       onOpenChange={onOpenChange}
-      title="Asignar deportista a una categoría"
+      title="Agregar deportista a una categoría"
       description={
         controller.seasonName
           ? `La asignación queda en la temporada ${controller.seasonName}.`
@@ -46,7 +46,7 @@ function AthleteAssignmentContent({ onOpenChange, season }: Omit<DialogProps, 'o
             <FormField
               id="assignment-athlete"
               label="Deportista"
-              description="Solo aparecen quienes aún no tienen categoría en esta temporada."
+              description="Puede estar en varias categorías a la vez: la suya y las superiores."
               error={fieldState.error?.message}
             >
               {(controlProps) => (
@@ -54,9 +54,9 @@ function AthleteAssignmentContent({ onOpenChange, season }: Omit<DialogProps, 'o
                   {...controlProps}
                   options={controller.athleteOptions}
                   value={field.value || null}
-                  onChange={(id) => field.onChange(id ?? 0)}
+                  onChange={(id) => (id ? controller.onAthleteChange(id) : field.onChange(0))}
                   isLoading={controller.isLoadingAthletes}
-                  emptyMessage="No hay deportistas pendientes por asignar con ese nombre."
+                  emptyMessage="No encontramos deportistas con ese nombre."
                 />
               )}
             </FormField>
@@ -66,7 +66,12 @@ function AthleteAssignmentContent({ onOpenChange, season }: Omit<DialogProps, 'o
           control={form.control}
           name="id_category"
           render={({ field, fieldState }) => (
-            <FormField id="assignment-category" label="Categoría" error={fieldState.error?.message}>
+            <FormField
+              id="assignment-category"
+              label="Categoría"
+              description={controller.categoryHint}
+              error={fieldState.error?.message}
+            >
               {(controlProps) => (
                 <SelectInput
                   {...controlProps}
@@ -74,6 +79,7 @@ function AthleteAssignmentContent({ onOpenChange, season }: Omit<DialogProps, 'o
                   onValueChange={field.onChange}
                   options={controller.categoryOptions}
                   placeholder="Elige la categoría"
+                  disabled={controller.categoryOptions.length === 0}
                 />
               )}
             </FormField>

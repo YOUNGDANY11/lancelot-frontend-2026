@@ -32,7 +32,8 @@ function CallUpsContent({ competency, onClose }: { competency: Competency; onClo
             <div className="flex flex-col gap-2">
               <Label htmlFor="callup-athlete">Convocar deportista</Label>
               <p className="text-sm text-muted-foreground">
-                Aparecen los deportistas de la plantilla de esta categoría y temporada.
+                Primero la plantilla de esta categoría; después, quienes por edad también pueden
+                jugarla. Nadie mayor al límite de la categoría.
               </p>
               <AthletePicker
                 id="callup-athlete"
@@ -40,7 +41,7 @@ function CallUpsContent({ competency, onClose }: { competency: Competency; onClo
                 value={controller.selectedAthlete}
                 onChange={controller.setSelectedAthlete}
                 isLoading={controller.isLoadingOptions}
-                emptyMessage="No hay más deportistas de la plantilla por convocar."
+                emptyMessage="No hay más deportistas habilitados por edad para convocar."
               />
               <Button
                 onClick={controller.add}

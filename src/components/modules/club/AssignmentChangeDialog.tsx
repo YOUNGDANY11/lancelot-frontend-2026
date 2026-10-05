@@ -44,6 +44,7 @@ function AssignmentChangeContent({
             <FormField
               id="change-category"
               label="Nueva categoría"
+              description={controller.categoryHint}
               error={fieldState.error?.message}
             >
               {(controlProps) => (

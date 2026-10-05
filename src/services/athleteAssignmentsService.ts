@@ -31,14 +31,15 @@ export const athleteAssignmentsService = {
     return fetchTotal('/athletes-in-categories', filters)
   },
 
-  async getMine(): Promise<AthleteAssignment | null> {
+  async getMine(): Promise<AthleteAssignment[]> {
     try {
-      const { data } = await apiClient.http.get<{ athInCat: AthleteAssignment }>(
-        '/athletes-in-categories/me',
-      )
-      return data.athInCat
+      const { data } = await apiClient.http.get<{
+        athInCat?: AthleteAssignment
+        athInCats?: AthleteAssignment[]
+      }>('/athletes-in-categories/me')
+      return data.athInCats ?? (data.athInCat ? [data.athInCat] : [])
     } catch (error) {
-      if (getApiErrorStatus(error) === 404) return null
+      if (getApiErrorStatus(error) === 404) return []
       throw error
     }
   },

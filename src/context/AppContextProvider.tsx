@@ -39,7 +39,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
     enabled: role !== null && !isAthlete,
   })
 
-  const myAssignmentQuery = useQuery({
+  const myAssignmentsQuery = useQuery({
     queryKey: queryKeys.assignments.mine(),
     queryFn: athleteAssignmentsService.getMine,
     staleTime: CONTEXT_STALE_TIME,
@@ -69,12 +69,17 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
 
   const value = useMemo<AppContextValue>(() => {
     const seasons = sortSeasons(seasonsQuery.data ?? [])
-    const myAssignment = myAssignmentQuery.data
     const categories: ContextCategory[] = isAthlete
-      ? myAssignment?.id_category
-        ? [{ id_category: myAssignment.id_category, name: myAssignment.category_name ?? '' }]
-        : []
-      : (categoriesQuery.data ?? []).map(({ id_category, name }) => ({ id_category, name }))
+      ? (myAssignmentsQuery.data ?? []).flatMap((assignment) =>
+          assignment.id_category
+            ? [{ id_category: assignment.id_category, name: assignment.category_name ?? '' }]
+            : [],
+        )
+      : (categoriesQuery.data ?? []).map(({ id_category, name, max_age }) => ({
+          id_category,
+          name,
+          max_age: Number(max_age),
+        }))
     const category = isAthlete
       ? (categories[0] ?? null)
       : (categories.find((item) => item.id_category === selection.categoryId) ?? null)
@@ -91,7 +96,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
       isLoading:
         seasonsQuery.isPending ||
         (!isAthlete && categoriesQuery.isPending) ||
-        (isAthlete && myAssignmentQuery.isPending),
+        (isAthlete && myAssignmentsQuery.isPending),
       isError: seasonsQuery.isError || categoriesQuery.isError,
       retry,
     }
@@ -102,8 +107,8 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
     categoriesQuery.data,
     categoriesQuery.isPending,
     categoriesQuery.isError,
-    myAssignmentQuery.data,
-    myAssignmentQuery.isPending,
+    myAssignmentsQuery.data,
+    myAssignmentsQuery.isPending,
     isAthlete,
     selection,
     setSeasonId,

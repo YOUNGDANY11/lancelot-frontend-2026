@@ -21,7 +21,7 @@ export const SUB15: Category = { id_category: 4, name: 'Sub-15', min_age: 13, ma
 export function primeAppDataMocks(overrides: { seasons?: Season[]; categories?: Category[] } = {}) {
   vi.mocked(seasonsService.listAll).mockResolvedValue(overrides.seasons ?? [ACTIVE_SEASON])
   vi.mocked(categoriesService.listAll).mockResolvedValue(overrides.categories ?? [SUB15])
-  vi.mocked(athleteAssignmentsService.getMine).mockResolvedValue(null)
+  vi.mocked(athleteAssignmentsService.getMine).mockResolvedValue([])
   vi.mocked(athleteAssignmentsService.listAll).mockResolvedValue([])
   vi.mocked(alertsService.countOpen).mockResolvedValue({ fatigue: 0, risk: 0, total: 0 })
   vi.mocked(weightProfilesService.count).mockResolvedValue(0)

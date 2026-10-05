@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useWatch } from 'react-hook-form'
 import { HEALTH_RECORD_STATUS } from '@/constants/enums'
 import { HEALTH_CONDITION_TYPES } from '@/constants/health'
 import { useAthleteOptions } from '@/controllers/health/useAthleteOptions'
@@ -66,7 +67,7 @@ export function useHealthRecordFormController({
     fieldMatchers: [{ field: 'id_user', pattern: /deportista|menor|consentimiento/i }],
   })
 
-  const selectedId = controller.form.watch('id_user')
+  const selectedId = useWatch({ control: controller.form.control, name: 'id_user' })
   const selected = athletes.athletes.find((athlete) => athlete.id_user === selectedId)
 
   return {

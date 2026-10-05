@@ -55,7 +55,7 @@ export function RosterTab() {
       <TabToolbar
         description={`Plantilla de ${controller.season?.name ?? 'la temporada'}${
           controller.categoryFilterName ? ` · ${controller.categoryFilterName}` : ''
-        }.`}
+        }. Un deportista puede estar en su categoría y en las superiores, nunca en una menor.`}
       >
         {controller.canManage && (
           <Button onClick={dialogs.openCreate}>
@@ -87,7 +87,7 @@ export function RosterTab() {
           <EmptyState
             icon={Users}
             title="Aún no hay deportistas en la plantilla"
-            description="Asigna cada deportista a su categoría con su posición."
+            description="Asigna cada deportista a su categoría con su posición. También puede jugar en categorías superiores."
             action={
               controller.canManage && (
                 <Button onClick={dialogs.openCreate}>Asignar deportista</Button>

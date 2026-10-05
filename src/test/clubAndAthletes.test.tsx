@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { athleteAssignmentsService } from '@/services/athleteAssignmentsService'
 import { authService } from '@/services/authService'
+import { categoriesService } from '@/services/categoriesService'
 import { competitionService } from '@/services/competitionService'
 import { evaluationsService } from '@/services/evaluationsService'
 import { healthService } from '@/services/healthService'
@@ -189,6 +190,45 @@ describe('módulo Club', () => {
 
     await user.click(screen.getByRole('tab', { name: 'Categorías' }))
     expect(await screen.findByRole('button', { name: 'Crear categoría' })).toBeInTheDocument()
+  })
+
+  it('agrega a un deportista a otra categoría solo si su edad lo permite', async () => {
+    vi.mocked(categoriesService.listAll).mockResolvedValue([
+      { id_category: 3, name: 'Sub-13', min_age: 12, max_age: 13 },
+      SUB15,
+      SUB17,
+    ])
+    vi.mocked(athleteAssignmentsService.create).mockResolvedValue({
+      status: 'Success',
+      mensaje: 'ok',
+    })
+    signInAs(ADMIN_USER)
+    const user = userEvent.setup()
+    renderAppAt('/app/club?tab=plantilla')
+
+    await user.click(await screen.findByRole('button', { name: 'Asignar deportista' }))
+    const dialog = await screen.findByRole('dialog', { name: /Agregar deportista a una categoría/ })
+    const picker = within(dialog).getByRole('combobox', { name: 'Deportista' })
+    await waitFor(() => expect(picker).toBeEnabled())
+    await user.click(picker)
+    await user.click(await within(dialog).findByRole('option', { name: /Ana María Pérez/ }))
+
+    expect(within(dialog).getByText(/Tiene 15 años en 2026/)).toBeInTheDocument()
+    await user.click(within(dialog).getByRole('combobox', { name: 'Categoría' }))
+    expect((await screen.findAllByRole('option')).map((option) => option.textContent)).toEqual([
+      'Sub-17 (categoría superior)',
+    ])
+    await user.click(screen.getByRole('option', { name: 'Sub-17 (categoría superior)' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Asignar' }))
+
+    await waitFor(() =>
+      expect(athleteAssignmentsService.create).toHaveBeenCalledWith({
+        id_user: ATHLETE_USER.id_user,
+        id_category: SUB17.id_category,
+        id_season: ACTIVE_SEASON.id_season,
+        position: 'Portero',
+      }),
+    )
   })
 
   it('cambia de categoría a un deportista conservando su historial', async () => {

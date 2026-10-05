@@ -4,6 +4,7 @@ import type { Season } from '@/types/club'
 export interface ContextCategory {
   id_category: number
   name: string
+  max_age?: number
 }
 
 export interface AppContextValue {

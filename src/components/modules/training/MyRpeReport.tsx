@@ -57,7 +57,9 @@ export function MyRpeReport({ limit }: { limit?: number }) {
                   {TRAINING_SESSION_TYPE.labels[session.type]} · {formatDate(session.date)}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  {session.planned_duration_min} minutos planificados
+                  {[session.category_name, `${session.planned_duration_min} minutos planificados`]
+                    .filter(Boolean)
+                    .join(' · ')}
                 </span>
               </div>
               <div className="flex gap-2">

@@ -16,7 +16,7 @@ const PAGE_SIZE = 12
 export type DirectoryViewMode = 'cards' | 'table'
 
 export function useAthleteDirectoryController() {
-  const { season, category } = useAppContext()
+  const { season, category, categories } = useAppContext()
   const { can } = useRole()
   const assignDialog = useDisclosure()
   const [search, setSearch] = useState('')
@@ -36,7 +36,16 @@ export function useAthleteDirectoryController() {
     enabled: idSeason !== undefined,
   })
 
-  const directory = buildAthleteDirectory(athletesQuery.data ?? [], assignmentsQuery.data ?? [])
+  const maxAgeById = new Map(
+    categories.flatMap((item) =>
+      item.max_age !== undefined ? [[item.id_category, item.max_age] as const] : [],
+    ),
+  )
+  const directory = buildAthleteDirectory(
+    athletesQuery.data ?? [],
+    assignmentsQuery.data ?? [],
+    maxAgeById,
+  )
   const filtered = filterAthleteDirectory(directory, {
     search: debouncedSearch,
     idCategory: category?.id_category ?? null,

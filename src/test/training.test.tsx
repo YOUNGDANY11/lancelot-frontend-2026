@@ -250,12 +250,14 @@ describe('vistas de entrenamiento por rol', () => {
   })
 
   it('permite al deportista reportar su RPE de hoy', async () => {
-    vi.mocked(athleteAssignmentsService.getMine).mockResolvedValue({
-      id_ath_cat: 30,
-      id_user: ATHLETE_USER.id_user,
-      id_category: SUB15.id_category,
-      category_name: SUB15.name,
-    })
+    vi.mocked(athleteAssignmentsService.getMine).mockResolvedValue([
+      {
+        id_ath_cat: 30,
+        id_user: ATHLETE_USER.id_user,
+        id_category: SUB15.id_category,
+        category_name: SUB15.name,
+      },
+    ])
     signInAs(ATHLETE_USER)
     const user = userEvent.setup()
     renderAppAt('/app/entrenamiento')

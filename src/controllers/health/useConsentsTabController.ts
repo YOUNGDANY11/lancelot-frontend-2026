@@ -1,27 +1,18 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { PARENTAL_CONSENT_STATUS, type ParentalConsentStatus } from '@/constants/enums'
+import { useMinorsWithoutConsent } from '@/controllers/health/useMinorsWithoutConsent'
 import { useResourceMutation } from '@/controllers/shared/useResourceMutation'
 import { queryKeys } from '@/lib/queryKeys'
 import {
   parentalConsentsService,
   type ParentalConsentFilters,
 } from '@/services/parentalConsentsService'
-import { usersService } from '@/services/usersService'
 import type { ParentalConsent } from '@/types/club'
-import { calculateAge, isMinor } from '@/utils/age'
 import { parseApiError } from '@/utils/parseApiError'
-import { fullName } from '@/utils/text'
 
 const PAGE_SIZE = 10
 const ALL = 'all'
-
-export interface MinorWithoutConsent {
-  id_user: number
-  name: string
-  age: number | null
-  latest?: ParentalConsent
-}
 
 type SheetState =
   | { mode: 'closed' }
@@ -30,10 +21,6 @@ type SheetState =
 
 type PendingAction =
   { kind: 'revoke'; consent: ParentalConsent } | { kind: 'delete'; consent: ParentalConsent } | null
-
-function latestFirst(first: ParentalConsent, second: ParentalConsent) {
-  return second.signed_at.localeCompare(first.signed_at) || second.id_consent - first.id_consent
-}
 
 export function useConsentsTabController() {
   const [page, setPage] = useState(1)
@@ -52,35 +39,7 @@ export function useConsentsTabController() {
     queryFn: () => parentalConsentsService.listPage(filters),
     placeholderData: keepPreviousData,
   })
-  const allConsentsQuery = useQuery({
-    queryKey: queryKeys.parentalConsents.list({ scope: 'every-status' }),
-    queryFn: () => parentalConsentsService.listAll(),
-  })
-  const athletesQuery = useQuery({
-    queryKey: queryKeys.users.athletes(),
-    queryFn: usersService.listAllAthletes,
-  })
-
-  const consentsByUser = new Map<number, ParentalConsent[]>()
-  for (const consent of allConsentsQuery.data ?? []) {
-    consentsByUser.set(consent.id_user, [...(consentsByUser.get(consent.id_user) ?? []), consent])
-  }
-
-  const minorsWithoutConsent: MinorWithoutConsent[] = (athletesQuery.data ?? [])
-    .filter((athlete) => isMinor(athlete.birth_date ?? null))
-    .filter(
-      (athlete) =>
-        !(consentsByUser.get(athlete.id_user) ?? []).some(
-          (consent) => consent.status === 'granted',
-        ),
-    )
-    .map((athlete) => ({
-      id_user: athlete.id_user,
-      name: fullName(athlete),
-      age: calculateAge(athlete.birth_date),
-      latest: [...(consentsByUser.get(athlete.id_user) ?? [])].sort(latestFirst)[0],
-    }))
-    .sort((first, second) => first.name.localeCompare(second.name, 'es'))
+  const minors = useMinorsWithoutConsent()
 
   const invalidate = [queryKeys.parentalConsents.all, queryKeys.athlete.root]
 
@@ -120,14 +79,7 @@ export function useConsentsTabController() {
       { value: ALL, label: 'Todos los estados' },
       ...PARENTAL_CONSENT_STATUS.options.map(({ value, label }) => ({ value, label })),
     ],
-    minors: {
-      items: minorsWithoutConsent,
-      isLoading: athletesQuery.isPending || allConsentsQuery.isPending,
-      errorMessage:
-        athletesQuery.isError || allConsentsQuery.isError
-          ? parseApiError(athletesQuery.error ?? allConsentsQuery.error)
-          : undefined,
-    },
+    minors,
     sheet,
     openCreate: (athleteId?: number) => setSheet({ mode: 'create', athleteId }),
     openEdit: (consent: ParentalConsent) => setSheet({ mode: 'edit', consent }),

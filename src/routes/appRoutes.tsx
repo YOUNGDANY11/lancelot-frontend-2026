@@ -14,6 +14,7 @@ import {
   ModulePlaceholderView,
   NotFoundView,
   ProfileView,
+  TalentView,
   TrainingView,
 } from '@/routes/lazyViews'
 import { ProtectedRoute } from '@/routes/ProtectedRoute'
@@ -57,7 +58,7 @@ export const appRoutes: RouteObject[] = [
               ]),
               moduleRoute('training', [{ index: true, element: <TrainingView /> }]),
               moduleRoute('health', [{ index: true, element: <HealthView /> }]),
-              moduleRoute('talent', [{ index: true, element: placeholder('talent') }]),
+              moduleRoute('talent', [{ index: true, element: <TalentView /> }]),
               moduleRoute('analytics', [{ index: true, element: placeholder('analytics') }]),
               moduleRoute('settings', [{ index: true, element: placeholder('settings') }]),
             ],

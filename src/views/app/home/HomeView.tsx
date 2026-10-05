@@ -1,28 +1,38 @@
+import { Suspense, type ComponentType } from 'react'
+import { LoadingSkeleton } from '@/components/common/LoadingSkeleton'
 import { PageHeader } from '@/components/common/PageHeader'
-import { SetupChecklist } from '@/components/common/SetupChecklist'
-import { Card, CardContent } from '@/components/ui/card'
+import type { RoleCode } from '@/constants/roles'
 import { useHomeController } from '@/controllers/useHomeController'
+import {
+  AdminHome,
+  AthleteHome,
+  CoachHome,
+  DirectorHome,
+  HealthHome,
+} from '@/views/app/home/roleHomes'
+
+const HOME_BY_ROLE: Record<RoleCode, ComponentType> = {
+  ADMIN: AdminHome,
+  DIRECTOR_TECNICO: DirectorHome,
+  ENTRENADOR: CoachHome,
+  ENCARGADO_SALUD: HealthHome,
+  DEPORTISTA: AthleteHome,
+}
 
 export default function HomeView() {
-  const { firstName, roleLabel, roleSummary, RoleIcon } = useHomeController()
+  const { firstName, role, roleSummary } = useHomeController()
+  const RoleHome = role ? HOME_BY_ROLE[role] : null
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title={`Hola, ${firstName}`} description="Este es tu inicio en Lancelot." />
-      <SetupChecklist />
-      <Card className="glass-subtle">
-        <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-start">
-          {RoleIcon && (
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <RoleIcon aria-hidden="true" className="size-6" />
-            </span>
-          )}
-          <div>
-            <p className="text-sm font-semibold text-primary">{roleLabel}</p>
-            <p className="mt-1 max-w-2xl text-pretty text-muted-foreground">{roleSummary}</p>
-          </div>
-        </CardContent>
-      </Card>
+      <PageHeader title={`Hola, ${firstName}`} description={roleSummary} />
+      {RoleHome && (
+        <Suspense
+          fallback={<LoadingSkeleton variant="cards" rows={3} label="Cargando tu inicio" />}
+        >
+          <RoleHome />
+        </Suspense>
+      )}
     </div>
   )
 }

@@ -102,6 +102,15 @@ export const TALENT_FLAG_SOURCE = defineEnum<TalentFlagSource>([
   { value: 'ml', label: 'Modelo de ML', tone: 'info' },
 ])
 
+export type TalentRuleCode =
+  'percentil_alto' | 'perfil_multidimensional' | 'mejora_sostenida' | 'disponibilidad'
+export const TALENT_RULE = defineEnum<TalentRuleCode>([
+  { value: 'percentil_alto', label: 'Percentil alto en su categoría', tone: 'info' },
+  { value: 'perfil_multidimensional', label: 'Sin dimensiones débiles', tone: 'info' },
+  { value: 'mejora_sostenida', label: 'Mejora frente a la temporada anterior', tone: 'success' },
+  { value: 'disponibilidad', label: 'Disponible y sin lesión severa', tone: 'success' },
+])
+
 export type DevelopmentObjectiveStatus = 'open' | 'achieved' | 'missed'
 export const DEVELOPMENT_OBJECTIVE_STATUS = defineEnum<DevelopmentObjectiveStatus>([
   { value: 'open', label: 'En curso', tone: 'info' },

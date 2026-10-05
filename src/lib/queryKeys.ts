@@ -50,6 +50,18 @@ export const queryKeys = {
     inbox: () => [...queryKeys.alerts.all, 'inbox'] as const,
     reviewTotals: () => [...queryKeys.alerts.all, 'review-totals'] as const,
   },
+  talent: {
+    all: ['talent'] as const,
+    indices: (idSeason: number) => [...queryKeys.talent.all, 'indices', idSeason] as const,
+    flags: (filters: QueryParams) => [...queryKeys.talent.all, 'flags', filters] as const,
+    flagCount: (filters: QueryParams) => [...queryKeys.talent.all, 'flag-count', filters] as const,
+  },
+  ml: {
+    all: ['ml'] as const,
+    engine: () => [...queryKeys.ml.all, 'engine'] as const,
+    readiness: () => [...queryKeys.ml.all, 'readiness'] as const,
+    dataQuality: (range: QueryParams) => [...queryKeys.ml.all, 'data-quality', range] as const,
+  },
   health: {
     all: ['health'] as const,
     injuries: (filters: QueryParams) => [...queryKeys.health.all, 'injuries', filters] as const,

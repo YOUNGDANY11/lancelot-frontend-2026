@@ -163,3 +163,11 @@ export const assignmentChangeSchema = z.object({
 })
 
 export type AssignmentChangeFormValues = z.infer<typeof assignmentChangeSchema>
+
+export const talentFlagSchema = z.object({
+  id_user: z.number({ error: 'Elige un deportista.' }).int().positive('Elige un deportista.'),
+  criteria: textField('los criterios observados', 10, 1000),
+  recommended_action: textField('la acción recomendada', 5, 500),
+})
+
+export type TalentFlagFormValues = z.infer<typeof talentFlagSchema>

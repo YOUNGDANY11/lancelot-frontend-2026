@@ -10,7 +10,7 @@ import {
   textField,
 } from '@/schemas/fields'
 import type { CreateWeightProfileRequest } from '@/types/club'
-import type { AdminCreateUserRequest } from '@/types/user'
+import type { AdminCreateUserRequest, AdminUpdateUserRequest } from '@/types/user'
 
 const WEIGHT_TOTAL = 100
 
@@ -81,5 +81,37 @@ export function toAdminCreateUserRequest(
     password: values.password,
     id_role: idRole,
     ...(values.birth_date ? { birth_date: values.birth_date } : {}),
+  }
+}
+
+export const userEditSchema = z
+  .object({
+    name: textField('los nombres', 2, 100),
+    lastname: textField('los apellidos', 2, 100),
+    email: emailField,
+    password: z.union([z.literal(''), passwordField('Escribe la nueva contraseña.')]),
+    role: z.enum(ROLE_CODES, { error: 'Elige el rol de la cuenta.' }),
+    birth_date: z.union([z.literal(''), birthDateField]),
+  })
+  .refine((values) => values.role !== 'DEPORTISTA' || values.birth_date !== '', {
+    message: 'La fecha de nacimiento es obligatoria para los deportistas.',
+    path: ['birth_date'],
+  })
+
+export type UserEditFormValues = z.infer<typeof userEditSchema>
+
+export function toAdminUpdateUserRequest(
+  values: UserEditFormValues,
+  roleIds: Partial<Record<RoleCode, number>>,
+): AdminUpdateUserRequest | null {
+  const idRole = roleIds[values.role]
+  if (!idRole) return null
+  return {
+    name: values.name,
+    lastname: values.lastname,
+    email: values.email,
+    id_role: idRole,
+    ...(values.birth_date ? { birth_date: values.birth_date } : {}),
+    ...(values.password ? { password: values.password } : {}),
   }
 }

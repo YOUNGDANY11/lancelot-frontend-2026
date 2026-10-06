@@ -9,10 +9,12 @@ import { FieldGroup } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { POSITION_HINT } from '@/constants/positions'
 import { useWeightProfileFormController } from '@/controllers/forms/useWeightProfileFormController'
+import type { PositionWeightProfile } from '@/types/club'
 
 interface DialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  profile?: PositionWeightProfile | null
 }
 
 const WEIGHT_FIELDS = [
@@ -21,8 +23,11 @@ const WEIGHT_FIELDS = [
   { name: 'w_participation', label: 'Participación (%)' },
 ] as const
 
-function WeightProfileContent({ onOpenChange }: Omit<DialogProps, 'open'>) {
-  const controller = useWeightProfileFormController({ onDone: () => onOpenChange(false) })
+function WeightProfileContent({ onOpenChange, profile }: Omit<DialogProps, 'open'>) {
+  const controller = useWeightProfileFormController({
+    onDone: () => onOpenChange(false),
+    profile,
+  })
   const { form } = controller
   const { errors } = form.formState
 
@@ -30,10 +35,10 @@ function WeightProfileContent({ onOpenChange }: Omit<DialogProps, 'open'>) {
     <FormModal
       open
       onOpenChange={onOpenChange}
-      title="Crear perfil de pesos"
+      title={controller.isEditing ? 'Editar perfil de pesos' : 'Crear perfil de pesos'}
       description="Define cuánto pesa cada dimensión en el índice de progreso de una posición y categoría."
-      submitLabel="Crear perfil"
-      pendingLabel="Creando…"
+      submitLabel={controller.isEditing ? 'Guardar' : 'Crear perfil'}
+      pendingLabel={controller.isEditing ? 'Guardando…' : 'Creando…'}
       isSubmitting={controller.isSubmitting}
       onSubmit={controller.onSubmit}
     >
@@ -105,6 +110,6 @@ function WeightProfileContent({ onOpenChange }: Omit<DialogProps, 'open'>) {
   )
 }
 
-export function WeightProfileFormDialog({ open, onOpenChange }: DialogProps) {
-  return open ? <WeightProfileContent onOpenChange={onOpenChange} /> : null
+export function WeightProfileFormDialog({ open, onOpenChange, profile }: DialogProps) {
+  return open ? <WeightProfileContent onOpenChange={onOpenChange} profile={profile} /> : null
 }

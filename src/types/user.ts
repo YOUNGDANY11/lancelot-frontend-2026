@@ -31,6 +31,15 @@ export interface AdminCreateUserRequest {
   id_role: number
 }
 
+export interface AdminUpdateUserRequest {
+  name: string
+  lastname: string
+  email: string
+  id_role: number
+  birth_date?: string
+  password?: string
+}
+
 export interface ChangePasswordRequest {
   current_password: string
   new_password: string

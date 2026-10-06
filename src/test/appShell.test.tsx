@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { alertsService } from '@/services/alertsService'
 import { authService } from '@/services/authService'
 import { seasonsService } from '@/services/seasonsService'
@@ -68,6 +68,14 @@ function signInAs(user: User) {
   vi.mocked(authService.refreshSession).mockResolvedValue('access-renovado')
   vi.mocked(usersService.getMe).mockResolvedValue(user)
 }
+
+beforeAll(async () => {
+  await Promise.all([
+    import('@/views/app/home/HomeView'),
+    import('@/components/modules/home/AdminHome'),
+    import('@/components/modules/home/CoachHome'),
+  ])
+})
 
 describe('estructura de la aplicación', () => {
   beforeEach(() => {

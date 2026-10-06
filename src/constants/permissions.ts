@@ -14,6 +14,11 @@ export const PERMISSIONS = {
   viewConsents: ['ADMIN', 'ENCARGADO_SALUD'],
   viewHealthAudit: ['ADMIN'],
   runTalentDetection: ['ADMIN', 'DIRECTOR_TECNICO'],
+  manageConfig: ['ADMIN', 'DIRECTOR_TECNICO'],
+  manageUsers: ['ADMIN'],
+  manageMlEngine: ['ADMIN'],
+  viewMlData: ['ADMIN', 'ENCARGADO_SALUD'],
+  viewValidation: ['ADMIN', 'DIRECTOR_TECNICO', 'ENCARGADO_SALUD'],
   createAthleteAccounts: ['ADMIN'],
 } satisfies Record<string, RoleCode[]>
 

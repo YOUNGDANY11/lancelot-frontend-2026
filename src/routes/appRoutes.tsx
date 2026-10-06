@@ -1,9 +1,9 @@
-import type { ReactElement } from 'react'
 import type { RouteObject } from 'react-router'
 import { AppShell } from '@/components/layout/AppShell'
 import { RootLayout } from '@/components/layout/RootLayout'
 import { APP_MODULES, type ModuleKey } from '@/constants/navigation'
 import {
+  AnalyticsView,
   AthleteDirectoryView,
   AthleteProfileView,
   ClubView,
@@ -11,9 +11,9 @@ import {
   HealthView,
   HomeView,
   LandingView,
-  ModulePlaceholderView,
   NotFoundView,
   ProfileView,
+  SettingsView,
   TalentView,
   TrainingView,
 } from '@/routes/lazyViews'
@@ -29,10 +29,6 @@ function moduleRoute(key: ModuleKey, children: RouteObject[]): RouteObject {
     element: <RoleGuard allow={module.roles} />,
     children,
   }
-}
-
-function placeholder(key: ModuleKey): ReactElement {
-  return <ModulePlaceholderView moduleKey={key} />
 }
 
 export const appRoutes: RouteObject[] = [
@@ -59,8 +55,8 @@ export const appRoutes: RouteObject[] = [
               moduleRoute('training', [{ index: true, element: <TrainingView /> }]),
               moduleRoute('health', [{ index: true, element: <HealthView /> }]),
               moduleRoute('talent', [{ index: true, element: <TalentView /> }]),
-              moduleRoute('analytics', [{ index: true, element: placeholder('analytics') }]),
-              moduleRoute('settings', [{ index: true, element: placeholder('settings') }]),
+              moduleRoute('analytics', [{ index: true, element: <AnalyticsView /> }]),
+              moduleRoute('settings', [{ index: true, element: <SettingsView /> }]),
             ],
           },
         ],

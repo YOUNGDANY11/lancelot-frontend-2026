@@ -3,6 +3,7 @@ import { fetchAllPages, fetchList, type QueryParams } from '@/lib/listRequest'
 import type { ApiMessage } from '@/types/api'
 import type {
   AdminCreateUserRequest,
+  AdminUpdateUserRequest,
   ChangePasswordRequest,
   UpdateMyProfileRequest,
   User,
@@ -48,5 +49,15 @@ export const usersService = {
   async createByAdmin(payload: AdminCreateUserRequest): Promise<User> {
     const { data } = await apiClient.http.post<UserResponse>('/users', payload)
     return data.user
+  },
+
+  async updateByAdmin(idUser: number, payload: AdminUpdateUserRequest): Promise<ApiMessage> {
+    const { data } = await apiClient.http.put<ApiMessage>(`/users/id/${idUser}`, payload)
+    return data
+  },
+
+  async remove(idUser: number): Promise<ApiMessage> {
+    const { data } = await apiClient.http.delete<ApiMessage>(`/users/id/${idUser}`)
+    return data
   },
 }

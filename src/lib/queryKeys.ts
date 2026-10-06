@@ -61,6 +61,19 @@ export const queryKeys = {
     engine: () => [...queryKeys.ml.all, 'engine'] as const,
     readiness: () => [...queryKeys.ml.all, 'readiness'] as const,
     dataQuality: (range: QueryParams) => [...queryKeys.ml.all, 'data-quality', range] as const,
+    models: () => [...queryKeys.ml.all, 'models'] as const,
+    features: (filters: QueryParams) => [...queryKeys.ml.all, 'features', filters] as const,
+    validation: (range: QueryParams) => [...queryKeys.ml.all, 'validation', range] as const,
+  },
+  config: {
+    all: (kind: string) => ['config', kind] as const,
+    active: (kind: string, idCategory: number | null) =>
+      [...queryKeys.config.all(kind), 'active', idCategory] as const,
+    overrides: (kind: string) => [...queryKeys.config.all(kind), 'overrides'] as const,
+  },
+  roles: {
+    all: ['roles'] as const,
+    list: () => [...queryKeys.roles.all, 'list'] as const,
   },
   health: {
     all: ['health'] as const,

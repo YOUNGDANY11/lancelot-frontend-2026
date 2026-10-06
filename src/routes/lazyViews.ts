@@ -9,6 +9,7 @@ export const AthleteProfileView = lazy(() => import('@/views/app/athletes/Athlet
 export const TrainingView = lazy(() => import('@/views/app/training/TrainingView'))
 export const HealthView = lazy(() => import('@/views/app/health/HealthView'))
 export const TalentView = lazy(() => import('@/views/app/talent/TalentView'))
-export const ModulePlaceholderView = lazy(() => import('@/views/app/ModulePlaceholderView'))
+export const AnalyticsView = lazy(() => import('@/views/app/analytics/AnalyticsView'))
+export const SettingsView = lazy(() => import('@/views/app/settings/SettingsView'))
 export const ForbiddenView = lazy(() => import('@/views/errors/ForbiddenView'))
 export const NotFoundView = lazy(() => import('@/views/errors/NotFoundView'))

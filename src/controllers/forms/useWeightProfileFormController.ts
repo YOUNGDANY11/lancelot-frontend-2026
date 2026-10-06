@@ -12,6 +12,7 @@ import {
   type WeightProfileFormValues,
 } from '@/schemas/settingsSchemas'
 import { weightProfilesService } from '@/services/weightProfilesService'
+import type { PositionWeightProfile } from '@/types/club'
 import { applyServerError, serverErrorOf } from '@/utils/formErrors'
 
 const EMPTY_PROFILE: WeightProfileFormValues = {
@@ -22,12 +23,33 @@ const EMPTY_PROFILE: WeightProfileFormValues = {
   w_participation: '20',
 }
 
-export function useWeightProfileFormController({ onDone }: { onDone: () => void }) {
+function toPercent(weight: number): string {
+  return String(Math.round(weight * 100))
+}
+
+function defaultsFor(profile: PositionWeightProfile | null | undefined): WeightProfileFormValues {
+  if (!profile) return EMPTY_PROFILE
+  return {
+    position: profile.position,
+    age_category: profile.age_category,
+    w_physical: toPercent(profile.w_physical),
+    w_technical: toPercent(profile.w_technical),
+    w_participation: toPercent(profile.w_participation),
+  }
+}
+
+export function useWeightProfileFormController({
+  onDone,
+  profile,
+}: {
+  onDone: () => void
+  profile?: PositionWeightProfile | null
+}) {
   const queryClient = useQueryClient()
   const { categories } = useAppContext()
   const form = useForm<WeightProfileFormValues>({
     resolver: zodResolver(weightProfileSchema),
-    defaultValues: EMPTY_PROFILE,
+    defaultValues: defaultsFor(profile),
     mode: 'onTouched',
   })
 
@@ -43,10 +65,16 @@ export function useWeightProfileFormController({ onDone }: { onDone: () => void 
 
   const mutation = useMutation({
     mutationFn: (values: WeightProfileFormValues) =>
-      weightProfilesService.create(toCreateWeightProfileRequest(values)),
+      profile
+        ? weightProfilesService.update(profile.id_profile, toCreateWeightProfileRequest(values))
+        : weightProfilesService.create(toCreateWeightProfileRequest(values)),
     onSuccess: async (_response, values) => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.weightProfiles.all })
-      toast.success(`Perfil de pesos creado para ${values.position} en ${values.age_category}.`)
+      toast.success(
+        profile
+          ? `Perfil de ${values.position} en ${values.age_category} actualizado.`
+          : `Perfil de pesos creado para ${values.position} en ${values.age_category}.`,
+      )
       form.reset(EMPTY_PROFILE)
       onDone()
     },
@@ -54,13 +82,21 @@ export function useWeightProfileFormController({ onDone }: { onDone: () => void 
       applyServerError(form, error, [{ field: 'position', pattern: /ya existe/i }]),
   })
 
+  const categoryNames = categories.map((category) => category.name)
+  const extraCategory =
+    profile && !categoryNames.includes(profile.age_category) ? [profile.age_category] : []
+
   return {
     form,
+    isEditing: Boolean(profile),
     positionGroups: POSITION_GROUPS.map((group) => ({
       label: group.label,
       options: group.positions.map((position) => ({ value: position, label: position })),
     })),
-    categoryOptions: categories.map((category) => ({ value: category.name, label: category.name })),
+    categoryOptions: [...categoryNames, ...extraCategory].map((name) => ({
+      value: name,
+      label: name,
+    })),
     weights: {
       physical: Number(physical) || 0,
       technical: Number(technical) || 0,

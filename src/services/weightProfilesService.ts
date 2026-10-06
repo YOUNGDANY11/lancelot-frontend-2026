@@ -31,4 +31,17 @@ export const weightProfilesService = {
     const { data } = await apiClient.http.post<ApiMessage>('/position-weight-profiles', payload)
     return data
   },
+
+  async update(id: number, payload: CreateWeightProfileRequest): Promise<ApiMessage> {
+    const { data } = await apiClient.http.put<ApiMessage>(
+      `/position-weight-profiles/id/${id}`,
+      payload,
+    )
+    return data
+  },
+
+  async remove(id: number): Promise<ApiMessage> {
+    const { data } = await apiClient.http.delete<ApiMessage>(`/position-weight-profiles/id/${id}`)
+    return data
+  },
 }

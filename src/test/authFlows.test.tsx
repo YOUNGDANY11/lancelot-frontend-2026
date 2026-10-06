@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ROLE_SUMMARIES } from '@/constants/roles'
 import { authService } from '@/services/authService'
 import { usersService } from '@/services/usersService'
@@ -79,6 +79,15 @@ async function openLoginFromNavbar() {
   const nav = screen.getByRole('navigation', { name: 'Navegación principal' })
   await user.click(within(nav).getByRole('button', { name: 'Iniciar sesión' }))
 }
+
+beforeAll(async () => {
+  await Promise.all([
+    import('@/views/landing/LandingView'),
+    import('@/views/app/home/HomeView'),
+    import('@/components/modules/home/CoachHome'),
+    import('@/views/app/profile/ProfileView'),
+  ])
+})
 
 describe('flujos de sesión', () => {
   beforeEach(() => {

@@ -11,6 +11,7 @@ import { trainingService } from '@/services/trainingService'
 import { usersService } from '@/services/usersService'
 import { ACTIVE_SEASON, SUB15, primeAppDataMocks } from '@/test/appDataMocks'
 import { ADMIN_USER, ATHLETE_USER, COACH_USER } from '@/test/fixtures'
+import { inboxItem, mockOpenInbox } from '@/test/inboxMocks'
 import { renderAppAt } from '@/test/renderWithProviders'
 import type { TalentFlag } from '@/types/talent'
 import type { User } from '@/types/user'
@@ -83,8 +84,8 @@ vi.mock('@/services/healthService', () => ({
   healthService: {
     listAllInjuries: vi.fn(),
     injuryMechanismTotals: vi.fn(),
-    listOpenFatigueAlerts: vi.fn(),
-    listOpenRiskAssessments: vi.fn(),
+    listInboxPage: vi.fn(),
+    listOpenInbox: vi.fn(),
     reviewFatigueAlert: vi.fn(),
     reviewRiskAssessment: vi.fn(),
     reviewTotals: vi.fn(),
@@ -198,20 +199,18 @@ beforeEach(() => {
   vi.mocked(talentService.countFlags).mockResolvedValue(3)
   vi.mocked(talentService.reviewFlag).mockResolvedValue(undefined)
   vi.mocked(talentService.recalculateAthlete).mockResolvedValue(undefined)
-  vi.mocked(healthService.listOpenFatigueAlerts).mockResolvedValue([])
-  vi.mocked(healthService.listOpenRiskAssessments).mockResolvedValue([
-    {
-      id_assessment: 9,
+  mockOpenInbox([
+    inboxItem({
+      kind: 'risk',
+      id: 9,
       id_user: BRUNO.id_user,
-      athlete_name: 'Bruno Díaz',
-      assessment_date: '2026-10-04',
-      risk_level: 'alto',
-      status: 'open',
-      acwr_value: 1.7,
+      athleteName: 'Bruno Díaz',
+      date: '2026-10-04',
+      level: 'alto',
+      acwr: 1.7,
       method: 'rules',
-      triggered_rules: ['acwr_sostenido'],
-      details: null,
-    },
+      rules: ['acwr_sostenido'],
+    }),
   ])
   vi.mocked(healthService.reviewTotals).mockResolvedValue({ reviewed: 0, dismissed: 0 })
   vi.mocked(healthService.listAllInjuries).mockResolvedValue([])

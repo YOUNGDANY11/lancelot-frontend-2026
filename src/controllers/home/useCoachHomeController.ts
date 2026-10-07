@@ -3,7 +3,7 @@ import { endOfWeek, startOfWeek } from 'date-fns'
 import { useState } from 'react'
 import { APP_MODULES } from '@/constants/navigation'
 import { LEVEL_PRIORITY } from '@/constants/health'
-import { useAlertInboxController } from '@/controllers/health/useAlertInboxController'
+import { useOpenInboxItems } from '@/controllers/health/useOpenInboxItems'
 import { useAppContext } from '@/hooks/useAppContext'
 import { queryKeys } from '@/lib/queryKeys'
 import { competitionService } from '@/services/competitionService'
@@ -18,7 +18,7 @@ const TEAM_LIMIT = 5
 export function useCoachHomeController() {
   const { season, category, categories } = useAppContext()
   const [rpeSession, setRpeSession] = useState<TrainingSession | null>(null)
-  const inbox = useAlertInboxController()
+  const inbox = useOpenInboxItems()
   const idSeason = season?.id_season
   const target = category ?? categories[0] ?? null
   const idCategory = target?.id_category

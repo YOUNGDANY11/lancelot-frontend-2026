@@ -3,11 +3,13 @@ import { RiskDistributionDonut } from '@/components/charts/RiskDistributionDonut
 import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
 import { LoadingSkeleton } from '@/components/common/LoadingSkeleton'
+import { PaginationNav } from '@/components/common/PaginationNav'
 import { AlertCard } from '@/components/modules/health/AlertCard'
 import { Button } from '@/components/ui/button'
 import { RISK_LEVEL, type RiskLevelValue } from '@/constants/enums'
 import { INBOX_COPY, INBOX_KIND_FILTERS } from '@/constants/health'
 import { useAlertInboxController } from '@/controllers/health/useAlertInboxController'
+import { cn } from '@/lib/utils'
 
 const LEVEL_FILTERS: { value: RiskLevelValue | 'all'; label: string }[] = [
   { value: 'all', label: 'Todos los niveles' },
@@ -43,7 +45,7 @@ function FilterChips<T extends string>({
         >
           {option.label}
           {counts?.[option.value] !== undefined && (
-            <span className="text-muted-foreground tabular-nums">({counts[option.value]})</span>
+            <span className="tabular-nums opacity-80">({counts[option.value]})</span>
           )}
         </Button>
       ))}
@@ -78,6 +80,7 @@ export function AlertInboxTab() {
             options={LEVEL_FILTERS}
             value={controller.level}
             onChange={controller.setLevel}
+            counts={{ all: controller.totalOpen, ...controller.levelCounts }}
           />
         </div>
 
@@ -92,18 +95,35 @@ export function AlertInboxTab() {
             description={controller.totalOpen === 0 ? INBOX_COPY.emptyDescription : undefined}
           />
         ) : (
-          <ul aria-label="Alertas pendientes" className="flex flex-col gap-3">
-            {controller.items.map((item) => (
-              <li key={item.key}>
-                <AlertCard
-                  item={item}
-                  athletePath={controller.athletePath(item)}
-                  isPending={controller.pendingKey === item.key}
-                  onDecide={(status) => controller.decide(item, status)}
-                />
-              </li>
-            ))}
-          </ul>
+          <div className="flex flex-col gap-4">
+            <ul
+              aria-label="Alertas pendientes"
+              aria-busy={controller.isChangingPage}
+              className={cn(
+                'flex flex-col gap-3 transition-opacity',
+                controller.isChangingPage && 'opacity-60',
+              )}
+            >
+              {controller.items.map((item) => (
+                <li key={item.key}>
+                  <AlertCard
+                    item={item}
+                    athletePath={controller.athletePath(item)}
+                    isPending={controller.pendingKey === item.key}
+                    onDecide={(status) => controller.decide(item, status)}
+                  />
+                </li>
+              ))}
+            </ul>
+            {controller.pagination && controller.pagination.totalPages > 1 && (
+              <PaginationNav
+                label="Paginación de la bandeja de alertas"
+                pagination={controller.pagination}
+                onPageChange={controller.setPage}
+                itemsLabel="alertas"
+              />
+            )}
+          </div>
         )}
       </div>
 

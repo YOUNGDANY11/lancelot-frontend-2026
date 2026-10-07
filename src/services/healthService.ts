@@ -1,12 +1,19 @@
-import type { InjuryRiskRuleCode, ReviewStatus } from '@/constants/enums'
+import type {
+  InjuryRiskRuleCode,
+  ReviewStatus,
+  RiskAssessmentMethod,
+  RiskLevelValue,
+} from '@/constants/enums'
 import { apiClient } from '@/lib/apiClient'
 import { fetchAllPages, fetchList, fetchTotal, type QueryParams } from '@/lib/listRequest'
-import type { ApiMessage } from '@/types/api'
+import type { ApiMessage, Pagination } from '@/types/api'
 import type { HealthRecord, Injury } from '@/types/athlete'
-import type { FatigueAlert, InjuryRiskAssessment } from '@/types/club'
 import type {
   HealthAuditLog,
   HealthRecordRequest,
+  InboxItem,
+  InboxKind,
+  InboxPage,
   InjuryMechanismTotals,
   InjuryRequest,
   ReviewStatusTotals,
@@ -50,34 +57,72 @@ function normalizeInjury(injury: Injury): Injury {
   )
 }
 
-function normalizeFatigueAlert(alert: FatigueAlert): FatigueAlert {
-  return withNumbers({ ...alert, date: String(alert.date).slice(0, 10) }, [
-    'acwr_value',
-    'acute_load',
-    'chronic_load',
-    'rpe_avg',
-  ])
+export interface ApiInboxItem {
+  kind: InboxKind
+  id: number
+  id_user: number
+  athlete_name: string
+  date: string
+  level: RiskLevelValue
+  acwr_value: number | null
+  acute_load: number | null
+  chronic_load: number | null
+  rpe_avg: number | null
+  triggered_rules: string[]
+  details: string | null
+  method: RiskAssessmentMethod | null
 }
 
-function normalizeRiskAssessment(assessment: InjuryRiskAssessment): InjuryRiskAssessment {
-  return withNumbers(
-    {
-      ...assessment,
-      assessment_date: String(assessment.assessment_date).slice(0, 10),
-      triggered_rules: (assessment.triggered_rules ?? []).filter(
-        (rule): rule is InjuryRiskRuleCode => Boolean(rule),
-      ),
+interface ApiInboxResponse {
+  items: ApiInboxItem[]
+  pagination: Pagination
+  counts: {
+    total: number
+    by_kind: Record<InboxKind, number>
+    by_level: Record<RiskLevelValue, number>
+  }
+}
+
+export interface InboxFilters extends QueryParams {
+  status?: ReviewStatus
+  kind?: InboxKind
+  level?: RiskLevelValue
+  page?: number
+  limit?: number
+}
+
+const INBOX_URL = '/alerts/inbox'
+
+export function mapInboxItem(item: ApiInboxItem): InboxItem {
+  return {
+    key: `${item.kind}-${item.id}`,
+    kind: item.kind,
+    id: item.id,
+    id_user: item.id_user,
+    athleteName: item.athlete_name || 'Deportista sin nombre',
+    level: item.level,
+    date: String(item.date).slice(0, 10),
+    acwr: item.acwr_value ?? null,
+    acuteLoad: item.acute_load ?? null,
+    chronicLoad: item.chronic_load ?? null,
+    rpeAvg: item.rpe_avg ?? null,
+    rules: (item.triggered_rules ?? []).filter((rule): rule is InjuryRiskRuleCode => Boolean(rule)),
+    details: item.details ?? null,
+    method: item.method ?? null,
+  }
+}
+
+async function inboxPage(filters: InboxFilters): Promise<InboxPage> {
+  const { data } = await apiClient.http.get<ApiInboxResponse>(INBOX_URL, { params: filters })
+  return {
+    items: data.items.map(mapInboxItem),
+    pagination: data.pagination,
+    counts: {
+      total: data.counts.total,
+      byKind: data.counts.by_kind,
+      byLevel: data.counts.by_level,
     },
-    ['acwr_value'],
-  )
-}
-
-async function reviewTotals(url: string): Promise<ReviewStatusTotals> {
-  const [reviewed, dismissed] = await Promise.all([
-    fetchTotal(url, { status: 'reviewed' }),
-    fetchTotal(url, { status: 'dismissed' }),
-  ])
-  return { reviewed, dismissed }
+  }
 }
 
 export const healthService = {
@@ -144,22 +189,13 @@ export const healthService = {
     return fetchList<HealthAuditLog>('/health-records/audit/logs', 'logs', filters)
   },
 
-  listOpenFatigueAlerts(): Promise<FatigueAlert[]> {
-    return fetchAllPages<FatigueAlert>(
-      '/fatigue-alerts',
-      'alerts',
-      { status: 'open' },
-      normalizeFatigueAlert,
-    )
+  listInboxPage(filters: InboxFilters): Promise<InboxPage> {
+    return inboxPage(filters)
   },
 
-  listOpenRiskAssessments(): Promise<InjuryRiskAssessment[]> {
-    return fetchAllPages<InjuryRiskAssessment>(
-      '/injury-risk-assessments',
-      'assessments',
-      { status: 'open' },
-      normalizeRiskAssessment,
-    )
+  async listOpenInbox(): Promise<InboxItem[]> {
+    const items = await fetchAllPages<ApiInboxItem>(INBOX_URL, 'items', { status: 'open' })
+    return items.map(mapInboxItem)
   },
 
   async reviewFatigueAlert(id: number, status: ReviewStatus): Promise<ApiMessage> {
@@ -175,13 +211,10 @@ export const healthService = {
   },
 
   async reviewTotals(): Promise<ReviewStatusTotals> {
-    const [fatigue, risk] = await Promise.all([
-      reviewTotals('/fatigue-alerts'),
-      reviewTotals('/injury-risk-assessments'),
+    const [reviewed, dismissed] = await Promise.all([
+      inboxPage({ status: 'reviewed', page: 1, limit: 1 }),
+      inboxPage({ status: 'dismissed', page: 1, limit: 1 }),
     ])
-    return {
-      reviewed: fatigue.reviewed + risk.reviewed,
-      dismissed: fatigue.dismissed + risk.dismissed,
-    }
+    return { reviewed: reviewed.counts.total, dismissed: dismissed.counts.total }
   },
 }

@@ -1,68 +1,61 @@
 import { describe, expect, it } from 'vitest'
 import { injurySchema, toInjuryRequest, type InjuryFormValues } from '@/schemas/healthSchemas'
-import type { FatigueAlert, InjuryRiskAssessment } from '@/types/club'
-import { buildInbox, countByLevel, filterInbox } from '@/utils/alertInbox'
+import { mapInboxItem, type ApiInboxItem } from '@/services/healthService'
 
-const ALERTS: FatigueAlert[] = [
+const API_ITEMS: ApiInboxItem[] = [
   {
-    id_alert: 1,
+    kind: 'risk',
+    id: 9,
+    id_user: 8,
+    athlete_name: 'Bruno Díaz',
+    date: '2026-10-01',
+    level: 'alto',
+    acwr_value: 1.71,
+    acute_load: null,
+    chronic_load: null,
+    rpe_avg: null,
+    triggered_rules: ['acwr_sostenido', 'recaida', ''],
+    details: 'ACWR alto tres días seguidos',
+    method: 'rules',
+  },
+  {
+    kind: 'fatigue',
+    id: 1,
     id_user: 7,
-    athlete_name: 'Ana Pérez',
-    date: '2026-10-03',
+    athlete_name: '',
+    date: '2026-10-03T00:00:00.000Z',
+    level: 'medio',
+    acwr_value: 1.53,
     acute_load: 520,
     chronic_load: 340,
-    acwr_value: 1.53,
     rpe_avg: 7.2,
-    level: 'medio',
-    status: 'open',
-  },
-  {
-    id_alert: 2,
-    id_user: 8,
-    athlete_name: 'Bruno Díaz',
-    date: '2026-10-04',
-    acute_load: 300,
-    chronic_load: 290,
-    acwr_value: 1.03,
-    rpe_avg: 5,
-    level: 'bajo',
-    status: 'open',
-  },
-]
-
-const ASSESSMENTS: InjuryRiskAssessment[] = [
-  {
-    id_assessment: 9,
-    id_user: 8,
-    athlete_name: 'Bruno Díaz',
-    assessment_date: '2026-10-01',
-    risk_level: 'alto',
-    status: 'open',
-    acwr_value: 1.71,
-    method: 'rules',
-    triggered_rules: ['acwr_sostenido', 'recaida'],
-    details: 'ACWR alto tres días seguidos',
+    triggered_rules: [],
+    details: null,
+    method: null,
   },
 ]
 
 describe('bandeja de alertas', () => {
-  it('une fatiga y riesgo y ordena por nivel y luego por fecha', () => {
-    const inbox = buildInbox(ALERTS, ASSESSMENTS)
-    expect(inbox.map((item) => item.key)).toEqual(['risk-9', 'fatigue-1', 'fatigue-2'])
-    expect(inbox[0]).toMatchObject({
+  it('convierte cada alerta del backend en un elemento de la bandeja', () => {
+    const [risk, fatigue] = API_ITEMS.map(mapInboxItem)
+    expect(risk).toMatchObject({
+      key: 'risk-9',
       kind: 'risk',
+      athleteName: 'Bruno Díaz',
       level: 'alto',
       acwr: 1.71,
       rules: ['acwr_sostenido', 'recaida'],
+      method: 'rules',
     })
-    expect(inbox[1]).toMatchObject({ acuteLoad: 520, chronicLoad: 340, rpeAvg: 7.2 })
-  })
-
-  it('filtra por tipo y nivel y cuenta por nivel', () => {
-    const inbox = buildInbox(ALERTS, ASSESSMENTS)
-    expect(filterInbox(inbox, 'fatigue', 'all')).toHaveLength(2)
-    expect(filterInbox(inbox, 'all', 'alto').map((item) => item.id)).toEqual([9])
-    expect(countByLevel(inbox)).toEqual({ alto: 1, medio: 1, bajo: 1 })
+    expect(fatigue).toMatchObject({
+      key: 'fatigue-1',
+      athleteName: 'Deportista sin nombre',
+      date: '2026-10-03',
+      acuteLoad: 520,
+      chronicLoad: 340,
+      rpeAvg: 7.2,
+      rules: [],
+    })
   })
 })
 

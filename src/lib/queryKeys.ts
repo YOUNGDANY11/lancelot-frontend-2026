@@ -47,7 +47,8 @@ export const queryKeys = {
   alerts: {
     all: ['alerts'] as const,
     openCount: () => [...queryKeys.alerts.all, 'open-count'] as const,
-    inbox: () => [...queryKeys.alerts.all, 'inbox'] as const,
+    inbox: (filters: QueryParams) => [...queryKeys.alerts.all, 'inbox', filters] as const,
+    openItems: () => [...queryKeys.alerts.all, 'open-items'] as const,
     reviewTotals: () => [...queryKeys.alerts.all, 'review-totals'] as const,
   },
   talent: {

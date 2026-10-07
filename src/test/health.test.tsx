@@ -6,8 +6,8 @@ import { healthService } from '@/services/healthService'
 import { usersService } from '@/services/usersService'
 import { primeAppDataMocks } from '@/test/appDataMocks'
 import { ADMIN_USER, ATHLETE_USER, COACH_USER } from '@/test/fixtures'
+import { inboxItem, mockOpenInbox } from '@/test/inboxMocks'
 import { renderAppAt } from '@/test/renderWithProviders'
-import type { FatigueAlert, InjuryRiskAssessment } from '@/types/club'
 import type { User } from '@/types/user'
 import { REFRESH_TOKEN_STORAGE_KEY } from '@/utils/tokenStorage'
 
@@ -77,8 +77,8 @@ vi.mock('@/services/healthService', () => ({
     updateHealthRecord: vi.fn(),
     removeHealthRecord: vi.fn(),
     listAuditLogs: vi.fn(),
-    listOpenFatigueAlerts: vi.fn(),
-    listOpenRiskAssessments: vi.fn(),
+    listInboxPage: vi.fn(),
+    listOpenInbox: vi.fn(),
     reviewFatigueAlert: vi.fn(),
     reviewRiskAssessment: vi.fn(),
     reviewTotals: vi.fn(),
@@ -97,31 +97,30 @@ const DT_USER: User = { ...COACH_USER, id_user: 12, id_role: 4, role_name: 'DIRE
 
 const EMPTY_PAGE = { items: [], pagination: { total: 0, page: 1, limit: 10, totalPages: 0 } }
 
-const FATIGUE: FatigueAlert = {
-  id_alert: 1,
+const FATIGUE = inboxItem({
+  kind: 'fatigue',
+  id: 1,
   id_user: ATHLETE_USER.id_user,
-  athlete_name: 'Ana María Pérez',
+  athleteName: 'Ana María Pérez',
   date: '2026-10-04',
-  acute_load: 520,
-  chronic_load: 340,
-  acwr_value: 1.53,
-  rpe_avg: 7.2,
+  acuteLoad: 520,
+  chronicLoad: 340,
+  acwr: 1.53,
+  rpeAvg: 7.2,
   level: 'medio',
-  status: 'open',
-}
+})
 
-const RISK: InjuryRiskAssessment = {
-  id_assessment: 9,
+const RISK = inboxItem({
+  kind: 'risk',
+  id: 9,
   id_user: 8,
-  athlete_name: 'Bruno Díaz',
-  assessment_date: '2026-10-03',
-  risk_level: 'alto',
-  status: 'open',
-  acwr_value: 1.71,
+  athleteName: 'Bruno Díaz',
+  date: '2026-10-03',
+  level: 'alto',
+  acwr: 1.71,
   method: 'rules',
-  triggered_rules: ['acwr_sostenido'],
-  details: null,
-}
+  rules: ['acwr_sostenido'],
+})
 
 function signInAs(user: User) {
   window.localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, 'refresh-guardado')
@@ -135,8 +134,7 @@ beforeAll(async () => {
 
 beforeEach(() => {
   primeAppDataMocks()
-  vi.mocked(healthService.listOpenFatigueAlerts).mockResolvedValue([FATIGUE])
-  vi.mocked(healthService.listOpenRiskAssessments).mockResolvedValue([RISK])
+  mockOpenInbox([FATIGUE, RISK])
   vi.mocked(healthService.reviewTotals).mockResolvedValue({ reviewed: 4, dismissed: 1 })
   vi.mocked(healthService.listInjuriesPage).mockResolvedValue(EMPTY_PAGE)
   vi.mocked(healthService.injuryMechanismTotals).mockResolvedValue({
@@ -182,7 +180,7 @@ describe('pestañas de salud según el rol', () => {
 describe('bandeja de alertas', () => {
   it('ordena por nivel y deja revisar una alerta con un clic', async () => {
     vi.mocked(healthService.reviewRiskAssessment).mockImplementation(async () => {
-      vi.mocked(healthService.listOpenRiskAssessments).mockResolvedValue([])
+      mockOpenInbox([FATIGUE])
       return { status: 'Success', mensaje: 'ok' }
     })
     signInAs(COACH_USER)
@@ -208,6 +206,44 @@ describe('bandeja de alertas', () => {
     await waitFor(() =>
       expect(screen.queryByRole('heading', { name: 'Bruno Díaz' })).not.toBeInTheDocument(),
     )
+  })
+  it('pagina las alertas desde el backend y reinicia la página al filtrar', async () => {
+    const many = Array.from({ length: 12 }, (_, index) =>
+      inboxItem({
+        kind: 'fatigue',
+        id: 100 + index,
+        id_user: 200 + index,
+        athleteName: `Deportista ${String(index + 1).padStart(2, '0')}`,
+        level: 'medio',
+      }),
+    )
+    mockOpenInbox([...many, RISK])
+    signInAs(HEALTH_USER)
+    const user = userEvent.setup()
+    renderAppAt('/app/salud')
+
+    const list = await screen.findByRole('list', { name: 'Alertas pendientes' })
+    expect(within(list).getAllByRole('article')).toHaveLength(10)
+    const nav = screen.getByRole('navigation', { name: 'Paginación de la bandeja de alertas' })
+    expect(within(nav).getByText('Página 1 de 2 · 13 alertas')).toBeInTheDocument()
+
+    await user.click(within(nav).getByRole('button', { name: 'Página siguiente' }))
+
+    expect(await screen.findByText('Página 2 de 2 · 13 alertas')).toBeInTheDocument()
+    expect(healthService.listInboxPage).toHaveBeenLastCalledWith(
+      expect.objectContaining({ status: 'open', page: 2, limit: 10 }),
+    )
+    expect(screen.getByRole('heading', { name: 'Deportista 12' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /Riesgo de lesión/ }))
+
+    expect(await screen.findByRole('heading', { name: 'Bruno Díaz' })).toBeInTheDocument()
+    expect(healthService.listInboxPage).toHaveBeenLastCalledWith(
+      expect.objectContaining({ kind: 'risk', page: 1 }),
+    )
+    expect(
+      screen.queryByRole('navigation', { name: 'Paginación de la bandeja de alertas' }),
+    ).not.toBeInTheDocument()
   })
 })
 

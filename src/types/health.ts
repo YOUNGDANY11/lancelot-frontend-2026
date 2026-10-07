@@ -9,6 +9,7 @@ import type {
   RiskAssessmentMethod,
   RiskLevelValue,
 } from '@/constants/enums'
+import type { Pagination } from '@/types/api'
 
 export type InboxKind = 'fatigue' | 'risk'
 
@@ -27,6 +28,18 @@ export interface InboxItem {
   rules: InjuryRiskRuleCode[]
   details: string | null
   method: RiskAssessmentMethod | null
+}
+
+export interface InboxCounts {
+  total: number
+  byKind: Record<InboxKind, number>
+  byLevel: Record<RiskLevelValue, number>
+}
+
+export interface InboxPage {
+  items: InboxItem[]
+  pagination: Pagination
+  counts: InboxCounts
 }
 
 export interface ReviewDecision {

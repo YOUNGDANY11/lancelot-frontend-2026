@@ -20,6 +20,7 @@ import { weightProfilesService } from '@/services/weightProfilesService'
 import { ACTIVE_SEASON, SUB15, primeAppDataMocks } from '@/test/appDataMocks'
 import { findAxeViolations } from '@/test/axe'
 import { ADMIN_USER, ATHLETE_USER, COACH_USER } from '@/test/fixtures'
+import { inboxItem, mockOpenInbox } from '@/test/inboxMocks'
 import { renderAppAt } from '@/test/renderWithProviders'
 import type { User } from '@/types/user'
 import { todayApiDate } from '@/utils/formatDate'
@@ -111,8 +112,8 @@ vi.mock('@/services/healthService', () => ({
     listHealthRecords: vi.fn(),
     listHealthRecordsPage: vi.fn(),
     listAuditLogs: vi.fn(),
-    listOpenFatigueAlerts: vi.fn(),
-    listOpenRiskAssessments: vi.fn(),
+    listInboxPage: vi.fn(),
+    listOpenInbox: vi.fn(),
     reviewTotals: vi.fn(),
   },
 }))
@@ -238,21 +239,20 @@ beforeEach(() => {
       },
     ],
   })
-  vi.mocked(healthService.listOpenFatigueAlerts).mockResolvedValue([
-    {
-      id_alert: 1,
+  mockOpenInbox([
+    inboxItem({
+      kind: 'fatigue',
+      id: 1,
       id_user: ATHLETE_USER.id_user,
-      athlete_name: 'Ana María Pérez',
+      athleteName: 'Ana María Pérez',
       date: todayApiDate(),
-      acute_load: 520,
-      chronic_load: 340,
-      acwr_value: 1.53,
-      rpe_avg: 7.2,
+      acuteLoad: 520,
+      chronicLoad: 340,
+      acwr: 1.53,
+      rpeAvg: 7.2,
       level: 'medio',
-      status: 'open',
-    },
+    }),
   ])
-  vi.mocked(healthService.listOpenRiskAssessments).mockResolvedValue([])
   vi.mocked(healthService.reviewTotals).mockResolvedValue({ reviewed: 1, dismissed: 0 })
   vi.mocked(healthService.listAllInjuries).mockResolvedValue([])
   vi.mocked(healthService.listInjuriesPage).mockResolvedValue(EMPTY_PAGE)

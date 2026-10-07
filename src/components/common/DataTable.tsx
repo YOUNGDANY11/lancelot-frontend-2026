@@ -1,9 +1,9 @@
-import { ChevronLeft, ChevronRight, Inbox } from 'lucide-react'
+import { Inbox } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
 import { LoadingSkeleton } from '@/components/common/LoadingSkeleton'
-import { Button } from '@/components/ui/button'
+import { PaginationNav } from '@/components/common/PaginationNav'
 import {
   Table,
   TableBody,
@@ -47,47 +47,6 @@ function mobileRole<T>(column: DataTableColumn<T>, index: number): MobileColumnR
   if (column.mobile) return column.mobile
   if (column.key === 'actions') return 'actions'
   return index === 0 ? 'title' : 'field'
-}
-
-function PaginationNav({
-  caption,
-  pagination,
-  onPageChange,
-}: {
-  caption: string
-  pagination: Pagination
-  onPageChange: (page: number) => void
-}) {
-  return (
-    <nav
-      aria-label={`Paginación de ${caption.toLowerCase()}`}
-      className="flex items-center justify-between gap-3 text-sm text-muted-foreground"
-    >
-      <span>
-        Página {pagination.page} de {pagination.totalPages} · {pagination.total} registros
-      </span>
-      <div className="flex gap-2">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => onPageChange(pagination.page - 1)}
-          disabled={pagination.page <= 1}
-          aria-label="Página anterior"
-        >
-          <ChevronLeft aria-hidden="true" />
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => onPageChange(pagination.page + 1)}
-          disabled={pagination.page >= pagination.totalPages}
-          aria-label="Página siguiente"
-        >
-          <ChevronRight aria-hidden="true" />
-        </Button>
-      </div>
-    </nav>
-  )
 }
 
 function CardList<T>({
@@ -209,7 +168,11 @@ export function DataTable<T>({
         </div>
       )}
       {pagination && onPageChange && pagination.totalPages > 1 && (
-        <PaginationNav caption={caption} pagination={pagination} onPageChange={onPageChange} />
+        <PaginationNav
+          label={`Paginación de ${caption.toLowerCase()}`}
+          pagination={pagination}
+          onPageChange={onPageChange}
+        />
       )}
     </div>
   )

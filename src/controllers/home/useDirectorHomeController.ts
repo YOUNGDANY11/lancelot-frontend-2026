@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { APP_MODULES } from '@/constants/navigation'
 import type { RiskLevelValue } from '@/constants/enums'
-import { useAlertInboxController } from '@/controllers/health/useAlertInboxController'
+import { useOpenInboxItems } from '@/controllers/health/useOpenInboxItems'
 import { useAppContext } from '@/hooks/useAppContext'
 import { queryKeys } from '@/lib/queryKeys'
 import { alertsService } from '@/services/alertsService'
@@ -21,7 +21,7 @@ export interface CategoryAlertCount {
 export function useDirectorHomeController() {
   const { season, categories } = useAppContext()
   const idSeason = season?.id_season
-  const inbox = useAlertInboxController()
+  const inbox = useOpenInboxItems()
 
   const assignmentsFilters = { id_season: idSeason, scope: 'all' }
   const assignmentsQuery = useQuery({

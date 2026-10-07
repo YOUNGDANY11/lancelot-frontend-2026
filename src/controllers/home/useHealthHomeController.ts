@@ -21,7 +21,7 @@ async function loadOngoingInjuries(): Promise<Injury[]> {
 }
 
 export function useHealthHomeController() {
-  const inbox = useAlertInboxController({ limit: HOME_LIMIT })
+  const inbox = useAlertInboxController({ pageSize: HOME_LIMIT })
   const minors = useMinorsWithoutConsent()
   const missingSheet = useDisclosure()
 

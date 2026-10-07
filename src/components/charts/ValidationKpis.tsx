@@ -3,7 +3,10 @@ import { formatPercent } from '@/utils/formatNumber'
 
 export function ValidationKpis({ kpis }: { kpis: ValidationKpi[] }) {
   return (
-    <ul aria-label="Indicadores de validación" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+    <ul
+      aria-label="Indicadores de validación"
+      className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3"
+    >
       {kpis.map((kpi) => (
         <li key={kpi.key} className="flex flex-col gap-2 rounded-2xl glass-subtle p-4">
           <p className="text-sm font-medium text-muted-foreground">{kpi.label}</p>

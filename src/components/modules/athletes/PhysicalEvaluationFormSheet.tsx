@@ -33,7 +33,7 @@ function PhysicalEvaluationContent({ idUser, evaluation, onClose }: Omit<SheetPr
     >
       <FieldGroup>
         <FormAlert message={controller.serverError} />
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <Controller
             control={form.control}
             name="stage"
@@ -85,7 +85,7 @@ function PhysicalEvaluationContent({ idUser, evaluation, onClose }: Omit<SheetPr
 
         <FieldSet>
           <FieldLegend variant="label">Capacidad física</FieldLegend>
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <FormField
               id="physical-vo2"
               label="VO₂ máx. estimado (ml/kg/min)"

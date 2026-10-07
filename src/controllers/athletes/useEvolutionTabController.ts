@@ -9,7 +9,7 @@ import { parseApiError } from '@/utils/parseApiError'
 export function useEvolutionTabController(idUser: number) {
   const { can } = useRole()
   const { seasons } = useAppContext()
-  const canSeeComparison = can('viewSeasonReports')
+  const canSeeComparison = can('viewSeasonComparison')
   const canSeeHistory = can('viewAssignmentHistory')
 
   const comparisonQuery = useQuery({

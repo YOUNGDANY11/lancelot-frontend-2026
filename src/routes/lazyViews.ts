@@ -1,6 +1,9 @@
 import { lazy } from 'react'
 
 export const LandingView = lazy(() => import('@/views/landing/LandingView'))
+export const AppShell = lazy(() =>
+  import('@/components/layout/AppShell').then((module) => ({ default: module.AppShell })),
+)
 export const HomeView = lazy(() => import('@/views/app/home/HomeView'))
 export const ProfileView = lazy(() => import('@/views/app/profile/ProfileView'))
 export const ClubView = lazy(() => import('@/views/app/club/ClubView'))

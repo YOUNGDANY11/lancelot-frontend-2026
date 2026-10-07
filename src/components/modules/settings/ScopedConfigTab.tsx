@@ -33,7 +33,7 @@ function ConfigForm({ definition, values, forceSave, isSaving, onSave }: ConfigF
         form.submit()
       }}
     >
-      <div className="grid gap-5 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         {definition.fields.map((field) => {
           const id = `${definition.kind}-${field.key}`
           const helpId = `${id}-ayuda`

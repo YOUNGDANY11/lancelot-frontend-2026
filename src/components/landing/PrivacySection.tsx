@@ -10,7 +10,7 @@ export function PrivacySection() {
       title={PRIVACY_CONTENT.title}
       description={PRIVACY_CONTENT.description}
     >
-      <ul className="grid gap-4 md:grid-cols-3">
+      <ul className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {PRIVACY_PRINCIPLES.map((principle, index) => (
           <Reveal
             as="li"

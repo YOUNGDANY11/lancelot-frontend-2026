@@ -11,6 +11,7 @@ import { ROLE_ICONS } from '@/constants/roles'
 import { useAdminHomeController } from '@/controllers/home/useAdminHomeController'
 import { formatDate } from '@/utils/formatDate'
 import { formatPercent } from '@/utils/formatNumber'
+import { countLabel } from '@/utils/text'
 
 function QualityItem({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
@@ -34,7 +35,9 @@ export function AdminHome() {
         id="usuarios"
         title="Usuarios por rol"
         icon={Users}
-        description={users.isLoading ? undefined : `${users.total} cuentas en total`}
+        description={
+          users.isLoading ? undefined : `${countLabel(users.total, 'cuenta', 'cuentas')} en total`
+        }
         linkTo={controller.paths.users}
         linkLabel="Gestionar usuarios"
       >
@@ -63,7 +66,7 @@ export function AdminHome() {
         )}
       </HomeSection>
 
-      <div className="grid gap-5 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
         <HomeSection
           id="motor"
           title="Motor de IA y readiness"

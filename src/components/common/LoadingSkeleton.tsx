@@ -22,7 +22,7 @@ export function LoadingSkeleton({
     <div role="status" aria-live="polite" className={cn('w-full', className)}>
       <span className="sr-only">{label}</span>
       {variant === 'cards' && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {items.map((item) => (
             <Skeleton key={item} className="h-28 rounded-2xl" />
           ))}

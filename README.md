@@ -83,8 +83,14 @@ src/
 - **Flujo de dependencias:** vista → controlador → servicio → `apiClient`. ESLint impide que una vista o un componente importe axios, `apiClient` o un servicio.
 - **Idioma:** identificadores en inglés y todo texto visible en español de Colombia.
 - **Textos centralizados** en `src/constants/`.
-- **Datos sensibles:** en el navegador solo se guarda el refresh token y la preferencia de tema. Nunca datos de salud ni personales (Ley 1581 de 2012).
+- **Datos sensibles:** en el navegador solo se guardan el refresh token, la preferencia de tema y la temporada y categoría elegidas. Nunca datos de salud ni personales (Ley 1581 de 2012).
 - **Contenido honesto:** no se inventan datos, métricas ni testimonios. Los gráficos de ejemplo de la landing van marcados como "ilustrativo".
+
+## Calidad y accesibilidad
+
+- **Responsive desde 360 px.** En pantallas angostas las tablas se muestran como tarjetas y los paneles laterales ocupan todo el ancho. El registro de RPE y la bandeja de alertas están pensados primero para el celular.
+- **Accesibilidad.** `src/test/accessibility.test.tsx` revisa con `axe-core` las pantallas principales de cada rol: landmarks, encabezados, nombres accesibles y formularios. Los botones que solo tienen ícono llevan `aria-label` y los modales atrapan el foco y se cierran con Esc.
+- **Rendimiento.** Cada vista, el AppShell, los paneles de inicio por rol y los formularios de acceso se cargan en diferido, de modo que quien visita la landing no descarga la aplicación privada.
 
 ## Tema
 

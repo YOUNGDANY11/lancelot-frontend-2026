@@ -6,6 +6,7 @@ import { queryKeys } from '@/lib/queryKeys'
 import { mlService } from '@/services/mlService'
 import type { ValidationReport } from '@/types/ml'
 import { parseApiError } from '@/utils/parseApiError'
+import { countLabel } from '@/utils/text'
 
 export interface ValidationKpi {
   key: string
@@ -22,14 +23,14 @@ function buildKpis(report: ValidationReport): ValidationKpi[] {
       key: 'fatigue-dismissal',
       label: 'Descarte de alertas de fatiga',
       value: report.fatigue_alerts.dismissal_rate,
-      detail: `${report.fatigue_alerts.total} alertas en el periodo`,
+      detail: `${countLabel(report.fatigue_alerts.total, 'alerta', 'alertas')} en el periodo`,
       definition: definitions.dismissal_rate,
     },
     {
       key: 'risk-dismissal',
       label: 'Descarte de evaluaciones de riesgo',
       value: report.injury_risk_assessments.dismissal_rate,
-      detail: `${report.injury_risk_assessments.total} evaluaciones en el periodo`,
+      detail: `${countLabel(report.injury_risk_assessments.total, 'evaluación', 'evaluaciones')} en el periodo`,
       definition: definitions.dismissal_rate,
     },
     {
@@ -56,7 +57,7 @@ function buildKpis(report: ValidationReport): ValidationKpi[] {
       key: `talent-${source}`,
       label: `Aceptación de talento · ${label}`,
       value: summary.acceptance_rate,
-      detail: `${summary.total} señalizaciones`,
+      detail: countLabel(summary.total, 'señalización', 'señalizaciones'),
       definition: definitions.acceptance_rate,
     })
   }

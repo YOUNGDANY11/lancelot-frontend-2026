@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { ROLE_SUMMARIES } from '@/constants/roles'
+import { HOME_INTROS } from '@/constants/roles'
 import { authService } from '@/services/authService'
 import { usersService } from '@/services/usersService'
 import { createApiError } from '@/test/apiErrors'
@@ -157,7 +157,7 @@ describe('flujos de sesión', () => {
 
     expect(await screen.findByRole('heading', { name: 'Hola, Carlos' })).toBeInTheDocument()
     expect(authService.refreshSession).toHaveBeenCalledTimes(1)
-    expect(screen.getByText(ROLE_SUMMARIES.ENTRENADOR)).toBeInTheDocument()
+    expect(screen.getByText(HOME_INTROS.ENTRENADOR)).toBeInTheDocument()
   })
 
   it('cierra sesión desde el menú de usuario sin pedir login de nuevo', async () => {

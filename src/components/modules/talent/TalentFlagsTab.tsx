@@ -60,7 +60,7 @@ export function TalentFlagsTab() {
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:max-w-xl">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:max-w-xl">
         <SelectInput
           aria-label="Filtrar por estado"
           value={controller.status}
@@ -86,7 +86,10 @@ export function TalentFlagsTab() {
           description="Cuando el sistema o el cuerpo técnico señalen un talento, aparecerá aquí."
         />
       ) : (
-        <ul aria-label="Señalizaciones de talento" className="grid gap-3 lg:grid-cols-2">
+        <ul
+          aria-label="Señalizaciones de talento"
+          className="grid grid-cols-1 gap-3 lg:grid-cols-2"
+        >
           {controller.flags.map((flag) => (
             <li key={flag.id_flag}>
               <TalentFlagCard

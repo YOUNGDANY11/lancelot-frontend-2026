@@ -17,7 +17,7 @@ export function HeroSection() {
       aria-labelledby="hero-titulo"
       className="scroll-mt-24 px-4 pt-28 pb-16 sm:px-6 sm:pt-36 sm:pb-24 lg:px-8"
     >
-      <div className="mx-auto grid w-full max-w-6xl items-center gap-10 lg:grid-cols-[1.15fr_1fr] lg:gap-12">
+      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-10 lg:grid-cols-[1.15fr_1fr] lg:gap-12">
         <m.div className="rounded-3xl glass p-6 sm:p-10" {...entranceAnimation}>
           <p className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
             <span aria-hidden="true" className="size-1.5 rounded-full bg-accent" />

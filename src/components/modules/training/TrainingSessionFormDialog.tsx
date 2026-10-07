@@ -49,7 +49,7 @@ function SessionFormContent({
             </FormField>
           )}
         />
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <FormField id="session-date" label="Fecha" error={errors.date?.message}>
             {(controlProps) => <DateField {...controlProps} {...form.register('date')} />}
           </FormField>

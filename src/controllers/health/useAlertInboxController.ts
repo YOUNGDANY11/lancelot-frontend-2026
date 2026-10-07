@@ -33,7 +33,10 @@ const DECISION_MESSAGES: Record<ReviewDecision['status'], string> = {
   dismissed: 'quedó descartada',
 }
 
-export function useAlertInboxController({ limit }: { limit?: number } = {}) {
+export function useAlertInboxController({
+  limit,
+  withTotals = false,
+}: { limit?: number; withTotals?: boolean } = {}) {
   const queryClient = useQueryClient()
   const [kind, setKind] = useState<InboxKind | 'all'>('all')
   const [level, setLevel] = useState<RiskLevelValue | 'all'>('all')
@@ -42,7 +45,7 @@ export function useAlertInboxController({ limit }: { limit?: number } = {}) {
   const totalsQuery = useQuery({
     queryKey: queryKeys.alerts.reviewTotals(),
     queryFn: healthService.reviewTotals,
-    enabled: limit === undefined,
+    enabled: withTotals,
   })
 
   const refresh = () =>

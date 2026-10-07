@@ -15,7 +15,7 @@ export function IntelligenceSection() {
       eyebrow={INTELLIGENCE_CONTENT.eyebrow}
       title={INTELLIGENCE_CONTENT.title}
     >
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {INTELLIGENCE_PILLARS.map((pillar, index) => (
           <Reveal key={pillar.title} delay={index * 0.06} className="rounded-2xl glass p-6 sm:p-8">
             <h3 className="text-xl font-semibold">{pillar.title}</h3>
@@ -54,7 +54,7 @@ export function IntelligenceSection() {
           <BookOpen aria-hidden="true" className="size-4" />
           Respaldado por la literatura científica
         </h3>
-        <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {SCIENTIFIC_REFERENCES.map((reference) => (
             <li key={reference.author} className="rounded-xl glass-subtle p-4">
               <p className="text-sm font-semibold">

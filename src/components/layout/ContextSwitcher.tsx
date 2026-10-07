@@ -1,4 +1,4 @@
-import { CalendarRange, ChevronDown, Users } from 'lucide-react'
+import { CalendarRange, ChevronDown } from 'lucide-react'
 import { SelectInput } from '@/components/common/SelectInput'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -59,7 +59,7 @@ function ContextFields({
 export function ContextSwitcher() {
   const controller = useContextSwitcherController()
 
-  if (controller.isLoading) return <Skeleton className="h-10 w-48 rounded-lg" />
+  if (controller.isLoading) return <Skeleton className="h-10 w-full max-w-48 rounded-lg" />
 
   return (
     <>
@@ -70,14 +70,17 @@ export function ContextSwitcher() {
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            className="h-10 max-w-[60vw] justify-start gap-2 md:hidden"
+            className="h-10 max-w-full min-w-0 shrink justify-start gap-2 md:hidden"
             aria-label={`Contexto: ${controller.seasonLabel}, ${controller.categoryLabel}. Cambiar`}
           >
             <CalendarRange aria-hidden="true" className="text-primary" />
-            <span className="truncate">{controller.seasonLabel}</span>
-            <Users aria-hidden="true" className="text-muted-foreground" />
-            <span className="truncate text-muted-foreground">{controller.categoryLabel}</span>
-            <ChevronDown aria-hidden="true" />
+            <span className="flex min-w-0 flex-col items-start leading-tight">
+              <span className="max-w-full truncate text-xs text-muted-foreground">
+                {controller.seasonLabel}
+              </span>
+              <span className="max-w-full truncate text-sm">{controller.categoryLabel}</span>
+            </span>
+            <ChevronDown aria-hidden="true" className="ml-auto" />
           </Button>
         </PopoverTrigger>
         <PopoverContent

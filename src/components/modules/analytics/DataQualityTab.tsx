@@ -5,6 +5,7 @@ import { KpiCard } from '@/components/common/KpiCard'
 import { LoadingSkeleton } from '@/components/common/LoadingSkeleton'
 import { useDataQualityTabController } from '@/controllers/analytics/useDataQualityTabController'
 import { formatNumber, formatPercent } from '@/utils/formatNumber'
+import { countLabel } from '@/utils/text'
 
 export function DataQualityTab() {
   const controller = useDataQualityTabController()
@@ -36,13 +37,13 @@ export function DataQualityTab() {
               <KpiCard
                 label="Lesiones sin mecanismo"
                 value={formatNumber(quality.injuries.without_mechanism, 0)}
-                hint={`${formatPercent(quality.injuries.without_mechanism_pct)} de ${quality.injuries.total} lesiones`}
+                hint={`${formatPercent(quality.injuries.without_mechanism_pct)} de ${countLabel(quality.injuries.total, 'lesión', 'lesiones')}`}
                 helpTerm="nonContactInjury"
               />
               <KpiCard
                 label="Partidos sin RPE"
                 value={formatNumber(quality.matches.without_rpe, 0)}
-                hint={`${formatPercent(quality.matches.without_rpe_pct)} de ${quality.matches.total} partidos`}
+                hint={`${formatPercent(quality.matches.without_rpe_pct)} de ${countLabel(quality.matches.total, 'partido', 'partidos')}`}
               />
               <KpiCard
                 label="Días sin carga"

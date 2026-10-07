@@ -57,6 +57,7 @@ export function TrainingMatchesTab() {
           { key: 'category', header: 'Categoría', cell: (match) => match.name_category ?? '—' },
           {
             key: 'stats',
+            mobile: 'full',
             header: <span className="sr-only">Estadísticas</span>,
             className: 'text-right',
             cell: (match) =>

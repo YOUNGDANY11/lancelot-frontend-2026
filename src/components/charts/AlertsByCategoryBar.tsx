@@ -7,6 +7,7 @@ import { ChartContainer, type ChartConfig } from '@/components/ui/chart'
 import { RISK_LEVEL, type RiskLevelValue } from '@/constants/enums'
 import { RISK_LEVEL_PRESENTATION } from '@/constants/riskLevels'
 import type { CategoryAlertCount } from '@/controllers/home/useDirectorHomeController'
+import { countLabel } from '@/utils/text'
 
 const LEVELS: RiskLevelValue[] = ['alto', 'medio', 'bajo']
 
@@ -40,7 +41,7 @@ function CategoryTooltip(props: TooltipRenderProps<CategoryDatum>) {
         value: String(datum[level]),
         color: LEVEL_COLORS[level],
       }))}
-      footer={`${datum.total} pendientes`}
+      footer={countLabel(datum.total, 'pendiente', 'pendientes')}
     />
   )
 }

@@ -20,7 +20,7 @@ export function MobileNav() {
 
   return (
     <nav
-      aria-label="Módulos"
+      aria-label="Accesos rápidos"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/90 px-2 pt-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] backdrop-blur-xl lg:hidden"
     >
       <ul className="flex items-stretch gap-1">

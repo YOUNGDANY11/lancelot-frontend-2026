@@ -147,7 +147,7 @@ function DirectoryContent() {
         emptyState
       ) : (
         <div className="flex flex-col gap-4">
-          <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {controller.entries.map((entry) => (
               <li key={entry.id_user}>
                 <AthleteCard entry={entry} href={controller.profilePath(entry.id_user)} />

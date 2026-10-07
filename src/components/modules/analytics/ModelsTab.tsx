@@ -89,7 +89,7 @@ export function ModelsTab() {
           description="Cuando haya datos suficientes, el servicio de ML registrará aquí sus modelos entrenados."
         />
       ) : (
-        <ul aria-label="Modelos de ML" className="grid gap-4 xl:grid-cols-2">
+        <ul aria-label="Modelos de ML" className="grid grid-cols-1 gap-4 xl:grid-cols-2">
           {controller.models.map((model) => {
             const rejection = controller.rejectionFor(model)
             return (

@@ -27,7 +27,7 @@ export function UsersTab() {
         </Button>
       </TabToolbar>
 
-      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_14rem]">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_14rem]">
         <div className="relative">
           <Search
             aria-hidden="true"

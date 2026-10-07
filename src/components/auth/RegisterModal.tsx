@@ -33,7 +33,7 @@ export function RegisterModal() {
       <form noValidate onSubmit={onSubmit} className="flex flex-col gap-5">
         <FormAlert message={serverError} />
         <FieldGroup>
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <FormField
               id="register-name"
               label={REGISTER_TEXTS.nameLabel}

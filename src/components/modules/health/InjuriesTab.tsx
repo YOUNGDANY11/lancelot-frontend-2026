@@ -51,7 +51,7 @@ export function InjuriesTab() {
         </div>
       )}
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:max-w-xl">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:max-w-xl">
         <SelectInput
           aria-label="Filtrar por estado"
           value={controller.status}

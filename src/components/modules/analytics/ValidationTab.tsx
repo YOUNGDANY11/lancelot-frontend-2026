@@ -103,7 +103,7 @@ export function ValidationTab() {
               </section>
             )}
 
-            <div className="grid gap-4 rounded-2xl glass-subtle p-4 sm:grid-cols-2 sm:p-5">
+            <div className="grid grid-cols-1 gap-4 rounded-2xl glass-subtle p-4 sm:grid-cols-2 sm:p-5">
               <SummaryTable caption="Alertas de fatiga" summary={report.fatigue_alerts} />
               <SummaryTable
                 caption="Evaluaciones de riesgo"

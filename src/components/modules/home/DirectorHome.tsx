@@ -50,7 +50,7 @@ export function DirectorHome() {
 
       <SetupChecklist />
 
-      <div className="grid gap-5 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
         {controller.isLoadingAlerts ? (
           <LoadingSkeleton variant="cards" rows={1} label="Cargando alertas por categoría" />
         ) : (

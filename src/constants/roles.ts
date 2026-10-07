@@ -54,6 +54,18 @@ export const ROLE_SUMMARIES: Record<RoleCode, string> = {
     'Configura el club, crea las cuentas del cuerpo técnico con su rol y supervisa el motor de análisis y la calidad de los datos.',
 }
 
+export const HOME_INTROS: Record<RoleCode, string> = {
+  ADMIN:
+    'Configura el club, gestiona las cuentas y vigila la calidad de los datos y el motor de análisis.',
+  DIRECTOR_TECNICO:
+    'Así va la temporada: carga, alertas pendientes y los índices de progreso más altos.',
+  ENTRENADOR:
+    'Registra el RPE de tus sesiones, sigue la carga de tu plantilla y revisa a quién tiene alertas.',
+  ENCARGADO_SALUD:
+    'Empieza por las alertas de la noche. Después, las lesiones en curso y los consentimientos pendientes.',
+  DEPORTISTA: 'Reporta qué tan dura fue tu sesión y sigue tu carga, tus objetivos y tu evolución.',
+}
+
 export const LANDING_ROLE_ORDER: RoleCode[] = [
   'DIRECTOR_TECNICO',
   'ENTRENADOR',

@@ -10,7 +10,7 @@ export function HowItWorksSection() {
       title="Un ciclo completo, temporada tras temporada"
       description="Lancelot acompaña al deportista antes, durante y después de cada temporada, y convierte esos registros en información para decidir."
     >
-      <ol className="relative grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <ol className="relative grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <span
           aria-hidden="true"
           className="absolute top-11 right-[12%] left-[12%] hidden h-px bg-linear-to-r from-primary via-secondary to-accent lg:block"

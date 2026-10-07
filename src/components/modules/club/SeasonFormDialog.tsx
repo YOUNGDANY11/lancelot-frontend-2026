@@ -43,7 +43,7 @@ function SeasonFormContent({ onOpenChange }: Omit<DialogProps, 'open'>) {
             />
           )}
         </FormField>
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <FormField id="season-start" label="Fecha de inicio" error={errors.start_date?.message}>
             {(controlProps) => <DateField {...controlProps} {...form.register('start_date')} />}
           </FormField>

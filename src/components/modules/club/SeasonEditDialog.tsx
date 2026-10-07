@@ -36,7 +36,7 @@ function SeasonEditContent({ season, onClose }: { season: Season; onClose: () =>
         <FormField id="season-edit-name" label="Nombre" error={errors.name?.message}>
           {(controlProps) => <Input {...controlProps} {...form.register('name')} />}
         </FormField>
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <FormField
             id="season-edit-start"
             label="Fecha de inicio"

@@ -10,7 +10,7 @@ export function ProblemSection() {
       title="El seguimiento del deportista se queda en papel"
       description="Las escuelas de formación y los clubes profesionales-amateur no tienen cómo conservar ni analizar la historia de sus jugadores."
     >
-      <ul className="grid gap-4 md:grid-cols-3">
+      <ul className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {PROBLEM_CARDS.map((card, index) => (
           <Reveal
             as="li"

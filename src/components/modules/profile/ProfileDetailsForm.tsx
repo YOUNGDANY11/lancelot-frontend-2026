@@ -39,7 +39,7 @@ export function ProfileDetailsForm({
         <form noValidate onSubmit={onSubmit} className="flex flex-col gap-5">
           <FormAlert message={serverError} />
           <FieldGroup>
-            <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <FormField id="profile-name" label="Nombres" error={errors.name?.message}>
                 {(controlProps) => (
                   <Input {...controlProps} autoComplete="given-name" {...form.register('name')} />
@@ -66,7 +66,7 @@ export function ProfileDetailsForm({
                 />
               )}
             </FormField>
-            <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <FormField
                 id="profile-birth-date"
                 label="Fecha de nacimiento"

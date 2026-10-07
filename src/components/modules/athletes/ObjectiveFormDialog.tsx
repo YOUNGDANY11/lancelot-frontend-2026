@@ -42,7 +42,7 @@ function ObjectiveFormContent({ idUser, objective, onClose }: Omit<DialogProps, 
             <Textarea {...controlProps} rows={3} autoFocus {...form.register('description')} />
           )}
         </FormField>
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <FormField id="objective-target" label="Fecha meta" error={errors.target_date?.message}>
             {(controlProps) => <DateField {...controlProps} {...form.register('target_date')} />}
           </FormField>

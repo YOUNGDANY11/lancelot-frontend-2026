@@ -23,3 +23,7 @@ export function initialsOf(person: { name?: string | null; lastname?: string | n
     .join('')
     .toUpperCase()
 }
+
+export function countLabel(count: number, singular: string, plural: string): string {
+  return `${count} ${count === 1 ? singular : plural}`
+}

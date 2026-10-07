@@ -1,9 +1,9 @@
 import type { RouteObject } from 'react-router'
-import { AppShell } from '@/components/layout/AppShell'
 import { RootLayout } from '@/components/layout/RootLayout'
 import { APP_MODULES, type ModuleKey } from '@/constants/navigation'
 import {
   AnalyticsView,
+  AppShell,
   AthleteDirectoryView,
   AthleteProfileView,
   ClubView,

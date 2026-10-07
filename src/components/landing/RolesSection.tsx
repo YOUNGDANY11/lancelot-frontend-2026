@@ -11,7 +11,7 @@ export function RolesSection() {
       title={ROLES_CONTENT.title}
       description={ROLES_CONTENT.description}
     >
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {LANDING_ROLE_ORDER.map((role, index) => {
           const Icon = ROLE_ICONS[role]
           return (

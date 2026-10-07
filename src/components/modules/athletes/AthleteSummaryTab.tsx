@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { useAthleteSummaryController } from '@/controllers/athletes/useAthleteSummaryController'
 import { formatDate } from '@/utils/formatDate'
 import { formatNumber, formatPercent } from '@/utils/formatNumber'
+import { countLabel } from '@/utils/text'
 
 export function AthleteSummaryTab({ idUser }: { idUser: number }) {
   const controller = useAthleteSummaryController(idUser)
@@ -38,11 +39,11 @@ export function AthleteSummaryTab({ idUser }: { idUser: number }) {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           label="Asistencia a entrenamientos"
           value={formatPercent(training.attendance_rate)}
-          hint={`${training.sessions_attended} de ${training.total_sessions} sesiones con RPE registrado`}
+          hint={`${training.sessions_attended} de ${countLabel(training.total_sessions, 'sesión', 'sesiones')} con RPE registrado`}
           icon={CalendarCheck}
         />
         <KpiCard
@@ -66,7 +67,7 @@ export function AthleteSummaryTab({ idUser }: { idUser: number }) {
         />
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <div className="flex flex-col gap-3">
           <ProgressRadarChart index={index} />
           {index?.warnings && index.warnings.length > 0 && (

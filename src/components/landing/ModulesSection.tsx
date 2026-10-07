@@ -10,7 +10,7 @@ export function ModulesSection() {
       title="Organizado por módulos, no por botones"
       description="Cada módulo resuelve una parte del trabajo del club, con una acción principal clara y ayuda junto a cada concepto técnico."
     >
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {LANDING_MODULES.map((module, index) => (
           <Reveal
             as="li"

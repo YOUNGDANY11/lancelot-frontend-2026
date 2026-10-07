@@ -8,6 +8,7 @@ export const PERMISSIONS = {
   manageEvaluations: SPORTS_STAFF,
   manageObjectives: SPORTS_STAFF,
   viewSeasonReports: SPORTS_STAFF,
+  viewSeasonComparison: [...SPORTS_STAFF, 'DEPORTISTA'],
   viewAssignmentHistory: [...SPORTS_STAFF, 'DEPORTISTA'],
   viewInjuries: ['ADMIN', 'ENTRENADOR', 'ENCARGADO_SALUD'],
   viewHealthRecords: ['ADMIN', 'ENCARGADO_SALUD'],

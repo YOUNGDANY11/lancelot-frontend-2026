@@ -12,7 +12,7 @@ export function TeamSection() {
       title={TEAM_CONTENT.title}
       description={TEAM_CONTENT.description}
     >
-      <ul className="mx-auto grid max-w-3xl gap-4 sm:grid-cols-2">
+      <ul className="mx-auto grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2">
         {TEAM_MEMBERS.map((member, index) => {
           const photoUrl = findTeamPhoto(member.photoFile)
           return (

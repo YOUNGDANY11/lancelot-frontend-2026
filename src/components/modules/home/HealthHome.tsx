@@ -19,18 +19,19 @@ import { INJURY_SEVERITY, INJURY_STATUS } from '@/constants/enums'
 import { INBOX_COPY } from '@/constants/health'
 import { useHealthHomeController } from '@/controllers/home/useHealthHomeController'
 import { formatDate } from '@/utils/formatDate'
+import { countLabel } from '@/utils/text'
 
 export function HealthHome() {
   const controller = useHealthHomeController()
   const { inbox, injuries, minors } = controller
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+    <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
       <HomeSection
         id="bandeja"
         title="Alertas más urgentes"
         icon={ShieldAlert}
-        description={`${inbox.totalOpen} pendientes · ${INBOX_COPY.decisionNote}`}
+        description={`${countLabel(inbox.totalOpen, 'pendiente', 'pendientes')} · ${INBOX_COPY.decisionNote}`}
         linkTo={controller.paths.inbox}
         linkLabel="Ir a la bandeja"
         className="xl:row-span-2"
@@ -67,7 +68,13 @@ export function HealthHome() {
         id="lesiones"
         title="Lesiones en curso"
         icon={HeartPulse}
-        description={injuries.isLoading ? undefined : `${injuries.total} activas o en recuperación`}
+        description={
+          injuries.isLoading
+            ? undefined
+            : injuries.total === 1
+              ? '1 activa o en recuperación'
+              : `${injuries.total} activas o en recuperación`
+        }
         linkTo={controller.paths.injuries}
       >
         {!controller.isLoadingMechanism && controller.missingMechanism > 0 && (

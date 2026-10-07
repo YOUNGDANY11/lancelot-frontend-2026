@@ -33,6 +33,7 @@ export function ModuleTabs<T extends string>({ tabs, defaultTab, label }: Module
       </div>
       {tabs.map((tab) => (
         <TabsContent key={tab.value} value={tab.value}>
+          <h2 className="sr-only">{tab.label}</h2>
           {tab.content}
         </TabsContent>
       ))}

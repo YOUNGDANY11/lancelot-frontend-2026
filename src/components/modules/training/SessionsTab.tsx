@@ -87,6 +87,7 @@ export function SessionsTab() {
           },
           {
             key: 'rpe',
+            mobile: 'full',
             header: <span className="sr-only">Registrar RPE</span>,
             className: 'text-right',
             cell: (session) =>

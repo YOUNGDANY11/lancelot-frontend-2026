@@ -80,7 +80,7 @@ function ParentalConsentContent({
         >
           {(controlProps) => <Input {...controlProps} {...form.register('guardian_name')} />}
         </FormField>
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <FormField
             id="consent-guardian-document"
             label="Documento del acudiente"
@@ -110,7 +110,7 @@ function ParentalConsentContent({
             )}
           />
         </div>
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <FormField
             id="consent-signed-at"
             label="Fecha de firma"

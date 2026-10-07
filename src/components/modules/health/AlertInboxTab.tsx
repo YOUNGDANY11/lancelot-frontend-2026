@@ -52,10 +52,10 @@ function FilterChips<T extends string>({
 }
 
 export function AlertInboxTab() {
-  const controller = useAlertInboxController()
+  const controller = useAlertInboxController({ withTotals: true })
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <div className="flex flex-col gap-4">
         <div className="flex items-start gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-4">
           <Scale aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-primary" />

@@ -16,12 +16,7 @@ export function AthleteHome() {
 
   return (
     <div className="flex flex-col gap-5">
-      <HomeSection
-        id="mi-categoria"
-        title="Mi categoría"
-        icon={Shirt}
-        description={season ? `Temporada ${season.name}` : undefined}
-      >
+      <HomeSection id="mi-categoria" title="Mi categoría" icon={Shirt} description={season?.name}>
         <p className="text-lg font-semibold">
           {categoryNames || 'Aún no tienes categoría en esta temporada'}
         </p>
@@ -38,7 +33,7 @@ export function AthleteHome() {
         <MyRpeReport />
       </HomeSection>
 
-      <div className="grid gap-5 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
         <HomeSection id="mi-carga" title="Mi carga" icon={Activity}>
           <MyLoadSummary />
         </HomeSection>

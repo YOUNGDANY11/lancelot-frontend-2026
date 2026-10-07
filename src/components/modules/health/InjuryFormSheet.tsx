@@ -60,7 +60,7 @@ function InjuryFormContent({ injury, onClose }: { injury: Injury | null; onClose
             )}
           />
         )}
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <FormField
             id="injury-date"
             label="Fecha de la lesión"
@@ -106,7 +106,7 @@ function InjuryFormContent({ injury, onClose }: { injury: Injury | null; onClose
             />
           )}
         />
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <Controller
             control={form.control}
             name="severity"
@@ -156,7 +156,7 @@ function InjuryFormContent({ injury, onClose }: { injury: Injury | null; onClose
             <Textarea {...controlProps} rows={3} {...form.register('diagnosis')} />
           )}
         </FormField>
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <FormField
             id="injury-recovery-date"
             label="Fecha de recuperación"

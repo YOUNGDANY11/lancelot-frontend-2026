@@ -41,7 +41,7 @@ function EngineForm({ config, isReady, modes, isSaving, serverError, onSave }: E
           Modo del motor de riesgo
           <HelpHint term="shadowMode" />
         </legend>
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           {modes.map((mode) => {
             const checked = draft.mode === mode.value
             return (

@@ -64,7 +64,7 @@ export function TechnicalTab({ idUser }: { idUser: number }) {
         />
       ) : (
         <>
-          <ul className="grid gap-3 sm:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {controller.indicators.map((summary) => (
               <li
                 key={summary.indicator}

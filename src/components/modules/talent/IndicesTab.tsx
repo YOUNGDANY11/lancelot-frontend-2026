@@ -72,7 +72,7 @@ export function IndicesTab() {
       )}
 
       {!controller.isLoading && !controller.errorMessage && controller.ranking.length > 0 && (
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
           <CategoryRankingBar
             title={
               controller.categoryName ? `Ranking de ${controller.categoryName}` : 'Ranking general'

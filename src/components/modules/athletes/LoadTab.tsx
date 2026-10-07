@@ -54,7 +54,7 @@ export function LoadTab({ idUser }: { idUser: number }) {
       ) : (
         <>
           <AcwrTrendChart series={controller.rangeSeries} thresholds={controller.thresholds} />
-          <div className="grid gap-5 lg:grid-cols-[2fr_1fr]">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-[2fr_1fr]">
             <DailyLoadBars series={controller.rangeSeries} />
             <LoadCalendarHeatmap series={controller.heatmapSeries} />
           </div>

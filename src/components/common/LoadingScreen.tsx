@@ -14,7 +14,7 @@ export function LoadingScreen({ label = 'Cargando…' }: LoadingScreenProps) {
       <span className="sr-only">{label}</span>
       <Skeleton className="h-9 w-2/3" />
       <Skeleton className="h-5 w-1/2" />
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Skeleton className="h-32 rounded-2xl" />
         <Skeleton className="h-32 rounded-2xl" />
       </div>

@@ -1,4 +1,4 @@
-import type { ReviewStatus, TalentFlagSource } from '@/constants/enums'
+import type { ReviewStatus, Sport, TalentFlagSource } from '@/constants/enums'
 import type { ProgressIndex } from '@/types/athlete'
 
 export interface RankedIndex extends ProgressIndex {
@@ -10,6 +10,7 @@ export interface TalentFlag {
   id_user: number
   athlete_name?: string
   id_season: number
+  sport?: Sport | null
   criteria: string
   recommended_action: string
   status: ReviewStatus
@@ -47,6 +48,7 @@ export interface DetectionSummary {
 export interface CreateTalentFlagRequest {
   id_user: number
   id_season: number
+  sport?: Sport
   criteria: string
   recommended_action: string
   created_by: number

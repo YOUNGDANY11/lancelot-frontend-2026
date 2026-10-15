@@ -1,3 +1,4 @@
+import { sportOf } from '@/constants/positions'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -10,6 +11,7 @@ import type { RecalculationSummary } from '@/types/talent'
 import { parseApiError } from '@/utils/parseApiError'
 import {
   athletesWithoutIndex,
+  baseAssignmentBySport,
   baseAssignmentByUser,
   buildRanking,
   type RankingEntry,
@@ -22,7 +24,7 @@ export function useIndicesTabController() {
   const queryClient = useQueryClient()
   const idSeason = season?.id_season
   const [localCategoryId, setLocalCategoryId] = useState<number | null>(null)
-  const [selectedUser, setSelectedUser] = useState<number | null>(null)
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [confirmingSeason, setConfirmingSeason] = useState(false)
   const [summary, setSummary] = useState<RecalculationSummary | null>(null)
   const idCategory = category?.id_category ?? localCategoryId
@@ -44,12 +46,14 @@ export function useIndicesTabController() {
       item.max_age !== undefined ? [[item.id_category, item.max_age] as const] : [],
     ),
   )
+  const sportById = new Map(categories.map((item) => [item.id_category, sportOf(item)] as const))
   const baseByUser = baseAssignmentByUser(assignmentsQuery.data ?? [], maxAgeById)
+  const baseBySport = baseAssignmentBySport(assignmentsQuery.data ?? [], maxAgeById, sportById)
   const indices = indicesQuery.data ?? []
-  const ranking = buildRanking(indices, baseByUser, idCategory)
-  const missing = athletesWithoutIndex(baseByUser, indices, idCategory)
+  const ranking = buildRanking(indices, baseBySport, idCategory)
+  const missing = athletesWithoutIndex(baseBySport, indices, idCategory)
   const selected =
-    ranking.find((entry) => entry.index.id_user === selectedUser) ?? ranking[0] ?? null
+    ranking.find((entry) => entry.index.id_index === selectedIndex) ?? ranking[0] ?? null
   const nameOf = (idUser: number) => {
     const assignment = baseByUser.get(idUser)
     return assignment ? fullName(assignment) : `Deportista ${idUser}`
@@ -92,13 +96,14 @@ export function useIndicesTabController() {
     ],
     onCategoryChange: (value: string) => {
       setLocalCategoryId(value === 'all' ? null : Number(value))
-      setSelectedUser(null)
+      setSelectedIndex(null)
     },
     categoryName: categories.find((item) => item.id_category === idCategory)?.name,
     ranking,
+    showSport: new Set(ranking.map((entry) => entry.sport)).size > 1,
     missing,
     selected,
-    selectEntry: (entry: RankingEntry) => setSelectedUser(entry.index.id_user),
+    selectEntry: (entry: RankingEntry) => setSelectedIndex(entry.index.id_index),
     isLoading: idSeason !== undefined && (indicesQuery.isPending || assignmentsQuery.isPending),
     errorMessage: indicesQuery.isError
       ? parseApiError(indicesQuery.error)

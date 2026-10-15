@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import type { RankedIndex } from '@/types/talent'
-import { athletesWithoutIndex, baseAssignmentByUser, buildRanking } from '@/utils/talentRanking'
+import {
+  athletesWithoutIndex,
+  baseAssignmentBySport,
+  baseAssignmentByUser,
+  buildRanking,
+} from '@/utils/talentRanking'
 
 const MAX_AGE = new Map([
   [3, 15],
@@ -63,12 +68,49 @@ function index(id_user: number, value: number): RankedIndex {
   }
 }
 
+const SPORTS = new Map([
+  [3, 'futbol' as const],
+  [4, 'futbol' as const],
+])
+
 describe('ranking del índice de progreso', () => {
-  const baseByUser = baseAssignmentByUser(ASSIGNMENTS, MAX_AGE)
+  const baseByUser = baseAssignmentBySport(ASSIGNMENTS, MAX_AGE, SPORTS)
   const indices = [index(7, 71.5), index(8, 80.2), index(9, 64)]
 
   it('ubica a cada deportista en su categoría de edad aunque juegue en varias', () => {
-    expect(baseByUser.get(7)).toMatchObject({ id_category: 3, position: 'Portero' })
+    expect(baseAssignmentByUser(ASSIGNMENTS, MAX_AGE).get(7)).toMatchObject({
+      id_category: 3,
+      position: 'Portero',
+    })
+    expect(baseByUser.get('7|futbol')).toMatchObject({ id_category: 3, position: 'Portero' })
+  })
+
+  it('lista a quien juega ambos deportes una vez por deporte', () => {
+    const futsal = {
+      id_ath_cat: 6,
+      id_user: 7,
+      id_category: 5,
+      category_name: 'Sala Sub-17',
+      name: 'Ana',
+      lastname: 'Pérez',
+      position: 'Ala',
+    }
+    const bySport = baseAssignmentBySport(
+      [...ASSIGNMENTS, futsal],
+      new Map([...MAX_AGE, [5, 17]]),
+      new Map([...SPORTS, [5, 'futbol_sala' as const]]),
+    )
+    const ranking = buildRanking(
+      [index(7, 71.5), { ...index(7, 66), id_index: 71, sport: 'futbol_sala' }],
+      bySport,
+      null,
+    )
+    expect(
+      ranking.map((entry) => [entry.athleteName, entry.category_name, entry.position]),
+    ).toEqual([
+      ['Ana Pérez (Fútbol)', 'Sub-15', 'Portero'],
+      ['Ana Pérez (Fútbol sala)', 'Sala Sub-17', 'Ala'],
+    ])
   })
 
   it('ordena de mayor a menor dentro de la categoría', () => {

@@ -8,7 +8,8 @@ import { alertsService } from '@/services/alertsService'
 import { athleteAssignmentsService } from '@/services/athleteAssignmentsService'
 import { talentService } from '@/services/talentService'
 import { trainingService } from '@/services/trainingService'
-import { baseAssignmentByUser, buildRanking } from '@/utils/talentRanking'
+import { sportOf } from '@/constants/positions'
+import { baseAssignmentBySport, baseAssignmentByUser, buildRanking } from '@/utils/talentRanking'
 
 const TOP_LIMIT = 5
 
@@ -57,6 +58,8 @@ export function useDirectorHomeController() {
     ),
   )
   const baseByUser = baseAssignmentByUser(assignmentsQuery.data ?? [], maxAgeById)
+  const sportById = new Map(categories.map((item) => [item.id_category, sportOf(item)] as const))
+  const baseBySport = baseAssignmentBySport(assignmentsQuery.data ?? [], maxAgeById, sportById)
 
   const byCategory = new Map<number | null, CategoryAlertCount>()
   for (const item of inbox.items) {
@@ -94,7 +97,7 @@ export function useDirectorHomeController() {
     },
     alertsByCategory,
     isLoadingAlerts: inbox.isLoading || loading(assignmentsQuery.isPending),
-    topIndices: buildRanking(indicesQuery.data ?? [], baseByUser, null).slice(0, TOP_LIMIT),
+    topIndices: buildRanking(indicesQuery.data ?? [], baseBySport, null).slice(0, TOP_LIMIT),
     isLoadingIndices: loading(indicesQuery.isPending) || loading(assignmentsQuery.isPending),
     paths: {
       talent: APP_MODULES.talent.path,

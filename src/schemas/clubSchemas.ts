@@ -168,6 +168,7 @@ export type AssignmentChangeFormValues = z.infer<typeof assignmentChangeSchema>
 
 export const talentFlagSchema = z.object({
   id_user: z.number({ error: 'Elige un deportista.' }).int().positive('Elige un deportista.'),
+  sport: z.enum(['', 'futbol', 'futbol_sala']),
   criteria: textField('los criterios observados', 10, 1000),
   recommended_action: textField('la acción recomendada', 5, 500),
 })

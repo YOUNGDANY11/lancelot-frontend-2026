@@ -32,6 +32,7 @@ describe('informe de evolución', () => {
       ]),
     ).toEqual([
       {
+        sport: null,
         dimension: 'tactica',
         indicator: 'Presión alta',
         average: 7,
@@ -39,13 +40,21 @@ describe('informe de evolución', () => {
         lastDate: '2026-04-01',
       },
       {
+        sport: null,
         dimension: 'tecnica',
         indicator: 'Pase corto',
         average: 7.5,
         count: 2,
         lastDate: '2026-05-01',
       },
-      { dimension: 'tecnica', indicator: 'Remate', average: 6, count: 1, lastDate: '2026-02-01' },
+      {
+        sport: null,
+        dimension: 'tecnica',
+        indicator: 'Remate',
+        average: 6,
+        count: 1,
+        lastDate: '2026-02-01',
+      },
     ])
   })
 

@@ -14,6 +14,7 @@ import { APP_MODULES } from '@/constants/navigation'
 import { useIndicesTabController } from '@/controllers/talent/useIndicesTabController'
 import { formatNumber } from '@/utils/formatNumber'
 import { fullName } from '@/utils/text'
+import { SPORT } from '@/constants/enums'
 
 export function IndicesTab() {
   const controller = useIndicesTabController()
@@ -78,9 +79,9 @@ export function IndicesTab() {
               controller.categoryName ? `Ranking de ${controller.categoryName}` : 'Ranking general'
             }
             entries={controller.ranking}
-            selectedUser={selected?.index.id_user ?? null}
-            onSelect={(idUser) => {
-              const entry = controller.ranking.find((item) => item.index.id_user === idUser)
+            selectedIndex={selected?.index.id_index ?? null}
+            onSelect={(idIndex) => {
+              const entry = controller.ranking.find((item) => item.index.id_index === idIndex)
               if (entry) controller.selectEntry(entry)
             }}
           />
@@ -143,7 +144,13 @@ export function IndicesTab() {
                   {entry.athleteName}
                 </Link>
                 <span className="text-xs text-muted-foreground">
-                  {[entry.category_name, entry.position].filter(Boolean).join(' · ')}
+                  {[
+                    entry.category_name,
+                    controller.showSport ? SPORT.labels[entry.sport] : null,
+                    entry.position,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
                 </span>
               </span>
             ),

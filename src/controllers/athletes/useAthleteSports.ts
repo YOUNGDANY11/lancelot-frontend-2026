@@ -6,7 +6,7 @@ import { useRole } from '@/hooks/useRole'
 import { queryKeys } from '@/lib/queryKeys'
 import { athleteAssignmentsService } from '@/services/athleteAssignmentsService'
 
-export function useAthleteSport(idUser: number): Sport | null {
+export function useAthleteSports(idUser: number): Sport[] {
   const { role } = useRole()
   const { season, categories } = useAppContext()
   const idSeason = season?.id_season
@@ -27,8 +27,8 @@ export function useAthleteSport(idUser: number): Sport | null {
   const sports = new Set(
     assignments.flatMap((assignment) => {
       const category = categories.find((item) => item.id_category === assignment.id_category)
-      return category?.sport ? [sportOf(category)] : []
+      return category ? [sportOf(category)] : []
     }),
   )
-  return sports.size === 1 ? [...sports][0] : null
+  return [...sports].sort()
 }

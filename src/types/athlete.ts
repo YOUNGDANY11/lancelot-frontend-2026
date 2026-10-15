@@ -46,6 +46,7 @@ export interface TechnicalEvaluation {
   id_user: number
   id_season: number
   season_name?: string
+  sport?: Sport | null
   dimension?: EvaluationDimension
   indicator: string
   score: number
@@ -57,6 +58,7 @@ export interface TechnicalEvaluation {
 export interface TechnicalEvaluationRequest {
   id_user: number
   id_season: number
+  sport?: Sport
   dimension: EvaluationDimension
   indicator: string
   score: number
@@ -149,11 +151,41 @@ export interface ProgressIndex {
   id_index: number
   id_user: number
   id_season: number
+  sport?: Sport
   physical_score: number
   technical_score: number
   participation_score: number
   index_value: number
   warnings?: string[] | null
+}
+
+export interface TrainingParticipation {
+  total_sessions: number
+  sessions_attended: number
+  attendance_rate: number
+  avg_rpe: number
+  total_session_load: number
+}
+
+export interface MatchParticipation {
+  matches_in_season: number
+  matches_played: number
+  total_minutes: number
+  goals: number
+  assists: number
+  yellow_cards: number
+  red_cards: number
+  fouls_committed?: number
+  match_minutes?: number | null
+}
+
+export interface SportSummary {
+  sport: Sport
+  category: string | null
+  position: string | null
+  training_participation: TrainingParticipation
+  match_participation: MatchParticipation
+  weighted_progress_index: ProgressIndex | null
 }
 
 export interface SeasonSummary {
@@ -163,36 +195,23 @@ export interface SeasonSummary {
     lastname: string
     position: string | null
     category: string | null
-    sport?: Sport
+    sport?: Sport | null
+    sports?: Sport[]
   }
   season: { id_season: number; name: string }
-  training_participation: {
-    total_sessions: number
-    sessions_attended: number
-    attendance_rate: number
-    avg_rpe: number
-    total_session_load: number
-  }
-  match_participation: {
-    matches_in_season: number
-    matches_played: number
-    total_minutes: number
-    goals: number
-    assists: number
-    yellow_cards: number
-    red_cards: number
-    fouls_committed?: number
-    match_minutes?: number
-  }
+  training_participation: TrainingParticipation
+  match_participation: MatchParticipation
   fatigue_alerts: FatigueAlert[]
   injury_risk_assessments: InjuryRiskAssessment[]
   weighted_progress_index: ProgressIndex | null
+  by_sport?: SportSummary[]
 }
 
 export interface SeasonComparisonPoint {
   id_season: number
   season_name: string
   start_date: string
+  sport?: Sport
   physical_score: number
   technical_score: number
   participation_score: number

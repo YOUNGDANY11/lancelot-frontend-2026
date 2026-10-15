@@ -5,6 +5,7 @@ import { StatusBadge } from '@/components/common/StatusBadge'
 import { Button } from '@/components/ui/button'
 import {
   REVIEW_STATUS,
+  SPORT,
   TALENT_FLAG_SOURCE,
   TALENT_RULE,
   type ReviewStatus,
@@ -49,6 +50,7 @@ export function TalentFlagCard({ flag, athletePath, isPending, onDecide }: Talen
               label={REVIEW_STATUS.labels[flag.status]}
               tone={REVIEW_STATUS.tones[flag.status]}
             />
+            {flag.sport && <StatusBadge label={SPORT.labels[flag.sport]} tone="neutral" />}
           </div>
         </div>
         {flag.score !== null && flag.score !== undefined && (

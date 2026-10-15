@@ -7,6 +7,7 @@ import { KpiCard } from '@/components/common/KpiCard'
 import { LevelBadge } from '@/components/common/LevelBadge'
 import { LoadingSkeleton } from '@/components/common/LoadingSkeleton'
 import { Button } from '@/components/ui/button'
+import { SPORT } from '@/constants/enums'
 import { useAthleteSummaryController } from '@/controllers/athletes/useAthleteSummaryController'
 import { formatDate } from '@/utils/formatDate'
 import { formatNumber, formatPercent } from '@/utils/formatNumber'
@@ -25,7 +26,7 @@ export function AthleteSummaryTab({ idUser }: { idUser: number }) {
     )
   }
   if (controller.isLoading) return <LoadingSkeleton variant="cards" rows={4} />
-  if (controller.errorMessage || !controller.summary) {
+  if (controller.errorMessage || !controller.summary || !controller.view) {
     return (
       <ErrorState
         message={controller.errorMessage ?? 'No pudimos generar el resumen.'}
@@ -34,11 +35,35 @@ export function AthleteSummaryTab({ idUser }: { idUser: number }) {
     )
   }
 
-  const { training_participation: training, match_participation: matches } = controller.summary
-  const index = controller.summary.weighted_progress_index
+  const view = controller.view
+  const { training_participation: training, match_participation: matches } = view
+  const index = view.weighted_progress_index
 
   return (
     <div className="flex flex-col gap-5">
+      {controller.sportViews.length > 1 && (
+        <div className="flex flex-col gap-2">
+          <p className="text-sm text-muted-foreground">
+            Juega fútbol y fútbol sala: la participación y el índice se calculan por deporte. Las
+            alertas de carga suman ambos.
+          </p>
+          <div role="group" aria-label="Deporte" className="flex flex-wrap gap-2">
+            {controller.sportViews.map((item) => (
+              <Button
+                key={item.sport}
+                type="button"
+                size="sm"
+                variant={item.sport === view.sport ? 'secondary' : 'ghost'}
+                aria-pressed={item.sport === view.sport}
+                onClick={() => controller.selectSport(item.sport)}
+              >
+                {SPORT.labels[item.sport]}
+                {item.category ? ` · ${item.category}` : ''}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           label="Asistencia a entrenamientos"
@@ -114,7 +139,7 @@ export function AthleteSummaryTab({ idUser }: { idUser: number }) {
         </section>
       </div>
 
-      {controller.summary.athlete.position === null && (
+      {view.position === null && (
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
           <Goal aria-hidden="true" className="size-4" />
           Este deportista no tiene posición en {controller.seasonName}: asígnala en Club → Plantilla

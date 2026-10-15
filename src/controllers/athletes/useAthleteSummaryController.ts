@@ -1,10 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+import type { Sport } from '@/constants/enums'
 import { APP_MODULES, canAccessModule } from '@/constants/navigation'
 import { useAppContext } from '@/hooks/useAppContext'
 import { useRole } from '@/hooks/useRole'
 import { queryKeys } from '@/lib/queryKeys'
 import { reportsService } from '@/services/reportsService'
 import { parseApiError } from '@/utils/parseApiError'
+import { sportViewsOf } from '@/utils/sportViews'
 
 const LEVEL_ORDER = { alto: 0, medio: 1, bajo: 2 } as const
 
@@ -20,6 +23,9 @@ export function useAthleteSummaryController(idUser: number) {
   })
 
   const summary = query.data
+  const [chosenSport, setChosenSport] = useState<Sport | null>(null)
+  const sportViews = summary ? sportViewsOf(summary) : []
+  const view = sportViews.find((item) => item.sport === chosenSport) ?? sportViews[0] ?? null
   const openAlerts = [
     ...(summary?.fatigue_alerts ?? [])
       .filter((alert) => alert.status === 'open')
@@ -51,6 +57,9 @@ export function useAthleteSummaryController(idUser: number) {
     errorMessage: query.isError ? parseApiError(query.error) : undefined,
     retry: () => void query.refetch(),
     summary,
+    sportViews,
+    view,
+    selectSport: setChosenSport,
     openAlerts,
     healthInboxPath: canAccessModule('health', role)
       ? `${APP_MODULES.health.path}?tab=alertas`

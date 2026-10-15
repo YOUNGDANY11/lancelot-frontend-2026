@@ -12,7 +12,7 @@ const MAX_BARS = 15
 const ROW_HEIGHT = 30
 
 interface RankingDatum {
-  id_user: number
+  id_index: number
   name: string
   value: number
   rank: number
@@ -37,19 +37,19 @@ function RankingTooltip(props: TooltipRenderProps<RankingDatum>) {
 
 interface CategoryRankingBarProps {
   entries: RankingEntry[]
-  selectedUser: number | null
-  onSelect: (idUser: number) => void
+  selectedIndex: number | null
+  onSelect: (idIndex: number) => void
   title: string
 }
 
 export function CategoryRankingBar({
   entries,
-  selectedUser,
+  selectedIndex,
   onSelect,
   title,
 }: CategoryRankingBarProps) {
   const data: RankingDatum[] = entries.slice(0, MAX_BARS).map((entry) => ({
-    id_user: entry.index.id_user,
+    id_index: entry.index.id_index,
     name: entry.athleteName,
     value: entry.index.index_value,
     rank: entry.rank,
@@ -108,17 +108,17 @@ export function CategoryRankingBar({
             isAnimationActive={false}
             onClick={(_item, position) => {
               const datum = data[position]
-              if (datum) onSelect(datum.id_user)
+              if (datum) onSelect(datum.id_index)
             }}
             className="cursor-pointer"
           >
             {data.map((datum) => (
               <Cell
-                key={datum.id_user}
+                key={datum.id_index}
                 fill="var(--color-value)"
-                fillOpacity={selectedUser === null || selectedUser === datum.id_user ? 1 : 0.45}
-                stroke={selectedUser === datum.id_user ? 'var(--foreground)' : 'none'}
-                strokeWidth={selectedUser === datum.id_user ? 1.5 : 0}
+                fillOpacity={selectedIndex === null || selectedIndex === datum.id_index ? 1 : 0.45}
+                stroke={selectedIndex === datum.id_index ? 'var(--foreground)' : 'none'}
+                strokeWidth={selectedIndex === datum.id_index ? 1.5 : 0}
               />
             ))}
             <LabelList

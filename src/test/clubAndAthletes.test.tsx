@@ -525,4 +525,159 @@ describe('fútbol y fútbol sala', () => {
       ),
     )
   })
+
+  describe('deportista que juega ambos deportes', () => {
+    const FUTBOL17 = {
+      id_category: 7,
+      name: 'Fútbol Sub-17',
+      min_age: 14,
+      max_age: 17,
+      sport: 'futbol' as const,
+    }
+
+    beforeEach(() => {
+      primeAppDataMocks({ categories: [FUTBOL17, SALA] })
+      vi.mocked(usersService.listAllAthletes).mockResolvedValue([ATHLETE_USER])
+      vi.mocked(athleteAssignmentsService.listAll).mockResolvedValue([
+        {
+          id_ath_cat: 40,
+          id_user: ATHLETE_USER.id_user,
+          id_category: FUTBOL17.id_category,
+          category_name: FUTBOL17.name,
+          name: ATHLETE_USER.name,
+          lastname: ATHLETE_USER.lastname,
+          id_season: ACTIVE_SEASON.id_season,
+          position: 'Delantero',
+        },
+        {
+          id_ath_cat: 41,
+          id_user: ATHLETE_USER.id_user,
+          id_category: SALA.id_category,
+          category_name: SALA.name,
+          name: ATHLETE_USER.name,
+          lastname: ATHLETE_USER.lastname,
+          id_season: ACTIVE_SEASON.id_season,
+          position: 'Ala',
+        },
+      ])
+    })
+
+    it('muestra cada equipo en la ficha y pide el deporte al evaluar', async () => {
+      vi.mocked(evaluationsService.createTechnical).mockResolvedValue({
+        status: 'Success',
+        mensaje: 'ok',
+      })
+      signInAs(COACH_USER)
+      const user = userEvent.setup()
+      renderAppAt(`/app/deportistas/${ATHLETE_USER.id_user}?tab=tecnico`)
+
+      expect(
+        await screen.findByText(
+          'Fútbol Sub-17 · Fútbol · Delantero | Sala Sub-17 · Fútbol sala · Ala',
+          { exact: false },
+        ),
+      ).toBeInTheDocument()
+
+      const [registerButton] = await screen.findAllByRole('button', {
+        name: 'Registrar evaluación',
+      })
+      await user.click(registerButton)
+      const dialog = await screen.findByRole('dialog', {
+        name: 'Registrar evaluación técnica o táctica',
+      })
+      await user.type(within(dialog).getByLabelText('Indicador'), 'Pase raso')
+      await user.type(within(dialog).getByLabelText('Puntaje (1 a 10)'), '7')
+      await user.click(within(dialog).getByRole('button', { name: /Registrar|Guardar/ }))
+      expect(await within(dialog).findByText('Elige el deporte.')).toBeInTheDocument()
+      expect(evaluationsService.createTechnical).not.toHaveBeenCalled()
+
+      await user.click(within(dialog).getByRole('combobox', { name: 'Deporte' }))
+      await user.click(await screen.findByRole('option', { name: 'Fútbol sala' }))
+      await user.click(within(dialog).getByRole('button', { name: /Registrar|Guardar/ }))
+
+      await waitFor(() =>
+        expect(evaluationsService.createTechnical).toHaveBeenCalledWith(
+          expect.objectContaining({ sport: 'futbol_sala', indicator: 'Pase raso' }),
+        ),
+      )
+    })
+
+    it('separa la participación y el índice por deporte en el resumen', async () => {
+      const participation = (minutes: number) => ({
+        matches_in_season: 2,
+        matches_played: 2,
+        total_minutes: minutes,
+        goals: 0,
+        assists: 0,
+        yellow_cards: 0,
+        red_cards: 0,
+      })
+      const training = {
+        total_sessions: 4,
+        sessions_attended: 4,
+        attendance_rate: 100,
+        avg_rpe: 6,
+        total_session_load: 2000,
+      }
+      const index = (id_index: number, sport: 'futbol' | 'futbol_sala', value: number) => ({
+        id_index,
+        id_user: ATHLETE_USER.id_user,
+        id_season: ACTIVE_SEASON.id_season,
+        sport,
+        physical_score: value,
+        technical_score: value,
+        participation_score: value,
+        index_value: value,
+      })
+      vi.mocked(reportsService.seasonSummary).mockResolvedValue({
+        athlete: {
+          id_user: ATHLETE_USER.id_user,
+          name: 'Ana María',
+          lastname: 'Pérez',
+          position: 'Delantero',
+          category: FUTBOL17.name,
+          sport: 'futbol',
+          sports: ['futbol', 'futbol_sala'],
+        },
+        season: { id_season: ACTIVE_SEASON.id_season, name: ACTIVE_SEASON.name },
+        training_participation: training,
+        match_participation: participation(220),
+        fatigue_alerts: [],
+        injury_risk_assessments: [],
+        weighted_progress_index: index(1, 'futbol', 62),
+        by_sport: [
+          {
+            sport: 'futbol',
+            category: FUTBOL17.name,
+            position: 'Delantero',
+            training_participation: training,
+            match_participation: { ...participation(180), match_minutes: 90 },
+            weighted_progress_index: index(1, 'futbol', 62),
+          },
+          {
+            sport: 'futbol_sala',
+            category: SALA.name,
+            position: 'Ala',
+            training_participation: training,
+            match_participation: { ...participation(80), match_minutes: 40 },
+            weighted_progress_index: index(2, 'futbol_sala', 88),
+          },
+        ],
+      })
+      signInAs(COACH_USER)
+      const user = userEvent.setup()
+      renderAppAt(`/app/deportistas/${ATHLETE_USER.id_user}?tab=resumen`)
+
+      const sports = await screen.findByRole('group', { name: 'Deporte' })
+      expect(
+        within(sports).getByRole('button', { name: /Fútbol · Fútbol Sub-17/ }),
+      ).toHaveAttribute('aria-pressed', 'true')
+      expect(screen.getByText('180')).toBeInTheDocument()
+
+      await user.click(within(sports).getByRole('button', { name: /Fútbol sala · Sala Sub-17/ }))
+
+      expect(await screen.findByText('80')).toBeInTheDocument()
+      expect(screen.getByText(/Valor del índice: 88/)).toBeInTheDocument()
+    })
+  })
 })

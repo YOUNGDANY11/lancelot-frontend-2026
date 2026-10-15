@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { useAthleteSport } from '@/controllers/athletes/useAthleteSport'
-import { EVALUATION_DIMENSION } from '@/constants/enums'
+import { EVALUATION_DIMENSION, SPORT, type Sport } from '@/constants/enums'
+import { useAthleteSports } from '@/controllers/athletes/useAthleteSports'
 import { useResourceMutation } from '@/controllers/shared/useResourceMutation'
 import { useAppContext } from '@/hooks/useAppContext'
 import { useCrudDialogs } from '@/hooks/useCrudDialogs'
@@ -32,19 +32,33 @@ export function useTechnicalTabController(idUser: number) {
 
   const evaluations = query.data ?? []
   const indicators = summarizeIndicators(evaluations)
-  const sport = useAthleteSport(idUser)
+  const sports = useAthleteSports(idUser)
+  const evaluatedSports = [
+    ...new Set(evaluations.flatMap((evaluation) => (evaluation.sport ? [evaluation.sport] : []))),
+  ]
+  const showSport = sports.length > 1 || evaluatedSports.length > 1
+  const sportGroups: { value: Sport | null; label: string | null }[] = showSport
+    ? [...SPORT.options, { value: null, label: 'Sin deporte indicado' }]
+    : [{ value: null, label: null }]
 
   return {
     evaluations: [...evaluations].reverse(),
     indicators,
-    sport,
-    groups: EVALUATION_DIMENSION.options
-      .map((option) => ({
-        dimension: option.value,
-        label: option.label,
-        items: indicators.filter((summary) => summary.dimension === option.value),
-      }))
-      .filter((group) => group.items.length > 0),
+    sports,
+    showSport,
+    groups: sportGroups.flatMap((sportGroup) =>
+      EVALUATION_DIMENSION.options
+        .map((option) => ({
+          key: `${sportGroup.value ?? 'sin-deporte'}-${option.value}`,
+          label: sportGroup.label ? `${sportGroup.label} · ${option.label}` : option.label,
+          items: indicators.filter(
+            (summary) =>
+              summary.dimension === option.value &&
+              (!showSport || summary.sport === sportGroup.value),
+          ),
+        }))
+        .filter((group) => group.items.length > 0),
+    ),
     isLoading: query.isPending,
     errorMessage: query.isError ? parseApiError(query.error) : undefined,
     retry: () => void query.refetch(),

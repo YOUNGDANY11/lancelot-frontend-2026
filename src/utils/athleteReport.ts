@@ -1,8 +1,9 @@
-import type { EvaluationDimension, RiskLevelValue } from '@/constants/enums'
+import type { EvaluationDimension, RiskLevelValue, Sport } from '@/constants/enums'
 import type { TechnicalEvaluation } from '@/types/athlete'
 import { dimensionOf } from '@/utils/technicalScores'
 
 export interface TechnicalAverage {
+  sport: Sport | null
   dimension: EvaluationDimension
   indicator: string
   average: number
@@ -13,13 +14,14 @@ export interface TechnicalAverage {
 export function averageByIndicator(evaluations: TechnicalEvaluation[]): TechnicalAverage[] {
   const groups = new Map<string, TechnicalEvaluation[]>()
   for (const evaluation of evaluations) {
-    const key = `${dimensionOf(evaluation)}|${evaluation.indicator.trim()}`
+    const key = `${evaluation.sport ?? ''}|${dimensionOf(evaluation)}|${evaluation.indicator.trim()}`
     groups.set(key, [...(groups.get(key) ?? []), evaluation])
   }
   return [...groups.entries()]
     .map(([key, items]) => ({
-      dimension: key.split('|')[0] as EvaluationDimension,
-      indicator: key.split('|')[1],
+      sport: (key.split('|')[0] || null) as Sport | null,
+      dimension: key.split('|')[1] as EvaluationDimension,
+      indicator: key.split('|')[2],
       average: items.reduce((sum, item) => sum + item.score, 0) / items.length,
       count: items.length,
       lastDate: items.map((item) => item.eval_date).sort((a, b) => b.localeCompare(a))[0],

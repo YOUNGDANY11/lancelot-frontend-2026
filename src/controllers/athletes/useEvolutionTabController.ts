@@ -5,6 +5,7 @@ import { queryKeys } from '@/lib/queryKeys'
 import { athleteAssignmentsService } from '@/services/athleteAssignmentsService'
 import { reportsService } from '@/services/reportsService'
 import { parseApiError } from '@/utils/parseApiError'
+import { comparisonBySport } from '@/utils/sportViews'
 
 export function useEvolutionTabController(idUser: number) {
   const { can } = useRole()
@@ -39,6 +40,7 @@ export function useEvolutionTabController(idUser: number) {
     comparison: {
       visible: canSeeComparison,
       points: comparisonQuery.data ?? [],
+      groups: comparisonBySport(comparisonQuery.data ?? []),
       isLoading: comparisonQuery.isPending,
       errorMessage: comparisonQuery.isError ? parseApiError(comparisonQuery.error) : undefined,
       retry: () => void comparisonQuery.refetch(),

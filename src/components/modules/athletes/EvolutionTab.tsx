@@ -3,6 +3,7 @@ import { SeasonComparisonChart } from '@/components/charts/SeasonComparisonChart
 import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
 import { LoadingSkeleton } from '@/components/common/LoadingSkeleton'
+import { SPORT } from '@/constants/enums'
 import { useEvolutionTabController } from '@/controllers/athletes/useEvolutionTabController'
 
 export function EvolutionTab({ idUser }: { idUser: number }) {
@@ -16,7 +17,17 @@ export function EvolutionTab({ idUser }: { idUser: number }) {
         ) : comparison.errorMessage ? (
           <ErrorState message={comparison.errorMessage} onRetry={comparison.retry} />
         ) : (
-          <SeasonComparisonChart comparison={comparison.points} />
+          comparison.groups.map((group) => (
+            <SeasonComparisonChart
+              key={group.sport ?? 'todos'}
+              comparison={group.points}
+              title={
+                comparison.groups.length > 1 && group.sport
+                  ? `Comparación entre temporadas · ${SPORT.labels[group.sport]}`
+                  : undefined
+              }
+            />
+          ))
         ))}
 
       {history.visible && (

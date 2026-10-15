@@ -6,6 +6,7 @@ import { FormSheet } from '@/components/common/FormSheet'
 import { FieldGroup } from '@/components/ui/field'
 import { Textarea } from '@/components/ui/textarea'
 import { useTalentFlagFormController } from '@/controllers/forms/useTalentFlagFormController'
+import { SelectInput } from '@/components/common/SelectInput'
 
 interface TalentFlagFormSheetProps {
   open: boolean
@@ -48,6 +49,30 @@ function TalentFlagFormContent({ onOpenChange }: Omit<TalentFlagFormSheetProps, 
             </FormField>
           )}
         />
+        {controller.showSport && (
+          <Controller
+            control={form.control}
+            name="sport"
+            render={({ field, fieldState }) => (
+              <FormField
+                id="flag-sport"
+                label="Deporte"
+                description="Juega fútbol y fútbol sala: indica en cuál observaste el potencial."
+                error={fieldState.error?.message}
+              >
+                {(controlProps) => (
+                  <SelectInput
+                    {...controlProps}
+                    value={field.value || undefined}
+                    onValueChange={field.onChange}
+                    options={controller.sportOptions}
+                    placeholder="Elige el deporte"
+                  />
+                )}
+              </FormField>
+            )}
+          />
+        )}
         <FormField
           id="flag-criteria"
           label="Criterios observados"

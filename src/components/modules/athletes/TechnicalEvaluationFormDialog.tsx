@@ -17,7 +17,7 @@ interface DialogProps {
   idUser: number
   evaluation: TechnicalEvaluation | null
   knownIndicators: string[]
-  sport: Sport | null
+  sports: Sport[]
   onClose: () => void
 }
 
@@ -25,14 +25,14 @@ function TechnicalEvaluationContent({
   idUser,
   evaluation,
   knownIndicators,
-  sport,
+  sports,
   onClose,
 }: Omit<DialogProps, 'open'>) {
   const controller = useTechnicalEvaluationFormController({
     idUser,
     evaluation,
     knownIndicators,
-    sport,
+    sports,
     onDone: onClose,
   })
   const { form } = controller
@@ -50,6 +50,30 @@ function TechnicalEvaluationContent({
     >
       <FieldGroup>
         <FormAlert message={controller.serverError} />
+        {controller.showSport && (
+          <Controller
+            control={form.control}
+            name="sport"
+            render={({ field, fieldState }) => (
+              <FormField
+                id="technical-sport"
+                label="Deporte"
+                description="Juega fútbol y fútbol sala: indica en cuál lo evaluaste."
+                error={fieldState.error?.message}
+              >
+                {(controlProps) => (
+                  <SelectInput
+                    {...controlProps}
+                    value={field.value || undefined}
+                    onValueChange={field.onChange}
+                    options={controller.sportOptions}
+                    placeholder="Elige el deporte"
+                  />
+                )}
+              </FormField>
+            )}
+          />
+        )}
         <Controller
           control={form.control}
           name="dimension"

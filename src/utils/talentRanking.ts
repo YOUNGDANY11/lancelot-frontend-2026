@@ -1,3 +1,5 @@
+import { SPORT, type Sport } from '@/constants/enums'
+import { DEFAULT_SPORT } from '@/constants/positions'
 import type { AthleteAssignment } from '@/types/club'
 import type { RankedIndex } from '@/types/talent'
 import { sortByAgeGroup } from '@/utils/categoryEligibility'
@@ -7,9 +9,16 @@ export interface RankingEntry {
   index: RankedIndex
   rank: number
   athleteName: string
+  sport: Sport
   id_category: number | null
   category_name: string | null
   position: string | null
+}
+
+export type SportAssignment = AthleteAssignment & { sport: Sport }
+
+export function rankingKey(idUser: number, sport: Sport | null | undefined): string {
+  return `${idUser}|${sport ?? DEFAULT_SPORT}`
 }
 
 export function baseAssignmentByUser(
@@ -25,17 +34,45 @@ export function baseAssignmentByUser(
   )
 }
 
+export function baseAssignmentBySport(
+  assignments: AthleteAssignment[],
+  maxAgeById: Map<number, number>,
+  sportById: Map<number, Sport>,
+): Map<string, SportAssignment> {
+  const grouped = new Map<string, SportAssignment[]>()
+  for (const assignment of assignments) {
+    const sport =
+      (assignment.id_category !== undefined && sportById.get(assignment.id_category)) ||
+      DEFAULT_SPORT
+    const key = rankingKey(assignment.id_user, sport)
+    grouped.set(key, [...(grouped.get(key) ?? []), { ...assignment, sport }])
+  }
+  return new Map(
+    [...grouped.entries()].map(([key, own]) => [key, sortByAgeGroup(own, maxAgeById)[0]]),
+  )
+}
+
 export function buildRanking(
   indices: RankedIndex[],
-  baseByUser: Map<number, AthleteAssignment>,
+  baseBySport: Map<string, SportAssignment>,
   idCategory: number | null,
 ): RankingEntry[] {
+  const sportsByUser = new Map<number, Set<Sport>>()
+  for (const index of indices) {
+    const sports = sportsByUser.get(index.id_user) ?? new Set<Sport>()
+    sports.add(index.sport ?? DEFAULT_SPORT)
+    sportsByUser.set(index.id_user, sports)
+  }
   return indices
     .map((index) => {
-      const base = baseByUser.get(index.id_user)
+      const sport = index.sport ?? DEFAULT_SPORT
+      const base = baseBySport.get(rankingKey(index.id_user, sport))
+      const name = index.athlete_name || (base ? fullName(base) : 'Deportista')
+      const playsBoth = (sportsByUser.get(index.id_user)?.size ?? 0) > 1
       return {
         index,
-        athleteName: index.athlete_name || (base ? fullName(base) : 'Deportista'),
+        sport,
+        athleteName: playsBoth ? `${name} (${SPORT.labels[sport]})` : name,
         id_category: base?.id_category ?? null,
         category_name: base?.category_name ?? null,
         position: base?.position ?? null,
@@ -51,14 +88,15 @@ export function buildRanking(
 }
 
 export function athletesWithoutIndex(
-  baseByUser: Map<number, AthleteAssignment>,
+  baseBySport: Map<string, SportAssignment>,
   indices: RankedIndex[],
   idCategory: number | null,
-): AthleteAssignment[] {
-  const indexed = new Set(indices.map((index) => index.id_user))
-  return [...baseByUser.values()].filter(
-    (assignment) =>
-      !indexed.has(assignment.id_user) &&
-      (idCategory === null || assignment.id_category === idCategory),
-  )
+): SportAssignment[] {
+  const indexed = new Set(indices.map((index) => rankingKey(index.id_user, index.sport)))
+  return [...baseBySport.entries()]
+    .filter(
+      ([key, assignment]) =>
+        !indexed.has(key) && (idCategory === null || assignment.id_category === idCategory),
+    )
+    .map(([, assignment]) => assignment)
 }

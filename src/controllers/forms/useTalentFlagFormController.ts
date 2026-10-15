@@ -1,4 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
+import { useWatch } from 'react-hook-form'
+import { SPORT, type Sport } from '@/constants/enums'
+import { sportOf } from '@/constants/positions'
 import type { AthleteOption } from '@/components/common/AthletePicker'
 import { useEntityFormController } from '@/controllers/shared/useEntityFormController'
 import { useAppContext } from '@/hooks/useAppContext'
@@ -10,7 +13,7 @@ import { talentService } from '@/services/talentService'
 import { fullName } from '@/utils/text'
 
 export function useTalentFlagFormController({ onDone }: { onDone: () => void }) {
-  const { season } = useAppContext()
+  const { season, categories } = useAppContext()
   const { user } = useAuth()
   const idSeason = season?.id_season
   const filters = { id_season: idSeason, scope: 'all' }
@@ -21,8 +24,13 @@ export function useTalentFlagFormController({ onDone }: { onDone: () => void }) 
     enabled: idSeason !== undefined,
   })
 
+  const sportsByUser = new Map<number, Set<Sport>>()
   const byUser = new Map<number, AthleteOption>()
   for (const assignment of assignmentsQuery.data ?? []) {
+    const category = categories.find((item) => item.id_category === assignment.id_category)
+    const sports = sportsByUser.get(assignment.id_user) ?? new Set<Sport>()
+    if (category) sports.add(sportOf(category))
+    sportsByUser.set(assignment.id_user, sports)
     const current = byUser.get(assignment.id_user)
     byUser.set(assignment.id_user, {
       id: assignment.id_user,
@@ -36,13 +44,14 @@ export function useTalentFlagFormController({ onDone }: { onDone: () => void }) 
 
   const controller = useEntityFormController<TalentFlagFormValues>({
     schema: talentFlagSchema,
-    defaultValues: { id_user: 0, criteria: '', recommended_action: '' },
+    defaultValues: { id_user: 0, sport: '', criteria: '', recommended_action: '' },
     submit: (values) => {
       if (idSeason === undefined || user?.id_user === undefined)
         throw new Error('Selecciona una temporada.')
       return talentService.createFlag({
         id_user: values.id_user,
         id_season: idSeason,
+        ...(values.sport ? { sport: values.sport } : {}),
         criteria: values.criteria.trim(),
         recommended_action: values.recommended_action.trim(),
         created_by: user.id_user,
@@ -52,13 +61,21 @@ export function useTalentFlagFormController({ onDone }: { onDone: () => void }) 
     successMessage: (values) =>
       `Señalización de ${byUser.get(values.id_user)?.label ?? 'el deportista'} registrada.`,
     onDone,
-    fieldMatchers: [{ field: 'id_user', pattern: /deportista/i }],
+    fieldMatchers: [
+      { field: 'sport', pattern: /deporte|juega/i },
+      { field: 'id_user', pattern: /deportista/i },
+    ],
   })
+
+  const selectedUser = useWatch({ control: controller.form.control, name: 'id_user' })
+  const selectedSports = [...(sportsByUser.get(selectedUser) ?? [])].sort()
 
   return {
     ...controller,
     seasonName: season?.name,
     athleteOptions,
     isLoadingAthletes: assignmentsQuery.isPending,
+    showSport: selectedSports.length > 1,
+    sportOptions: SPORT.options.filter((option) => selectedSports.includes(option.value)),
   }
 }

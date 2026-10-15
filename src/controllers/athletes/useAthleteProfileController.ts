@@ -5,7 +5,9 @@ import {
   athleteTabsForRole,
   type AthleteProfileTab,
 } from '@/constants/athleteProfile'
+import { SPORT } from '@/constants/enums'
 import { APP_MODULES } from '@/constants/navigation'
+import { sportOf } from '@/constants/positions'
 import { useAppContext } from '@/hooks/useAppContext'
 import { useAuth } from '@/hooks/useAuth'
 import { queryKeys } from '@/lib/queryKeys'
@@ -71,6 +73,12 @@ export function useAthleteProfileController(rawId: string | undefined) {
   const assignment = assignments[0] ?? null
   const tabs: AthleteProfileTab[] = athleteTabsForRole(role)
   const age = calculateAge(athlete?.birth_date)
+  const sportOfAssignment = (item: { id_category?: number }) => {
+    const category = categories.find((entry) => entry.id_category === item.id_category)
+    return category?.sport ? sportOf(category) : null
+  }
+  const playsBoth =
+    new Set(assignments.map(sportOfAssignment).filter((sport) => sport !== null)).size > 1
 
   return {
     idUser,
@@ -85,12 +93,20 @@ export function useAthleteProfileController(rawId: string | undefined) {
     age,
     birthDate: athlete?.birth_date ?? null,
     email: !isAthleteRole ? athlete?.email : undefined,
-    categoryName:
-      assignments
-        .map((item) => item.category_name)
-        .filter(Boolean)
-        .join(' · ') || null,
-    position: assignment?.position ?? null,
+    categoryName: playsBoth
+      ? assignments
+          .map((item) => {
+            const sport = sportOfAssignment(item)
+            return [item.category_name, sport ? SPORT.labels[sport] : null, item.position]
+              .filter(Boolean)
+              .join(' · ')
+          })
+          .join(' | ')
+      : assignments
+          .map((item) => item.category_name)
+          .filter(Boolean)
+          .join(' · ') || null,
+    position: playsBoth ? null : (assignment?.position ?? null),
     seasonName: season?.name,
     reportPath:
       role && ATHLETE_REPORT_ROLES.includes(role) && idUser !== null

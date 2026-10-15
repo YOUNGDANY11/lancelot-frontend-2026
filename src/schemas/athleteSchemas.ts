@@ -62,6 +62,7 @@ export function toPhysicalEvaluationRequest(
 }
 
 export const technicalEvaluationSchema = z.object({
+  sport: z.enum(['', 'futbol', 'futbol_sala']),
   dimension: z.enum(['tecnica', 'tactica'], { error: 'Elige si es técnica o táctica.' }),
   indicator: textField('el indicador', 1, 60),
   score: decimalField('el puntaje', 1, 10, 1),
@@ -69,6 +70,13 @@ export const technicalEvaluationSchema = z.object({
 })
 
 export type TechnicalEvaluationFormValues = z.infer<typeof technicalEvaluationSchema>
+
+export function technicalEvaluationSchemaFor(requireSport: boolean) {
+  return technicalEvaluationSchema.refine((values) => !requireSport || values.sport !== '', {
+    message: 'Elige el deporte.',
+    path: ['sport'],
+  })
+}
 
 export function toTechnicalEvaluationRequest(
   values: TechnicalEvaluationFormValues,
@@ -78,6 +86,7 @@ export function toTechnicalEvaluationRequest(
     id_user: context.idUser,
     id_season: context.idSeason,
     evaluator_id: context.evaluatorId,
+    ...(values.sport ? { sport: values.sport } : {}),
     dimension: values.dimension,
     indicator: values.indicator,
     score: toDecimal(values.score),

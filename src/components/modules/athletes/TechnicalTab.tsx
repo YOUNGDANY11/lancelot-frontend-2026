@@ -12,7 +12,8 @@ import { useTechnicalTabController } from '@/controllers/athletes/useTechnicalTa
 import { formatDate } from '@/utils/formatDate'
 import { formatNumber } from '@/utils/formatNumber'
 import { dimensionOf, type IndicatorSummary } from '@/utils/technicalScores'
-import { EVALUATION_DIMENSION } from '@/constants/enums'
+import { EVALUATION_DIMENSION, SPORT } from '@/constants/enums'
+import type { TechnicalEvaluation } from '@/types/athlete'
 import { DELETED_ACCOUNT_LABEL } from '@/constants/roles'
 
 function TrendBadge({ summary }: { summary: IndicatorSummary }) {
@@ -67,12 +68,12 @@ export function TechnicalTab({ idUser }: { idUser: number }) {
       ) : (
         <>
           {controller.groups.map((group) => (
-            <section key={group.dimension} className="flex flex-col gap-3">
+            <section key={group.key} className="flex flex-col gap-3">
               <h3 className="text-base font-semibold">{group.label}</h3>
               <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {group.items.map((summary) => (
                   <li
-                    key={`${summary.dimension}-${summary.indicator}`}
+                    key={`${summary.sport ?? ''}-${summary.dimension}-${summary.indicator}`}
                     className="flex flex-col gap-2 rounded-xl glass-subtle p-4"
                   >
                     <div className="flex items-baseline justify-between gap-2">
@@ -114,6 +115,16 @@ export function TechnicalTab({ idUser }: { idUser: number }) {
                 header: 'Fecha',
                 cell: (evaluation) => formatDate(evaluation.eval_date),
               },
+              ...(controller.showSport
+                ? [
+                    {
+                      key: 'sport',
+                      header: 'Deporte',
+                      cell: (evaluation: TechnicalEvaluation) =>
+                        evaluation.sport ? SPORT.labels[evaluation.sport] : 'Sin indicar',
+                    },
+                  ]
+                : []),
               {
                 key: 'dimension',
                 header: 'Dimensión',
@@ -169,7 +180,7 @@ export function TechnicalTab({ idUser }: { idUser: number }) {
         idUser={idUser}
         evaluation={dialogs.editing}
         knownIndicators={controller.indicators.map((summary) => summary.indicator)}
-        sport={controller.sport}
+        sports={controller.sports}
         onClose={dialogs.close}
       />
       <ConfirmDialog

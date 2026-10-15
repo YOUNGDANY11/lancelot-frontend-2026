@@ -17,6 +17,7 @@ const EMPTY_REGISTER_FORM: RegisterFormValues = {
   password: '',
   confirmPassword: '',
   birth_date: '',
+  accept_data_policy: false,
 }
 
 function isEmailConflict(error: unknown, message: string): boolean {

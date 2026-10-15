@@ -7,7 +7,7 @@ import { APP_ROUTES } from '@/constants/routes'
 
 export function Topbar() {
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl print:hidden">
       <div className="flex h-16 items-center gap-3 px-4 sm:px-6 md:h-20">
         <Link
           to={APP_ROUTES.home}

@@ -20,6 +20,7 @@ const VALID_REGISTER = {
   password: 'secreta1',
   confirmPassword: 'secreta1',
   birth_date: '2011-04-12',
+  accept_data_policy: true,
 }
 
 describe('loginSchema', () => {
@@ -52,8 +53,17 @@ describe('registerSchema', () => {
         email: 'ana.perez@club.com',
         password: 'secreta1',
         birth_date: '2011-04-12',
+        accept_data_policy: true,
       })
     }
+  })
+
+  it('exige la autorización del tratamiento de datos', () => {
+    const result = registerSchema.safeParse({ ...VALID_REGISTER, accept_data_policy: false })
+    expect(firstIssue(result)).toMatchObject({
+      message: 'Debes autorizar el tratamiento de tus datos para crear la cuenta.',
+      path: ['accept_data_policy'],
+    })
   })
 
   it('avisa cuando las contraseñas no coinciden', () => {

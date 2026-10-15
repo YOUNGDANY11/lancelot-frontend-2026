@@ -9,6 +9,9 @@ export interface User {
   birth_date: string | null
   role_name: string
   id_ath_cat?: number[]
+  data_policy_accepted_at?: string | null
+  data_policy_version?: string | null
+  data_policy_pending?: boolean
 }
 
 export interface UserResponse extends ApiMessage {

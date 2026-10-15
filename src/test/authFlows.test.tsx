@@ -29,6 +29,7 @@ vi.mock('@/services/usersService', () => ({
     listAllAthletes: vi.fn(),
     searchAthletes: vi.fn(),
     createByAdmin: vi.fn(),
+    acceptDataPolicy: vi.fn(),
   },
 }))
 
@@ -191,6 +192,7 @@ describe('registro', () => {
     user: ReturnType<typeof userEvent.setup>,
     dialog: HTMLElement,
     birthDate: string,
+    acceptPolicy = true,
   ) {
     await user.type(within(dialog).getByLabelText('Nombres'), 'Ana María')
     await user.type(within(dialog).getByLabelText('Apellidos'), 'Pérez')
@@ -198,6 +200,12 @@ describe('registro', () => {
     await user.type(within(dialog).getByLabelText('Fecha de nacimiento'), birthDate)
     await user.type(within(dialog).getByLabelText('Contraseña'), 'secreta1')
     await user.type(within(dialog).getByLabelText('Confirmar contraseña'), 'secreta1')
+    if (acceptPolicy)
+      await user.click(
+        within(dialog).getByRole('checkbox', {
+          name: 'Autorizo el tratamiento de mis datos personales',
+        }),
+      )
   }
 
   it('explica que el registro crea cuentas de deportista', async () => {
@@ -234,7 +242,25 @@ describe('registro', () => {
       email: 'ana.perez@club.com',
       password: 'secreta1',
       birth_date: '2011-04-12',
+      accept_data_policy: true,
     })
+  })
+
+  it('exige autorizar el tratamiento de datos antes de crear la cuenta', async () => {
+    const { user, dialog } = await openRegister()
+    await fillRegister(user, dialog, '2011-04-12', false)
+    await user.click(within(dialog).getByRole('button', { name: 'Crear cuenta' }))
+
+    expect(
+      await within(dialog).findByText(
+        'Debes autorizar el tratamiento de tus datos para crear la cuenta.',
+      ),
+    ).toBeInTheDocument()
+    expect(authService.register).not.toHaveBeenCalled()
+    expect(within(dialog).getByRole('link', { name: 'Leer la política' })).toHaveAttribute(
+      'href',
+      '/politica-de-datos',
+    )
   })
 
   it('marca el correo cuando ya está en uso', async () => {
@@ -318,5 +344,51 @@ describe('mi perfil', () => {
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/'))
     expect(authService.logoutAll).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('política de tratamiento de datos', () => {
+  beforeEach(() => {
+    primeAppDataMocks()
+  })
+
+  it('pide la autorización a quien aún no la ha dado y la registra', async () => {
+    window.localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, 'refresh-guardado')
+    vi.mocked(authService.refreshSession).mockResolvedValue('access-renovado')
+    vi.mocked(usersService.getMe).mockResolvedValue({ ...ATHLETE_USER, data_policy_pending: true })
+    vi.mocked(usersService.acceptDataPolicy).mockResolvedValue({
+      ...ATHLETE_USER,
+      data_policy_pending: false,
+      data_policy_accepted_at: '2026-10-15T14:30:00.000Z',
+    })
+    renderAppAt('/app/perfil')
+    const user = userEvent.setup()
+
+    const gate = await screen.findByRole('alertdialog', {
+      name: 'Autoriza el tratamiento de tus datos',
+    })
+    await user.click(within(gate).getByRole('button', { name: 'Acepto y continúo' }))
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('alertdialog', { name: 'Autoriza el tratamiento de tus datos' }),
+      ).not.toBeInTheDocument(),
+    )
+    expect(usersService.acceptDataPolicy).toHaveBeenCalledTimes(1)
+    expect(
+      await screen.findByText(/Autorizaste el tratamiento de tus datos el 15\/10\/2026/),
+    ).toBeInTheDocument()
+  })
+
+  it('publica la política sin necesidad de iniciar sesión', async () => {
+    renderAppAt('/politica-de-datos')
+
+    expect(
+      await screen.findByRole('heading', {
+        level: 1,
+        name: 'Política de tratamiento de datos personales',
+      }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Tus derechos como titular' })).toBeInTheDocument()
   })
 })

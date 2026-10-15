@@ -20,6 +20,7 @@ export interface RegisterRequest {
   email: string
   password: string
   birth_date: string
+  accept_data_policy: boolean
 }
 
 export interface AccessTokenPayload {

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { DATA_POLICY_CONSENT } from '@/constants/dataPolicy'
 import { birthDateField, emailField, passwordField, personNameField } from '@/schemas/fields'
 import type { LoginRequest, RegisterRequest } from '@/types/auth'
 
@@ -17,6 +18,7 @@ export const registerSchema = z
     password: passwordField('Crea una contraseña.'),
     confirmPassword: z.string().min(1, 'Confirma tu contraseña.'),
     birth_date: birthDateField,
+    accept_data_policy: z.boolean().refine((accepted) => accepted, DATA_POLICY_CONSENT.required),
   })
   .refine((values) => values.password === values.confirmPassword, {
     message: 'Las contraseñas no coinciden.',
@@ -36,5 +38,6 @@ export function toRegisterRequest(values: RegisterFormValues): RegisterRequest {
     email: values.email,
     password: values.password,
     birth_date: values.birth_date,
+    accept_data_policy: values.accept_data_policy,
   }
 }

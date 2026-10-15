@@ -1,6 +1,9 @@
+import { Link } from 'react-router'
 import { LandingSection } from '@/components/landing/LandingSection'
 import { Reveal } from '@/components/landing/Reveal'
+import { DATA_POLICY } from '@/constants/dataPolicy'
 import { LANDING_SECTION_IDS, PRIVACY_CONTENT, PRIVACY_PRINCIPLES } from '@/constants/landing'
+import { APP_ROUTES } from '@/constants/routes'
 
 export function PrivacySection() {
   return (
@@ -28,6 +31,14 @@ export function PrivacySection() {
           </Reveal>
         ))}
       </ul>
+      <p className="mt-6 text-sm text-muted-foreground">
+        <Link
+          to={APP_ROUTES.dataPolicy}
+          className="font-medium text-primary underline-offset-4 hover:underline"
+        >
+          {DATA_POLICY.title}
+        </Link>
+      </p>
     </LandingSection>
   )
 }

@@ -32,6 +32,8 @@ export const ATHLETE_PROFILE_TAB_ROLES: Record<AthleteProfileTab, RoleCode[]> = 
   evolucion: ['ADMIN', 'DIRECTOR_TECNICO', 'ENTRENADOR', 'DEPORTISTA'],
 }
 
+export const ATHLETE_REPORT_ROLES: RoleCode[] = ['ADMIN', 'DIRECTOR_TECNICO', 'ENTRENADOR']
+
 export function athleteTabsForRole(role: RoleCode | null): AthleteProfileTab[] {
   if (!role) return []
   return ATHLETE_PROFILE_TABS.filter((tab) => ATHLETE_PROFILE_TAB_ROLES[tab].includes(role))

@@ -4,4 +4,5 @@ export const APP_ROUTES = {
   home: '/app/inicio',
   profile: '/app/perfil',
   forbidden: '/403',
+  dataPolicy: '/politica-de-datos',
 } as const

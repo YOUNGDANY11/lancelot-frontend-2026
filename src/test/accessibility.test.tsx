@@ -348,6 +348,19 @@ describe('accesibilidad de las pantallas principales', () => {
     await expectNoViolations(/Hola/)
   })
 
+  it('política de tratamiento de datos', async () => {
+    renderAppAt('/politica-de-datos')
+    await screen.findByRole('heading', { level: 1 })
+    expect(await findAxeViolations()).toEqual([])
+  })
+
+  it('aviso de autorización de datos pendiente', async () => {
+    signInAs({ ...COACH_USER, data_policy_pending: true })
+    renderAppAt('/app/inicio')
+    await screen.findByRole('alertdialog', { name: 'Autoriza el tratamiento de tus datos' })
+    expect(await findAxeViolations()).toEqual([])
+  })
+
   it('landing pública', async () => {
     renderAppAt('/')
     await screen.findByRole('heading', { level: 1 })

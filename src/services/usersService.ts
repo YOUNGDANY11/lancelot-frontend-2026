@@ -29,6 +29,13 @@ export const usersService = {
     return data.user
   },
 
+  async acceptDataPolicy(): Promise<User> {
+    const { data } = await apiClient.http.put<UserResponse>('/users/me/data-policy', {
+      accept: true,
+    })
+    return data.user
+  },
+
   async changeMyPassword(payload: ChangePasswordRequest): Promise<ApiMessage> {
     const { data } = await apiClient.http.put<ApiMessage>('/users/me/password', payload)
     return data

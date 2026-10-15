@@ -1,8 +1,12 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { LANDING_NAV_LINKS } from '@/constants/landing'
 import { renderAppAt } from '@/test/renderWithProviders'
+
+beforeAll(async () => {
+  await import('@/components/auth/AuthDialogContent')
+})
 
 async function renderLanding() {
   const result = renderAppAt('/')

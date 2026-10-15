@@ -1,9 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import {
   ATHLETE_PROFILE_TAB_LABELS,
+  ATHLETE_REPORT_ROLES,
   athleteTabsForRole,
   type AthleteProfileTab,
 } from '@/constants/athleteProfile'
+import { APP_MODULES } from '@/constants/navigation'
 import { useAppContext } from '@/hooks/useAppContext'
 import { useAuth } from '@/hooks/useAuth'
 import { queryKeys } from '@/lib/queryKeys'
@@ -90,6 +92,10 @@ export function useAthleteProfileController(rawId: string | undefined) {
         .join(' · ') || null,
     position: assignment?.position ?? null,
     seasonName: season?.name,
+    reportPath:
+      role && ATHLETE_REPORT_ROLES.includes(role) && idUser !== null
+        ? `${APP_MODULES.athletes.path}/${idUser}/informe`
+        : null,
     tabs: tabs.map((tab) => ({ value: tab, label: ATHLETE_PROFILE_TAB_LABELS[tab] })),
     defaultTab: tabs[0] ?? 'carga',
   }

@@ -1,12 +1,16 @@
 import type { RouteObject } from 'react-router'
 import { RootLayout } from '@/components/layout/RootLayout'
 import { APP_MODULES, type ModuleKey } from '@/constants/navigation'
+import { APP_ROUTES } from '@/constants/routes'
+import { ATHLETE_REPORT_ROLES } from '@/constants/athleteProfile'
 import {
   AnalyticsView,
   AppShell,
   AthleteDirectoryView,
   AthleteProfileView,
+  AthleteReportView,
   ClubView,
+  DataPolicyView,
   ForbiddenView,
   HealthView,
   HomeView,
@@ -51,6 +55,11 @@ export const appRoutes: RouteObject[] = [
               moduleRoute('athletes', [
                 { index: true, element: <AthleteDirectoryView /> },
                 { path: ':id_user', element: <AthleteProfileView /> },
+                {
+                  path: ':id_user/informe',
+                  element: <RoleGuard allow={ATHLETE_REPORT_ROLES} />,
+                  children: [{ index: true, element: <AthleteReportView /> }],
+                },
               ]),
               moduleRoute('training', [{ index: true, element: <TrainingView /> }]),
               moduleRoute('health', [{ index: true, element: <HealthView /> }]),
@@ -61,6 +70,7 @@ export const appRoutes: RouteObject[] = [
           },
         ],
       },
+      { path: APP_ROUTES.dataPolicy.slice(1), element: <DataPolicyView /> },
       { path: '403', element: <ForbiddenView /> },
       { path: '*', element: <NotFoundView /> },
     ],

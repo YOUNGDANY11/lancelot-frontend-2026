@@ -1,4 +1,6 @@
 import { Info, ShieldAlert } from 'lucide-react'
+import { Controller } from 'react-hook-form'
+import { Link } from 'react-router'
 import { DateField } from '@/components/common/DateField'
 import { FormAlert } from '@/components/common/FormAlert'
 import { FormField } from '@/components/common/FormField'
@@ -6,10 +8,14 @@ import { PasswordInput } from '@/components/common/PasswordInput'
 import { SubmitButton } from '@/components/common/SubmitButton'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { FieldGroup } from '@/components/ui/field'
+import { FieldError, FieldGroup } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { REGISTER_TEXTS } from '@/constants/authTexts'
+import { DATA_POLICY_CONSENT } from '@/constants/dataPolicy'
+import { APP_ROUTES } from '@/constants/routes'
 import { useRegisterController } from '@/controllers/useRegisterController'
 import { todayApiDate } from '@/utils/formatDate'
 
@@ -125,6 +131,51 @@ export function RegisterModal() {
               />
             )}
           </FormField>
+          <Controller
+            control={form.control}
+            name="accept_data_policy"
+            render={({ field }) => (
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-start gap-3 rounded-lg border border-border p-3">
+                  <Checkbox
+                    id="register-data-policy"
+                    ref={field.ref}
+                    checked={field.value}
+                    onCheckedChange={(checked) => field.onChange(checked === true)}
+                    onBlur={field.onBlur}
+                    aria-invalid={Boolean(errors.accept_data_policy)}
+                    aria-describedby={
+                      errors.accept_data_policy
+                        ? 'register-data-policy-hint register-data-policy-error'
+                        : 'register-data-policy-hint'
+                    }
+                    className="mt-0.5"
+                  />
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor="register-data-policy">
+                      {DATA_POLICY_CONSENT.checkboxLabel}
+                    </Label>
+                    <p id="register-data-policy-hint" className="text-xs text-muted-foreground">
+                      {DATA_POLICY_CONSENT.checkboxHint}{' '}
+                      <Link
+                        to={APP_ROUTES.dataPolicy}
+                        target="_blank"
+                        rel="noopener"
+                        className="font-medium text-primary underline-offset-4 hover:underline"
+                      >
+                        {DATA_POLICY_CONSENT.readPolicy}
+                      </Link>
+                    </p>
+                  </div>
+                </div>
+                {errors.accept_data_policy?.message && (
+                  <FieldError id="register-data-policy-error">
+                    {errors.accept_data_policy.message}
+                  </FieldError>
+                )}
+              </div>
+            )}
+          />
         </FieldGroup>
         <SubmitButton pending={isSubmitting} pendingLabel={REGISTER_TEXTS.submitting} size="lg">
           {REGISTER_TEXTS.submit}

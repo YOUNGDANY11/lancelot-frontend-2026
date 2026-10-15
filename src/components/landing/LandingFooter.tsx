@@ -1,6 +1,9 @@
 import { GraduationCap } from 'lucide-react'
+import { Link } from 'react-router'
 import { BrandLogo } from '@/components/common/BrandLogo'
+import { DATA_POLICY } from '@/constants/dataPolicy'
 import { FOOTER_CONTENT } from '@/constants/landing'
+import { APP_ROUTES } from '@/constants/routes'
 
 export function LandingFooter() {
   return (
@@ -11,6 +14,12 @@ export function LandingFooter() {
           <p className="text-sm text-muted-foreground">
             Seguimiento y análisis integral del deportista.
           </p>
+          <Link
+            to={APP_ROUTES.dataPolicy}
+            className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+          >
+            {DATA_POLICY.title}
+          </Link>
         </div>
         <address className="flex items-start gap-3 text-sm text-muted-foreground not-italic sm:text-right">
           <GraduationCap

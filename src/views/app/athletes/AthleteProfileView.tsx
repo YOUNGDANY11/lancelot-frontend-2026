@@ -1,4 +1,4 @@
-import { ArrowLeft, UserX } from 'lucide-react'
+import { ArrowLeft, FileText, UserX } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link, Navigate, useParams } from 'react-router'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -95,6 +95,14 @@ export default function AthleteProfileView() {
               .join(' · ')}
           </p>
         </div>
+        {controller.reportPath && (
+          <Button asChild variant="outline" className="sm:self-start">
+            <Link to={controller.reportPath}>
+              <FileText aria-hidden="true" />
+              Informe de evolución
+            </Link>
+          </Button>
+        )}
       </header>
 
       <ModuleTabs

@@ -152,6 +152,45 @@
   --landing-glow-b: rgba(139, 92, 246, 0.2);
 }
 
+.report-sheet {
+  --background: #ffffff;
+  --foreground: #0b1220;
+  --card: #ffffff;
+  --card-foreground: #0b1220;
+  --primary: #0e7490;
+  --muted: rgba(15, 23, 42, 0.06);
+  --muted-foreground: #475569;
+  --border: rgba(15, 23, 42, 0.14);
+  --risk-low: #15803d;
+  --risk-medium: #b45309;
+  --risk-high: #be123c;
+  background-color: #ffffff;
+  color: var(--foreground);
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+  }
+
+  .report-sheet {
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    print-color-adjust: exact;
+  }
+
+  .report-avoid-break {
+    break-inside: avoid;
+  }
+}
+
 @utility glass {
   background-color: var(--card);
   border: 1px solid var(--border);

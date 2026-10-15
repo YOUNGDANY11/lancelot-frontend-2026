@@ -32,7 +32,7 @@ export function Sidebar() {
   const { items } = useNavigationController()
 
   return (
-    <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar backdrop-blur-xl lg:flex">
+    <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar backdrop-blur-xl lg:flex print:hidden">
       <div className="flex h-16 items-center px-5">
         <NavLink to={APP_ROUTES.home} className="rounded-lg" aria-label="Lancelot, ir a mi inicio">
           <BrandLogo />

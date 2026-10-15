@@ -126,6 +126,7 @@ beforeAll(async () => {
   await Promise.all([
     import('@/views/app/club/ClubView'),
     import('@/views/app/athletes/AthleteProfileView'),
+    import('@/views/app/athletes/AthleteReportView'),
   ])
 })
 
@@ -315,5 +316,101 @@ describe('módulo Deportistas', () => {
 
     await waitFor(() => expect(screen.queryByText('Ana María Pérez')).not.toBeInTheDocument())
     expect(screen.getByText('José Gómez')).toBeInTheDocument()
+  })
+})
+
+describe('informe de evolución individual', () => {
+  const SUMMARY = {
+    athlete: {
+      id_user: ATHLETE_USER.id_user,
+      name: 'Ana María',
+      lastname: 'Pérez',
+      position: 'Portero',
+      category: SUB15.name,
+    },
+    season: { id_season: ACTIVE_SEASON.id_season, name: ACTIVE_SEASON.name },
+    training_participation: {
+      total_sessions: 20,
+      sessions_attended: 18,
+      attendance_rate: 90,
+      avg_rpe: 6.4,
+      total_session_load: 9200,
+    },
+    match_participation: {
+      matches_in_season: 8,
+      matches_played: 7,
+      total_minutes: 540,
+      goals: 2,
+      assists: 3,
+      yellow_cards: 1,
+      red_cards: 0,
+    },
+    fatigue_alerts: [],
+    injury_risk_assessments: [],
+    weighted_progress_index: {
+      id_index: 1,
+      id_user: ATHLETE_USER.id_user,
+      id_season: ACTIVE_SEASON.id_season,
+      physical_score: 70,
+      technical_score: 75.5,
+      participation_score: 80,
+      index_value: 74.5,
+      warnings: ['Sin evaluación física de mitad de temporada'],
+    },
+  }
+
+  it('reúne la evolución de la temporada en un informe imprimible', async () => {
+    vi.mocked(reportsService.seasonSummary).mockResolvedValue(SUMMARY)
+    vi.mocked(evaluationsService.listTechnical).mockResolvedValue([
+      {
+        id_eval_tech: 1,
+        id_user: ATHLETE_USER.id_user,
+        id_season: ACTIVE_SEASON.id_season,
+        indicator: 'Pase corto',
+        score: 7,
+        evaluator_id: 2,
+        eval_date: '2026-03-01',
+      },
+      {
+        id_eval_tech: 2,
+        id_user: ATHLETE_USER.id_user,
+        id_season: ACTIVE_SEASON.id_season,
+        indicator: 'Pase corto',
+        score: 8,
+        evaluator_id: 2,
+        eval_date: '2026-05-01',
+      },
+    ])
+    const print = vi.spyOn(window, 'print').mockImplementation(() => undefined)
+    signInAs(COACH_USER)
+    const user = userEvent.setup()
+    const { router } = renderAppAt(`/app/deportistas/${ATHLETE_USER.id_user}`)
+
+    await user.click(await screen.findByRole('link', { name: 'Informe de evolución' }))
+
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe(
+        `/app/deportistas/${ATHLETE_USER.id_user}/informe`,
+      ),
+    )
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Ana María Pérez' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Informe de evolución individual')).toBeInTheDocument()
+    expect(screen.getByText('74,5')).toBeInTheDocument()
+    expect(screen.getByText('Sin evaluación física de mitad de temporada')).toBeInTheDocument()
+    const technical = screen.getByRole('table', { name: 'Promedio por indicador técnico' })
+    expect(within(technical).getByRole('row', { name: /Pase corto 7,5 2/ })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Imprimir o guardar en PDF' }))
+    expect(print).toHaveBeenCalledTimes(1)
+    print.mockRestore()
+  })
+
+  it('no deja abrir el informe a roles sin acceso al resumen deportivo', async () => {
+    signInAs(HEALTH_USER)
+    const { router } = renderAppAt(`/app/deportistas/${ATHLETE_USER.id_user}/informe`)
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/403'))
   })
 })

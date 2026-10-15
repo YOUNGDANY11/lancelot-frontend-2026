@@ -1,9 +1,12 @@
+import { Controller } from 'react-hook-form'
 import { FormAlert } from '@/components/common/FormAlert'
 import { FormField } from '@/components/common/FormField'
 import { FormModal } from '@/components/common/FormModal'
 import { HelpHint } from '@/components/common/HelpHint'
+import { SelectInput } from '@/components/common/SelectInput'
 import { FieldGroup } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { SPORT } from '@/constants/enums'
 import { useCategoryFormController } from '@/controllers/forms/useCategoryFormController'
 import type { Category } from '@/types/club'
 
@@ -44,6 +47,27 @@ function CategoryFormContent({ onOpenChange, category }: Omit<DialogProps, 'open
             nombre exacto.
           </p>
         )}
+        <Controller
+          control={form.control}
+          name="sport"
+          render={({ field, fieldState }) => (
+            <FormField
+              id="category-sport"
+              label="Deporte"
+              description="Define las posiciones, la duración del partido (90 o 40 minutos) y las estadísticas que se registran."
+              error={fieldState.error?.message}
+            >
+              {(controlProps) => (
+                <SelectInput
+                  {...controlProps}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  options={SPORT.options}
+                />
+              )}
+            </FormField>
+          )}
+        />
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
           Rango de edades
           <HelpHint term="multiAgeCategory" />

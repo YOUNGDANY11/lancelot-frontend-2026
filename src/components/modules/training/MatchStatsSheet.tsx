@@ -56,11 +56,13 @@ function MatchStatsForm({
           {usesCallUps ? 'Convocados a la competencia' : 'Plantilla de la categoría'} ·{' '}
           {form.playedCount} jugaron
         </p>
+        <p className="text-sm text-muted-foreground">{form.sportNote}</p>
         <ul className="flex flex-col gap-3">
           {form.rows.map((row) => (
             <MatchStatRowItem
               key={row.id_user}
               row={row}
+              counterFields={form.counterFields}
               saveState={form.rowStates[row.id_user]}
               disabled={form.isSaving}
               onTogglePlayed={() => form.togglePlayed(row)}

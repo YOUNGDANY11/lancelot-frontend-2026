@@ -9,8 +9,11 @@ import { trainingService } from '@/services/trainingService'
 import type { Match } from '@/types/competition'
 import type { RowSaveState } from '@/controllers/training/useRpeLogController'
 import { runWithConcurrency } from '@/utils/batchRunner'
+import type { Sport } from '@/constants/enums'
+import { SPORT_RULES, sportOf } from '@/constants/positions'
 import {
   buildMatchStatRows,
+  counterFieldsFor,
   isStatRowDirty,
   toMatchStatPayload,
   type MatchStatRow,
@@ -75,8 +78,15 @@ export function useMatchStatsData(match: Match) {
   }
 }
 
+export function useMatchSport(match: Match): Sport {
+  const { categories } = useAppContext()
+  return sportOf(categories.find((category) => category.id_category === match.id_category))
+}
+
 export function useMatchStatsForm(match: Match, initialRows: MatchStatRow[]) {
   const queryClient = useQueryClient()
+  const sport = useMatchSport(match)
+  const rules = SPORT_RULES[sport]
   const [rows, setRows] = useState(initialRows)
   const [rowStates, setRowStates] = useState<Record<number, RowSaveState>>({})
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
@@ -94,8 +104,11 @@ export function useMatchStatsForm(match: Match, initialRows: MatchStatRow[]) {
   }
 
   const save = async () => {
-    const dirtyRows = rows.filter((row) => isStatRowDirty(row, match.id_match))
-    const planned = dirtyRows.map((row) => ({ row, ...toMatchStatPayload(row, match.id_match) }))
+    const dirtyRows = rows.filter((row) => isStatRowDirty(row, match.id_match, sport))
+    const planned = dirtyRows.map((row) => ({
+      row,
+      ...toMatchStatPayload(row, match.id_match, sport),
+    }))
     const invalid = planned.filter((item) => item.payload === null)
     const valid = planned.filter((item) => item.payload !== null)
 
@@ -168,10 +181,18 @@ export function useMatchStatsForm(match: Match, initialRows: MatchStatRow[]) {
     progress,
     isSaving: progress !== null,
     playedCount: rows.filter((row) => row.played).length,
-    dirtyCount: rows.filter((row) => isStatRowDirty(row, match.id_match)).length,
+    dirtyCount: rows.filter((row) => isStatRowDirty(row, match.id_match, sport)).length,
+    counterFields: counterFieldsFor(sport),
+    sportNote:
+      sport === 'futbol_sala'
+        ? `Fútbol sala: partido de ${rules.matchMinutes} minutos. Registra también las faltas cometidas, que se acumulan por equipo.`
+        : `Fútbol: partido de ${rules.matchMinutes} minutos.`,
     updateRow,
     togglePlayed: (row: MatchStatRow) =>
-      updateRow(row.id_user, { played: !row.played, minutes: row.minutes || '90' }),
+      updateRow(row.id_user, {
+        played: !row.played,
+        minutes: row.minutes || String(rules.matchMinutes),
+      }),
     save,
   }
 }

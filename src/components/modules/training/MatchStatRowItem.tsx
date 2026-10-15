@@ -7,15 +7,9 @@ import type { RowSaveState } from '@/controllers/training/useRpeLogController'
 import { cn } from '@/lib/utils'
 import type { MatchCounterField, MatchStatRow } from '@/utils/matchStatsBatch'
 
-const COUNTER_FIELDS: { field: MatchCounterField; label: string }[] = [
-  { field: 'goals', label: 'Goles' },
-  { field: 'assists', label: 'Asistencias' },
-  { field: 'yellow', label: 'Amarillas' },
-  { field: 'red', label: 'Rojas' },
-]
-
 interface MatchStatRowItemProps {
   row: MatchStatRow
+  counterFields: { field: MatchCounterField; label: string }[]
   saveState?: RowSaveState
   disabled: boolean
   onTogglePlayed: () => void
@@ -24,6 +18,7 @@ interface MatchStatRowItemProps {
 
 export function MatchStatRowItem({
   row,
+  counterFields,
   saveState,
   disabled,
   onTogglePlayed,
@@ -65,7 +60,12 @@ export function MatchStatRowItem({
 
       {row.played && (
         <>
-          <div className="grid grid-cols-5 gap-2">
+          <div
+            className={cn(
+              'grid grid-cols-3 gap-2',
+              counterFields.length > 4 ? 'sm:grid-cols-6' : 'sm:grid-cols-5',
+            )}
+          >
             <div className="flex flex-col gap-1">
               <Label htmlFor={`minutos-${row.id_user}`} className="text-xs text-muted-foreground">
                 Minutos
@@ -79,7 +79,7 @@ export function MatchStatRowItem({
                 className="h-9 px-2"
               />
             </div>
-            {COUNTER_FIELDS.map(({ field, label }) => (
+            {counterFields.map(({ field, label }) => (
               <div key={field} className="flex flex-col gap-1">
                 <Label
                   htmlFor={`${field}-${row.id_user}`}

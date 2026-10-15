@@ -1,4 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
+import { useAthleteSport } from '@/controllers/athletes/useAthleteSport'
+import { EVALUATION_DIMENSION } from '@/constants/enums'
 import { useResourceMutation } from '@/controllers/shared/useResourceMutation'
 import { useAppContext } from '@/hooks/useAppContext'
 import { useCrudDialogs } from '@/hooks/useCrudDialogs'
@@ -29,10 +31,20 @@ export function useTechnicalTabController(idUser: number) {
   })
 
   const evaluations = query.data ?? []
+  const indicators = summarizeIndicators(evaluations)
+  const sport = useAthleteSport(idUser)
 
   return {
     evaluations: [...evaluations].reverse(),
-    indicators: summarizeIndicators(evaluations),
+    indicators,
+    sport,
+    groups: EVALUATION_DIMENSION.options
+      .map((option) => ({
+        dimension: option.value,
+        label: option.label,
+        items: indicators.filter((summary) => summary.dimension === option.value),
+      }))
+      .filter((group) => group.items.length > 0),
     isLoading: query.isPending,
     errorMessage: query.isError ? parseApiError(query.error) : undefined,
     retry: () => void query.refetch(),

@@ -1,3 +1,4 @@
+import type { EvaluationDimension, Sport } from '@/constants/enums'
 import type { RoleCode } from '@/constants/roles'
 
 export const ATHLETE_PROFILE_TABS = [
@@ -15,7 +16,7 @@ export type AthleteProfileTab = (typeof ATHLETE_PROFILE_TABS)[number]
 export const ATHLETE_PROFILE_TAB_LABELS: Record<AthleteProfileTab, string> = {
   resumen: 'Resumen',
   fisico: 'Físico',
-  tecnico: 'Técnico',
+  tecnico: 'Técnica y táctica',
   carga: 'Carga',
   salud: 'Salud',
   objetivos: 'Objetivos',
@@ -39,18 +40,51 @@ export function athleteTabsForRole(role: RoleCode | null): AthleteProfileTab[] {
   return ATHLETE_PROFILE_TABS.filter((tab) => ATHLETE_PROFILE_TAB_ROLES[tab].includes(role))
 }
 
-export const TECHNICAL_INDICATOR_SUGGESTIONS = [
-  'Control del balón',
-  'Pase corto',
-  'Pase largo',
-  'Conducción',
-  'Regate',
-  'Remate',
-  'Cabeceo',
-  'Marcaje',
-  'Toma de decisiones',
-  'Juego aéreo',
-]
+export const INDICATOR_SUGGESTIONS: Record<Sport, Record<EvaluationDimension, string[]>> = {
+  futbol: {
+    tecnica: [
+      'Control del balón',
+      'Pase corto',
+      'Pase largo',
+      'Conducción',
+      'Regate',
+      'Remate',
+      'Cabeceo',
+      'Juego aéreo',
+    ],
+    tactica: [
+      'Posicionamiento defensivo',
+      'Marcaje',
+      'Desmarque',
+      'Coberturas',
+      'Presión tras pérdida',
+      'Transiciones',
+      'Toma de decisiones',
+      'Balón parado',
+    ],
+  },
+  futbol_sala: {
+    tecnica: [
+      'Control con la planta',
+      'Pase raso',
+      'Conducción en espacio reducido',
+      'Regate 1 contra 1',
+      'Remate con puntera',
+      'Protección del balón',
+      'Juego de pies del portero',
+    ],
+    tactica: [
+      'Rotaciones',
+      'Defensa en zona',
+      'Defensa individual',
+      'Presión alta',
+      'Juego con portero-jugador',
+      'Transiciones',
+      'Toma de decisiones',
+      'Balón parado',
+    ],
+  },
+}
 
 export const ACWR_ZONE_LABELS = {
   underload: 'Destreno',

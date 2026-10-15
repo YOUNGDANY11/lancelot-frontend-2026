@@ -75,10 +75,11 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
             ? [{ id_category: assignment.id_category, name: assignment.category_name ?? '' }]
             : [],
         )
-      : (categoriesQuery.data ?? []).map(({ id_category, name, max_age }) => ({
+      : (categoriesQuery.data ?? []).map(({ id_category, name, max_age, sport }) => ({
           id_category,
           name,
           max_age: Number(max_age),
+          sport,
         }))
     const category = isAthlete
       ? (categories[0] ?? null)

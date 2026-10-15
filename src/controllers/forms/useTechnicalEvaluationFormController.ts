@@ -1,4 +1,6 @@
-import { TECHNICAL_INDICATOR_SUGGESTIONS } from '@/constants/athleteProfile'
+import { useWatch } from 'react-hook-form'
+import { INDICATOR_SUGGESTIONS } from '@/constants/athleteProfile'
+import { EVALUATION_DIMENSION, type Sport } from '@/constants/enums'
 import { useEntityFormController } from '@/controllers/shared/useEntityFormController'
 import { useAppContext } from '@/hooks/useAppContext'
 import { useAuth } from '@/hooks/useAuth'
@@ -11,16 +13,19 @@ import {
 import { evaluationsService } from '@/services/evaluationsService'
 import type { TechnicalEvaluation } from '@/types/athlete'
 import { todayApiDate } from '@/utils/formatDate'
+import { dimensionOf } from '@/utils/technicalScores'
 
 export function useTechnicalEvaluationFormController({
   idUser,
   evaluation,
   knownIndicators,
+  sport,
   onDone,
 }: {
   idUser: number
   evaluation?: TechnicalEvaluation | null
   knownIndicators: string[]
+  sport: Sport | null
   onDone: () => void
 }) {
   const { season } = useAppContext()
@@ -31,11 +36,12 @@ export function useTechnicalEvaluationFormController({
     schema: technicalEvaluationSchema,
     defaultValues: evaluation
       ? {
+          dimension: dimensionOf(evaluation),
           indicator: evaluation.indicator,
           score: String(evaluation.score),
           eval_date: evaluation.eval_date,
         }
-      : { indicator: '', score: '', eval_date: todayApiDate() },
+      : { dimension: 'tecnica', indicator: '', score: '', eval_date: todayApiDate() },
     submit: (values) => {
       const evaluatorId = evaluation?.evaluator_id ?? user?.id_user
       if (idSeason === undefined || evaluatorId === undefined) {
@@ -54,10 +60,23 @@ export function useTechnicalEvaluationFormController({
     onDone,
   })
 
+  const dimension = useWatch({ control: controller.form.control, name: 'dimension' })
+
   return {
     ...controller,
     isEditing: Boolean(evaluation),
     seasonName: evaluation?.season_name ?? season?.name,
-    indicatorSuggestions: [...new Set([...knownIndicators, ...TECHNICAL_INDICATOR_SUGGESTIONS])],
+    dimensionOptions: EVALUATION_DIMENSION.options,
+    indicatorSuggestions: [
+      ...new Set([
+        ...knownIndicators,
+        ...(sport
+          ? INDICATOR_SUGGESTIONS[sport][dimension]
+          : [
+              ...INDICATOR_SUGGESTIONS.futbol[dimension],
+              ...INDICATOR_SUGGESTIONS.futbol_sala[dimension],
+            ]),
+      ]),
+    ],
   }
 }

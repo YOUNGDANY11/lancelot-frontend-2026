@@ -1,4 +1,6 @@
 import type {
+  Sport,
+  EvaluationDimension,
   DevelopmentObjectiveStatus,
   HealthRecordStatus,
   InjuryMechanism,
@@ -44,6 +46,7 @@ export interface TechnicalEvaluation {
   id_user: number
   id_season: number
   season_name?: string
+  dimension?: EvaluationDimension
   indicator: string
   score: number
   evaluator_id: number
@@ -54,6 +57,7 @@ export interface TechnicalEvaluation {
 export interface TechnicalEvaluationRequest {
   id_user: number
   id_season: number
+  dimension: EvaluationDimension
   indicator: string
   score: number
   evaluator_id: number
@@ -159,6 +163,7 @@ export interface SeasonSummary {
     lastname: string
     position: string | null
     category: string | null
+    sport?: Sport
   }
   season: { id_season: number; name: string }
   training_participation: {
@@ -176,6 +181,8 @@ export interface SeasonSummary {
     assists: number
     yellow_cards: number
     red_cards: number
+    fouls_committed?: number
+    match_minutes?: number
   }
   fatigue_alerts: FatigueAlert[]
   injury_risk_assessments: InjuryRiskAssessment[]

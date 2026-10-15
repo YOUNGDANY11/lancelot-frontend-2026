@@ -76,7 +76,7 @@ function AthleteAssignmentContent({ onOpenChange, season }: Omit<DialogProps, 'o
                 <SelectInput
                   {...controlProps}
                   value={field.value}
-                  onValueChange={field.onChange}
+                  onValueChange={controller.onCategoryChange}
                   options={controller.categoryOptions}
                   placeholder="Elige la categoría"
                   disabled={controller.categoryOptions.length === 0}

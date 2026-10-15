@@ -47,6 +47,7 @@ export const categorySchema = z
     name: textField('el nombre de la categoría', 2, 50),
     min_age: integerField('la edad mínima', 3, 60),
     max_age: integerField('la edad máxima', 3, 60),
+    sport: z.enum(['futbol', 'futbol_sala'], { error: 'Elige el deporte.' }),
   })
   .refine((values) => Number(values.min_age) <= Number(values.max_age), {
     message: 'La edad máxima debe ser mayor o igual a la mínima.',
@@ -60,6 +61,7 @@ export function toCreateCategoryRequest(values: CategoryFormValues): CreateCateg
     name: values.name,
     min_age: Number(values.min_age),
     max_age: Number(values.max_age),
+    sport: values.sport,
   }
 }
 

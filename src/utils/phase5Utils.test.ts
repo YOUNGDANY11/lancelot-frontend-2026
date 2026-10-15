@@ -80,6 +80,17 @@ describe('indicadores técnicos', () => {
       expect.objectContaining({ indicator: 'Regate', latest: 8, previous: null, count: 1 }),
     ])
   })
+
+  it('separa el mismo indicador cuando se evalúa en dimensiones distintas', () => {
+    const summary = summarizeIndicators([
+      evaluation('Toma de decisiones', 6, '2026-02-01'),
+      { ...evaluation('Toma de decisiones', 8, '2026-03-01'), dimension: 'tactica' },
+    ])
+    expect(summary.map(({ dimension, latest }) => [dimension, latest])).toEqual([
+      ['tactica', 8],
+      ['tecnica', 6],
+    ])
+  })
 })
 
 describe('mapa de calor de carga', () => {

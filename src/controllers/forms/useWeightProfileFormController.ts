@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
-import { POSITION_GROUPS } from '@/constants/positions'
+import { positionGroupsFor, sportOf } from '@/constants/positions'
 import { useAppContext } from '@/hooks/useAppContext'
 import { queryKeys } from '@/lib/queryKeys'
 import {
@@ -53,9 +53,9 @@ export function useWeightProfileFormController({
     mode: 'onTouched',
   })
 
-  const [physical, technical, participation] = useWatch({
+  const [physical, technical, participation, ageCategory] = useWatch({
     control: form.control,
-    name: ['w_physical', 'w_technical', 'w_participation'],
+    name: ['w_physical', 'w_technical', 'w_participation', 'age_category'],
   })
   const total = weightsTotal({
     w_physical: physical,
@@ -79,9 +79,13 @@ export function useWeightProfileFormController({
       onDone()
     },
     onError: (error) =>
-      applyServerError(form, error, [{ field: 'position', pattern: /ya existe/i }]),
+      applyServerError(form, error, [
+        { field: 'position', pattern: /ya existe|no corresponde/i },
+        { field: 'age_category', pattern: /categoría llamada/i },
+      ]),
   })
 
+  const selectedCategory = categories.find((category) => category.name === ageCategory)
   const categoryNames = categories.map((category) => category.name)
   const extraCategory =
     profile && !categoryNames.includes(profile.age_category) ? [profile.age_category] : []
@@ -89,10 +93,7 @@ export function useWeightProfileFormController({
   return {
     form,
     isEditing: Boolean(profile),
-    positionGroups: POSITION_GROUPS.map((group) => ({
-      label: group.label,
-      options: group.positions.map((position) => ({ value: position, label: position })),
-    })),
+    positionGroups: positionGroupsFor(selectedCategory ? sportOf(selectedCategory) : null),
     categoryOptions: [...categoryNames, ...extraCategory].map((name) => ({
       value: name,
       label: name,

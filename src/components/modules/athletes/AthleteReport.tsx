@@ -2,8 +2,10 @@ import type { ReactNode } from 'react'
 import { DataTableSimple } from '@/components/charts/DataTableSimple'
 import {
   DEVELOPMENT_OBJECTIVE_STATUS,
+  EVALUATION_DIMENSION,
   PHYSICAL_EVALUATION_STAGE,
   RISK_LEVEL,
+  SPORT,
   type RiskLevelValue,
 } from '@/constants/enums'
 import { PARTNER_CONTENT } from '@/constants/landing'
@@ -66,7 +68,13 @@ export function AthleteReport({ report }: { report: ReportData }) {
             {athlete.name} {athlete.lastname}
           </h1>
           <p className="text-muted-foreground">
-            {[athlete.category ?? 'Sin categoría', athlete.position ?? 'Sin posición'].join(' · ')}
+            {[
+              athlete.category ?? 'Sin categoría',
+              athlete.sport ? SPORT.labels[athlete.sport] : null,
+              athlete.position ?? 'Sin posición',
+            ]
+              .filter(Boolean)
+              .join(' · ')}
           </p>
         </div>
         <dl className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm sm:text-right">
@@ -151,25 +159,32 @@ export function AthleteReport({ report }: { report: ReportData }) {
         )}
       </ReportSection>
 
-      <ReportSection
-        title="Evaluación técnica"
-        description="Promedio de cada indicador en la temporada, en escala de 1 a 10."
-      >
-        {report.technical.length > 0 ? (
-          <DataTableSimple
-            caption="Promedio por indicador técnico"
-            headers={['Indicador', 'Promedio', 'Evaluaciones', 'Última']}
-            rows={report.technical.map((item) => [
-              item.indicator,
-              formatNumber(item.average, 1),
-              item.count,
-              formatDate(item.lastDate),
-            ])}
-          />
-        ) : (
-          <EmptyNote>No tiene evaluaciones técnicas en esta temporada.</EmptyNote>
-        )}
-      </ReportSection>
+      {EVALUATION_DIMENSION.options.map(({ value, label }) => {
+        const items = report.technical.filter((item) => item.dimension === value)
+        const noun = label.toLowerCase()
+        return (
+          <ReportSection
+            key={value}
+            title={`Evaluación ${noun}`}
+            description="Promedio de cada indicador en la temporada, en escala de 1 a 10."
+          >
+            {items.length > 0 ? (
+              <DataTableSimple
+                caption={`Promedio por indicador de la evaluación ${noun}`}
+                headers={['Indicador', 'Promedio', 'Evaluaciones', 'Última']}
+                rows={items.map((item) => [
+                  item.indicator,
+                  formatNumber(item.average, 1),
+                  item.count,
+                  formatDate(item.lastDate),
+                ])}
+              />
+            ) : (
+              <EmptyNote>{`No tiene evaluaciones de tipo ${noun} en esta temporada.`}</EmptyNote>
+            )}
+          </ReportSection>
+        )
+      })}
 
       <ReportSection title="Participación">
         <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -183,12 +198,19 @@ export function AthleteReport({ report }: { report: ReportData }) {
           <Stat
             label="Partidos jugados"
             value={`${matches.matches_played} de ${matches.matches_in_season}`}
-            hint={`${formatNumber(matches.total_minutes, 0)} minutos`}
+            hint={`${formatNumber(matches.total_minutes, 0)} minutos${matches.match_minutes ? ` · partidos de ${matches.match_minutes}` : ''}`}
           />
           <Stat label="Goles" value={String(matches.goals)} />
           <Stat label="Asistencias" value={String(matches.assists)} />
           <Stat label="Tarjetas amarillas" value={String(matches.yellow_cards)} />
           <Stat label="Tarjetas rojas" value={String(matches.red_cards)} />
+          {athlete.sport === 'futbol_sala' && (
+            <Stat
+              label="Faltas cometidas"
+              value={String(matches.fouls_committed ?? 0)}
+              hint="Se acumulan por equipo en fútbol sala"
+            />
+          )}
         </dl>
       </ReportSection>
 

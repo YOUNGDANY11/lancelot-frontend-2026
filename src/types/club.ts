@@ -1,4 +1,5 @@
 import type {
+  Sport,
   InjuryRiskRuleCode,
   ParentalConsentStatus,
   ReviewStatus,
@@ -29,12 +30,14 @@ export interface Category {
   name: string
   min_age: number
   max_age: number
+  sport?: Sport
 }
 
 export interface CreateCategoryRequest {
   name: string
   min_age: number
   max_age: number
+  sport: Sport
 }
 
 export interface AthleteAssignment {

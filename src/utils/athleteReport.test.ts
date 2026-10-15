@@ -2,11 +2,18 @@ import { describe, expect, it } from 'vitest'
 import type { TechnicalEvaluation } from '@/types/athlete'
 import { averageByIndicator, countLevels, inSeason } from '@/utils/athleteReport'
 
-function technical(indicator: string, score: number, eval_date: string, id_season = 2) {
+function technical(
+  indicator: string,
+  score: number,
+  eval_date: string,
+  id_season = 2,
+  dimension: TechnicalEvaluation['dimension'] = 'tecnica',
+) {
   return {
     id_eval_tech: score,
     id_user: 7,
     id_season,
+    dimension,
     indicator,
     score,
     evaluator_id: 1,
@@ -21,10 +28,24 @@ describe('informe de evolución', () => {
         technical('Remate', 6, '2026-02-01'),
         technical('Pase corto ', 7, '2026-03-01'),
         technical('Pase corto', 8, '2026-05-01'),
+        technical('Presión alta', 7, '2026-04-01', 2, 'tactica'),
       ]),
     ).toEqual([
-      { indicator: 'Pase corto', average: 7.5, count: 2, lastDate: '2026-05-01' },
-      { indicator: 'Remate', average: 6, count: 1, lastDate: '2026-02-01' },
+      {
+        dimension: 'tactica',
+        indicator: 'Presión alta',
+        average: 7,
+        count: 1,
+        lastDate: '2026-04-01',
+      },
+      {
+        dimension: 'tecnica',
+        indicator: 'Pase corto',
+        average: 7.5,
+        count: 2,
+        lastDate: '2026-05-01',
+      },
+      { dimension: 'tecnica', indicator: 'Remate', average: 6, count: 1, lastDate: '2026-02-01' },
     ])
   })
 

@@ -1,3 +1,4 @@
+import { DEFAULT_SPORT, sportOf } from '@/constants/positions'
 import { useEntityFormController } from '@/controllers/shared/useEntityFormController'
 import { queryKeys } from '@/lib/queryKeys'
 import {
@@ -25,8 +26,9 @@ export function useCategoryFormController({ onDone, category }: CategoryFormOpti
             name: category.name,
             min_age: String(category.min_age),
             max_age: String(category.max_age),
+            sport: sportOf(category),
           }
-        : { name: '', min_age: '', max_age: '' },
+        : { name: '', min_age: '', max_age: '', sport: DEFAULT_SPORT },
       submit: (values) =>
         category
           ? categoriesService.update(category.id_category, toCreateCategoryRequest(values))
@@ -35,7 +37,10 @@ export function useCategoryFormController({ onDone, category }: CategoryFormOpti
       successMessage: (values) =>
         isEditing ? `Categoría ${values.name} actualizada.` : `Categoría ${values.name} creada.`,
       onDone,
-      fieldMatchers: [{ field: 'name', pattern: /nombre/i }],
+      fieldMatchers: [
+        { field: 'name', pattern: /nombre/i },
+        { field: 'sport', pattern: /deporte/i },
+      ],
     }),
   }
 }

@@ -399,7 +399,9 @@ describe('informe de evolución individual', () => {
     expect(screen.getByText('Informe de evolución individual')).toBeInTheDocument()
     expect(screen.getByText('74,5')).toBeInTheDocument()
     expect(screen.getByText('Sin evaluación física de mitad de temporada')).toBeInTheDocument()
-    const technical = screen.getByRole('table', { name: 'Promedio por indicador técnico' })
+    const technical = screen.getByRole('table', {
+      name: 'Promedio por indicador de la evaluación técnica',
+    })
     expect(within(technical).getByRole('row', { name: /Pase corto 7,5 2/ })).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Imprimir o guardar en PDF' }))
@@ -412,5 +414,115 @@ describe('informe de evolución individual', () => {
     const { router } = renderAppAt(`/app/deportistas/${ATHLETE_USER.id_user}/informe`)
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/403'))
+  })
+})
+
+describe('fútbol y fútbol sala', () => {
+  const SALA = {
+    id_category: 6,
+    name: 'Sala Sub-17',
+    min_age: 14,
+    max_age: 17,
+    sport: 'futbol_sala' as const,
+  }
+
+  it('crea una categoría indicando su deporte', async () => {
+    vi.mocked(categoriesService.create).mockResolvedValue(SALA)
+    signInAs(ADMIN_USER)
+    const user = userEvent.setup()
+    renderAppAt('/app/club?tab=categorias')
+
+    await user.click(await screen.findByRole('button', { name: 'Crear categoría' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Crear categoría' })
+    await user.type(within(dialog).getByLabelText('Nombre'), 'Sala Sub-17')
+    await user.type(within(dialog).getByLabelText('Edad mínima'), '14')
+    await user.type(within(dialog).getByLabelText('Edad máxima'), '17')
+    await user.click(within(dialog).getByRole('combobox', { name: 'Deporte' }))
+    await user.click(await screen.findByRole('option', { name: 'Fútbol sala' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Crear categoría' }))
+
+    await waitFor(() =>
+      expect(categoriesService.create).toHaveBeenCalledWith({
+        name: 'Sala Sub-17',
+        min_age: 14,
+        max_age: 17,
+        sport: 'futbol_sala',
+      }),
+    )
+  })
+
+  it('ofrece solo las posiciones del deporte de la categoría elegida', async () => {
+    vi.mocked(categoriesService.listAll).mockResolvedValue([SUB15, SALA])
+    signInAs(ADMIN_USER)
+    const user = userEvent.setup()
+    renderAppAt('/app/club?tab=plantilla')
+
+    await user.click(await screen.findByRole('button', { name: 'Asignar deportista' }))
+    const dialog = await screen.findByRole('dialog', { name: /Agregar deportista a una categoría/ })
+    const picker = within(dialog).getByRole('combobox', { name: 'Deportista' })
+    await waitFor(() => expect(picker).toBeEnabled())
+    await user.click(picker)
+    await user.click(await within(dialog).findByRole('option', { name: /Ana María Pérez/ }))
+    await user.click(within(dialog).getByRole('combobox', { name: 'Categoría' }))
+    await user.click(await screen.findByRole('option', { name: /Sala Sub-17/ }))
+
+    expect(within(dialog).getByRole('combobox', { name: 'Posición' })).toHaveTextContent(
+      /Elige|Selecciona/,
+    )
+    await user.click(within(dialog).getByRole('combobox', { name: 'Posición' }))
+    const options = (await screen.findAllByRole('option')).map((option) => option.textContent)
+    expect(options).toEqual(['Portero de fútbol sala', 'Cierre', 'Ala', 'Pívot', 'Universal'])
+  })
+
+  it('separa las evaluaciones técnicas de las tácticas', async () => {
+    vi.mocked(evaluationsService.listTechnical).mockResolvedValue([
+      {
+        id_eval_tech: 1,
+        id_user: ATHLETE_USER.id_user,
+        id_season: ACTIVE_SEASON.id_season,
+        dimension: 'tecnica',
+        indicator: 'Pase corto',
+        score: 7,
+        evaluator_id: 2,
+        eval_date: '2026-03-01',
+      },
+      {
+        id_eval_tech: 2,
+        id_user: ATHLETE_USER.id_user,
+        id_season: ACTIVE_SEASON.id_season,
+        dimension: 'tactica',
+        indicator: 'Presión alta',
+        score: 8,
+        evaluator_id: 2,
+        eval_date: '2026-03-02',
+      },
+    ])
+    vi.mocked(evaluationsService.createTechnical).mockResolvedValue({
+      status: 'Success',
+      mensaje: 'ok',
+    })
+    signInAs(COACH_USER)
+    const user = userEvent.setup()
+    renderAppAt(`/app/deportistas/${ATHLETE_USER.id_user}?tab=tecnico`)
+
+    const tactical = await screen.findByRole('heading', { level: 3, name: 'Táctica' })
+    expect(within(tactical.parentElement as HTMLElement).getByText('Presión alta')).toBeVisible()
+    expect(screen.getByRole('heading', { level: 3, name: 'Técnica' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Registrar evaluación' }))
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Registrar evaluación técnica o táctica',
+    })
+    await user.click(within(dialog).getByRole('combobox', { name: 'Dimensión' }))
+    await user.click(await screen.findByRole('option', { name: 'Táctica' }))
+    await user.type(within(dialog).getByLabelText('Indicador'), 'Coberturas')
+    await user.type(within(dialog).getByLabelText('Puntaje (1 a 10)'), '6')
+    await user.click(within(dialog).getByRole('button', { name: /Registrar|Guardar/ }))
+
+    await waitFor(() =>
+      expect(evaluationsService.createTechnical).toHaveBeenCalledWith(
+        expect.objectContaining({ dimension: 'tactica', indicator: 'Coberturas', score: 6 }),
+      ),
+    )
   })
 })

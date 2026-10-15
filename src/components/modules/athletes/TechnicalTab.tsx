@@ -11,7 +11,8 @@ import { Button } from '@/components/ui/button'
 import { useTechnicalTabController } from '@/controllers/athletes/useTechnicalTabController'
 import { formatDate } from '@/utils/formatDate'
 import { formatNumber } from '@/utils/formatNumber'
-import type { IndicatorSummary } from '@/utils/technicalScores'
+import { dimensionOf, type IndicatorSummary } from '@/utils/technicalScores'
+import { EVALUATION_DIMENSION } from '@/constants/enums'
 import { DELETED_ACCOUNT_LABEL } from '@/constants/roles'
 
 function TrendBadge({ summary }: { summary: IndicatorSummary }) {
@@ -43,12 +44,12 @@ export function TechnicalTab({ idUser }: { idUser: number }) {
 
   return (
     <TabSection
-      description="Puntajes de 1 a 10 por habilidad. Se muestra el último de cada indicador."
+      description="Puntajes de 1 a 10 por habilidad técnica y por comprensión táctica del juego. Se muestra el último de cada indicador."
       action={
         controller.canCreate && (
           <Button onClick={dialogs.openCreate}>
             <Plus aria-hidden="true" />
-            Registrar evaluación técnica
+            Registrar evaluación
           </Button>
         )
       }
@@ -56,50 +57,55 @@ export function TechnicalTab({ idUser }: { idUser: number }) {
       {controller.indicators.length === 0 ? (
         <EmptyState
           icon={Target}
-          title="Aún no hay evaluaciones técnicas"
+          title="Aún no hay evaluaciones técnicas ni tácticas"
           action={
             controller.canCreate && (
-              <Button onClick={dialogs.openCreate}>Registrar evaluación técnica</Button>
+              <Button onClick={dialogs.openCreate}>Registrar evaluación</Button>
             )
           }
         />
       ) : (
         <>
-          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {controller.indicators.map((summary) => (
-              <li
-                key={summary.indicator}
-                className="flex flex-col gap-2 rounded-xl glass-subtle p-4"
-              >
-                <div className="flex items-baseline justify-between gap-2">
-                  <span className="font-medium">{summary.indicator}</span>
-                  <span className="font-heading text-xl font-semibold tabular-nums">
-                    {formatNumber(summary.latest, 1)}
-                    <span className="text-sm text-muted-foreground"> / 10</span>
-                  </span>
-                </div>
-                <div
-                  className="h-2 overflow-hidden rounded-full bg-muted"
-                  role="img"
-                  aria-label={`${summary.indicator}: ${formatNumber(summary.latest, 1)} de 10`}
-                >
-                  <div
-                    className="h-full rounded-full bg-chart-1"
-                    style={{ width: `${(summary.latest / 10) * 100}%` }}
-                  />
-                </div>
-                <div className="flex justify-between gap-2 text-xs text-muted-foreground">
-                  <span>
-                    {formatDate(summary.date)} · {summary.count}{' '}
-                    {summary.count === 1 ? 'evaluación' : 'evaluaciones'}
-                  </span>
-                  <TrendBadge summary={summary} />
-                </div>
-              </li>
-            ))}
-          </ul>
+          {controller.groups.map((group) => (
+            <section key={group.dimension} className="flex flex-col gap-3">
+              <h3 className="text-base font-semibold">{group.label}</h3>
+              <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {group.items.map((summary) => (
+                  <li
+                    key={`${summary.dimension}-${summary.indicator}`}
+                    className="flex flex-col gap-2 rounded-xl glass-subtle p-4"
+                  >
+                    <div className="flex items-baseline justify-between gap-2">
+                      <span className="font-medium">{summary.indicator}</span>
+                      <span className="font-heading text-xl font-semibold tabular-nums">
+                        {formatNumber(summary.latest, 1)}
+                        <span className="text-sm text-muted-foreground"> / 10</span>
+                      </span>
+                    </div>
+                    <div
+                      className="h-2 overflow-hidden rounded-full bg-muted"
+                      role="img"
+                      aria-label={`${summary.indicator}: ${formatNumber(summary.latest, 1)} de 10`}
+                    >
+                      <div
+                        className="h-full rounded-full bg-chart-1"
+                        style={{ width: `${(summary.latest / 10) * 100}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between gap-2 text-xs text-muted-foreground">
+                      <span>
+                        {formatDate(summary.date)} · {summary.count}{' '}
+                        {summary.count === 1 ? 'evaluación' : 'evaluaciones'}
+                      </span>
+                      <TrendBadge summary={summary} />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
           <DataTable
-            caption="Historial de evaluaciones técnicas"
+            caption="Historial de evaluaciones técnicas y tácticas"
             rows={controller.evaluations}
             getRowKey={(evaluation) => evaluation.id_eval_tech}
             columns={[
@@ -107,6 +113,11 @@ export function TechnicalTab({ idUser }: { idUser: number }) {
                 key: 'date',
                 header: 'Fecha',
                 cell: (evaluation) => formatDate(evaluation.eval_date),
+              },
+              {
+                key: 'dimension',
+                header: 'Dimensión',
+                cell: (evaluation) => EVALUATION_DIMENSION.labels[dimensionOf(evaluation)],
               },
               { key: 'indicator', header: 'Indicador', cell: (evaluation) => evaluation.indicator },
               {
@@ -158,6 +169,7 @@ export function TechnicalTab({ idUser }: { idUser: number }) {
         idUser={idUser}
         evaluation={dialogs.editing}
         knownIndicators={controller.indicators.map((summary) => summary.indicator)}
+        sport={controller.sport}
         onClose={dialogs.close}
       />
       <ConfirmDialog

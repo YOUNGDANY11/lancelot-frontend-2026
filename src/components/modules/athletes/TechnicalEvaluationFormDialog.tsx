@@ -1,10 +1,13 @@
 import { useId } from 'react'
+import { Controller } from 'react-hook-form'
 import { DateField } from '@/components/common/DateField'
 import { FormAlert } from '@/components/common/FormAlert'
 import { FormField } from '@/components/common/FormField'
 import { FormModal } from '@/components/common/FormModal'
+import { SelectInput } from '@/components/common/SelectInput'
 import { FieldGroup } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import type { Sport } from '@/constants/enums'
 import { useTechnicalEvaluationFormController } from '@/controllers/forms/useTechnicalEvaluationFormController'
 import type { TechnicalEvaluation } from '@/types/athlete'
 import { todayApiDate } from '@/utils/formatDate'
@@ -14,6 +17,7 @@ interface DialogProps {
   idUser: number
   evaluation: TechnicalEvaluation | null
   knownIndicators: string[]
+  sport: Sport | null
   onClose: () => void
 }
 
@@ -21,12 +25,14 @@ function TechnicalEvaluationContent({
   idUser,
   evaluation,
   knownIndicators,
+  sport,
   onClose,
 }: Omit<DialogProps, 'open'>) {
   const controller = useTechnicalEvaluationFormController({
     idUser,
     evaluation,
     knownIndicators,
+    sport,
     onDone: onClose,
   })
   const { form } = controller
@@ -37,13 +43,34 @@ function TechnicalEvaluationContent({
     <FormModal
       open
       onOpenChange={(open) => !open && onClose()}
-      title={controller.isEditing ? 'Editar evaluación técnica' : 'Registrar evaluación técnica'}
+      title={controller.isEditing ? 'Editar evaluación' : 'Registrar evaluación técnica o táctica'}
       description={controller.seasonName ? `Temporada ${controller.seasonName}.` : undefined}
       isSubmitting={controller.isSubmitting}
       onSubmit={controller.onSubmit}
     >
       <FieldGroup>
         <FormAlert message={controller.serverError} />
+        <Controller
+          control={form.control}
+          name="dimension"
+          render={({ field, fieldState }) => (
+            <FormField
+              id="technical-dimension"
+              label="Dimensión"
+              description="Técnica: dominio del balón. Táctica: comprensión del juego."
+              error={fieldState.error?.message}
+            >
+              {(controlProps) => (
+                <SelectInput
+                  {...controlProps}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  options={controller.dimensionOptions}
+                />
+              )}
+            </FormField>
+          )}
+        />
         <FormField
           id="technical-indicator"
           label="Indicador"
@@ -55,7 +82,6 @@ function TechnicalEvaluationContent({
               {...controlProps}
               list={suggestionsId}
               autoComplete="off"
-              autoFocus
               {...form.register('indicator')}
             />
           )}

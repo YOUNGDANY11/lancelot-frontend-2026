@@ -1,3 +1,4 @@
+import type { Sport } from '@/constants/enums'
 import { createContext } from 'react'
 import type { Season } from '@/types/club'
 
@@ -5,6 +6,7 @@ export interface ContextCategory {
   id_category: number
   name: string
   max_age?: number
+  sport?: Sport
 }
 
 export interface AppContextValue {

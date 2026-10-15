@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { describeSessionLoad, rpeLabel } from '@/constants/rpeScale'
 import { runWithConcurrency } from '@/utils/batchRunner'
-import { buildMatchStatRows, isStatRowDirty, toMatchStatPayload } from '@/utils/matchStatsBatch'
+import {
+  buildMatchStatRows,
+  counterFieldsFor,
+  isStatRowDirty,
+  toMatchStatPayload,
+} from '@/utils/matchStatsBatch'
 import { buildRpeRows, planRpeOperations, summarizeRows } from '@/utils/rpeBatch'
 
 const ROSTER = [
@@ -71,10 +76,10 @@ describe('lote de RPE', () => {
 describe('lote de estadísticas de partido', () => {
   it('solo envía a quienes jugaron y valida las tarjetas', () => {
     const rows = buildMatchStatRows(ROSTER, [])
-    expect(rows.every((row) => !isStatRowDirty(row, 4))).toBe(true)
+    expect(rows.every((row) => !isStatRowDirty(row, 4, 'futbol'))).toBe(true)
 
-    const played = { ...rows[0], played: true, minutes: '70', goals: '1', rpe: 7 }
-    expect(toMatchStatPayload(played, 4).payload).toEqual({
+    const played = { ...rows[0], played: true, minutes: '70', goals: '1', fouls: '4', rpe: 7 }
+    expect(toMatchStatPayload(played, 4, 'futbol').payload).toEqual({
       id_match: 4,
       id_user: 1,
       minutes_played: 70,
@@ -82,11 +87,28 @@ describe('lote de estadísticas de partido', () => {
       assists: 0,
       yellow_cards: 0,
       red_cards: 0,
+      fouls_committed: 0,
       rpe: 7,
     })
-    expect(toMatchStatPayload({ ...played, red: '3' }, 4).error).toBe(
+    expect(toMatchStatPayload({ ...played, red: '3' }, 4, 'futbol').error).toBe(
       'Revisa goles, asistencias y tarjetas.',
     )
+  })
+
+  it('en fútbol sala limita los minutos a la duración del partido y registra las faltas', () => {
+    const [row] = buildMatchStatRows(ROSTER, [])
+    const played = { ...row, played: true, minutes: '38', fouls: '4' }
+
+    expect(toMatchStatPayload(played, 4, 'futbol_sala').payload).toMatchObject({
+      minutes_played: 38,
+      fouls_committed: 4,
+    })
+    expect(toMatchStatPayload({ ...played, minutes: '70' }, 4, 'futbol_sala').error).toBe(
+      'Minutos entre 0 y 50.',
+    )
+    expect(toMatchStatPayload({ ...played, minutes: '70' }, 4, 'futbol').error).toBeNull()
+    expect(counterFieldsFor('futbol_sala').map((field) => field.label)).toContain('Faltas')
+    expect(counterFieldsFor('futbol').map((field) => field.label)).not.toContain('Faltas')
   })
 })
 

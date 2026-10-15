@@ -1,5 +1,6 @@
+import { useWatch } from 'react-hook-form'
 import { useQuery } from '@tanstack/react-query'
-import { POSITION_GROUPS } from '@/constants/positions'
+import { positionFitsSport, positionGroupsFor, sportOf } from '@/constants/positions'
 import { useEntityFormController } from '@/controllers/shared/useEntityFormController'
 import { useAppContext } from '@/hooks/useAppContext'
 import { queryKeys } from '@/lib/queryKeys'
@@ -61,9 +62,16 @@ export function useAssignmentChangeFormController({
       return `${fullName(assignment)} quedó en ${target?.name ?? 'la nueva categoría'}.`
     },
     onDone,
-    fieldMatchers: [{ field: 'id_category', pattern: /categor|límite|años|nacimiento/i }],
+    fieldMatchers: [
+      { field: 'position', pattern: /posición/i },
+      { field: 'id_category', pattern: /categor|límite|años|nacimiento/i },
+    ],
   })
 
+  const selectedCategoryId = useWatch({ control: controller.form.control, name: 'id_category' })
+  const selectedCategory = categories.find(
+    (item) => String(item.id_category) === String(selectedCategoryId),
+  )
   const isLoadingAthlete = athletesQuery.isPending || seasonAssignmentsQuery.isPending
   const options = categories.filter(
     (item) =>
@@ -84,9 +92,13 @@ export function useAssignmentChangeFormController({
       value: String(item.id_category),
       label: item.name,
     })),
-    positionGroups: POSITION_GROUPS.map((group) => ({
-      label: group.label,
-      options: group.positions.map((position) => ({ value: position, label: position })),
-    })),
+    positionGroups: positionGroupsFor(selectedCategory ? sportOf(selectedCategory) : null),
+    onCategoryChange: (value: string) => {
+      controller.form.setValue('id_category', value, { shouldValidate: true })
+      const category = categories.find((item) => String(item.id_category) === value)
+      const position = controller.form.getValues('position')
+      if (category && position && !positionFitsSport(position, sportOf(category)))
+        controller.form.setValue('position', '')
+    },
   }
 }

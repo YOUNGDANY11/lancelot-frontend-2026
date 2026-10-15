@@ -51,7 +51,7 @@ function AssignmentChangeContent({
                 <SelectInput
                   {...controlProps}
                   value={field.value}
-                  onValueChange={field.onChange}
+                  onValueChange={controller.onCategoryChange}
                   options={controller.categoryOptions}
                 />
               )}

@@ -7,6 +7,8 @@ import { CategoryFormDialog } from '@/components/modules/club/CategoryFormDialog
 import { TabToolbar } from '@/components/modules/club/TabToolbar'
 import { Button } from '@/components/ui/button'
 import { useCategoriesTabController } from '@/controllers/club/useCategoriesTabController'
+import { SPORT } from '@/constants/enums'
+import { sportOf } from '@/constants/positions'
 
 export function CategoriesTab() {
   const controller = useCategoriesTabController()
@@ -51,6 +53,11 @@ export function CategoriesTab() {
             key: 'ages',
             header: 'Edades',
             cell: (category) => `${category.min_age} a ${category.max_age} años`,
+          },
+          {
+            key: 'sport',
+            header: 'Deporte',
+            cell: (category) => SPORT.labels[sportOf(category)],
           },
           {
             key: 'actions',

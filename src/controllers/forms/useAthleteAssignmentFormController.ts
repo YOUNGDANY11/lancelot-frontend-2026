@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import type { AthleteOption } from '@/components/common/AthletePicker'
-import { POSITION_GROUPS } from '@/constants/positions'
+import { positionFitsSport, positionGroupsFor, sportOf } from '@/constants/positions'
 import { useAppContext } from '@/hooks/useAppContext'
 import { queryKeys } from '@/lib/queryKeys'
 import {
@@ -74,6 +74,10 @@ export function useAthleteAssignmentFormController({
   })
 
   const selectedId = useWatch({ control: form.control, name: 'id_user' })
+  const selectedCategoryId = useWatch({ control: form.control, name: 'id_category' })
+  const selectedCategory = categories.find(
+    (category) => String(category.id_category) === String(selectedCategoryId),
+  )
   const selectedAthlete = athletes.find((athlete) => athlete.id_user === selectedId)
   const selectedAssignments = selectedAthlete ? assignmentsOf(selectedAthlete.id_user) : []
   const takenCategories = new Set(selectedAssignments.map((assignment) => assignment.id_category))
@@ -121,6 +125,7 @@ export function useAthleteAssignmentFormController({
         return
       }
       applyServerError(form, error, [
+        { field: 'position', pattern: /posición/i },
         { field: 'id_category', pattern: /categor|límite|años|nacimiento/i },
         { field: 'id_user', pattern: /deportista|usuario/i },
       ])
@@ -141,6 +146,13 @@ export function useAthleteAssignmentFormController({
       if (existingPosition && !form.getValues('position'))
         form.setValue('position', existingPosition)
     },
+    onCategoryChange: (value: string) => {
+      form.setValue('id_category', value, { shouldValidate: true })
+      const category = categories.find((item) => String(item.id_category) === value)
+      const position = form.getValues('position')
+      if (category && position && !positionFitsSport(position, sportOf(category)))
+        form.setValue('position', '')
+    },
     categoryHint,
     categoryOptions: eligible.map((category) => ({
       value: String(category.id_category),
@@ -151,10 +163,7 @@ export function useAthleteAssignmentFormController({
             ? `${category.name} (categoría superior)`
             : category.name,
     })),
-    positionGroups: POSITION_GROUPS.map((group) => ({
-      label: group.label,
-      options: group.positions.map((position) => ({ value: position, label: position })),
-    })),
+    positionGroups: positionGroupsFor(selectedCategory ? sportOf(selectedCategory) : null),
     onSubmit: form.handleSubmit((values) => mutation.mutate(values)),
     isSubmitting: mutation.isPending,
     serverError: serverErrorOf(form),

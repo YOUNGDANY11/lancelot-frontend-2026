@@ -12,6 +12,7 @@ import { useTechnicalTabController } from '@/controllers/athletes/useTechnicalTa
 import { formatDate } from '@/utils/formatDate'
 import { formatNumber } from '@/utils/formatNumber'
 import type { IndicatorSummary } from '@/utils/technicalScores'
+import { DELETED_ACCOUNT_LABEL } from '@/constants/roles'
 
 function TrendBadge({ summary }: { summary: IndicatorSummary }) {
   if (summary.previous === null) return null
@@ -118,7 +119,7 @@ export function TechnicalTab({ idUser }: { idUser: number }) {
               {
                 key: 'evaluator',
                 header: 'Evaluó',
-                cell: (evaluation) => evaluation.evaluator_name ?? '—',
+                cell: (evaluation) => evaluation.evaluator_name || DELETED_ACCOUNT_LABEL,
               },
               {
                 key: 'actions',

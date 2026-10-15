@@ -84,7 +84,7 @@ export interface HealthRecordRequest {
 export interface HealthAuditLog {
   id_log: number
   id_health?: number | null
-  accessed_by: number
+  accessed_by: number | null
   accessed_by_name?: string
   action: HealthAccessAction
   accessed_at: string

@@ -114,7 +114,7 @@ export function UsersTab() {
         open={dialogs.deleting !== null}
         onOpenChange={(open) => !open && dialogs.close()}
         title={`¿Eliminar la cuenta de ${dialogs.deleting ? fullName(dialogs.deleting) : ''}?`}
-        description="La persona ya no podrá ingresar. Si tiene registros asociados, el sistema puede impedir la eliminación."
+        description={controller.deleteDescription(dialogs.deleting)}
         confirmLabel="Eliminar"
         onConfirm={controller.confirmDelete}
         pending={controller.isDeleting}

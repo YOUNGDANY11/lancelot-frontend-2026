@@ -9,7 +9,7 @@ import { rolesService } from '@/services/rolesService'
 import { usersService } from '@/services/usersService'
 import { createApiError } from '@/test/apiErrors'
 import { SUB15, primeAppDataMocks } from '@/test/appDataMocks'
-import { ADMIN_USER, COACH_USER } from '@/test/fixtures'
+import { ADMIN_USER, ATHLETE_USER, COACH_USER } from '@/test/fixtures'
 import { renderAppAt } from '@/test/renderWithProviders'
 import type { MlModel, ValidationReport } from '@/types/ml'
 import type { User } from '@/types/user'
@@ -306,5 +306,48 @@ describe('configuración', () => {
         id_role: 4,
       }),
     )
+  })
+
+  it('advierte que eliminar a un deportista borra todo su historial y muestra si el sistema lo impide', async () => {
+    vi.mocked(usersService.listAll).mockResolvedValue([ADMIN_USER, COACH_USER, ATHLETE_USER])
+    vi.mocked(usersService.remove).mockRejectedValue(
+      createApiError(409, {
+        status: 'Error',
+        mensaje:
+          'No se puede completar la operación porque el registro está relacionado con otra información del sistema.',
+      }),
+    )
+    signInAs(ADMIN_USER)
+    const user = userEvent.setup()
+    renderAppAt('/app/configuracion?tab=usuarios')
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Más acciones para Ana María Pérez' }),
+    )
+    await user.click(await screen.findByRole('menuitem', { name: 'Eliminar' }))
+    const confirm = await screen.findByRole('alertdialog')
+    expect(within(confirm).getByText(/todo su historial/)).toBeInTheDocument()
+    await user.click(within(confirm).getByRole('button', { name: 'Eliminar' }))
+
+    expect(
+      await screen.findByText(
+        'No se puede completar la operación porque el registro está relacionado con otra información del sistema.',
+      ),
+    ).toBeInTheDocument()
+    expect(usersService.remove).toHaveBeenCalledWith(ATHLETE_USER.id_user)
+  })
+
+  it('aclara que al eliminar a alguien del cuerpo técnico se conservan sus registros', async () => {
+    vi.mocked(usersService.listAll).mockResolvedValue([ADMIN_USER, COACH_USER])
+    signInAs(ADMIN_USER)
+    const user = userEvent.setup()
+    renderAppAt('/app/configuracion?tab=usuarios')
+
+    await user.click(await screen.findByRole('button', { name: 'Más acciones para Carlos Rojas' }))
+    await user.click(await screen.findByRole('menuitem', { name: 'Eliminar' }))
+
+    expect(
+      within(await screen.findByRole('alertdialog')).getByText(/se conservan, sin su nombre/),
+    ).toBeInTheDocument()
   })
 })

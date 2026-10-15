@@ -17,6 +17,8 @@ export const ROLE_CODES = [
 
 export type RoleCode = (typeof ROLE_CODES)[number]
 
+export const DELETED_ACCOUNT_LABEL = 'Cuenta eliminada'
+
 export const ROLE_CODE_BY_ID: Record<number, RoleCode> = {
   1: 'ADMIN',
   2: 'ENTRENADOR',

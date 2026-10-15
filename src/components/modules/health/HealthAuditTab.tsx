@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { HEALTH_ACCESS_ACTION } from '@/constants/enums'
 import { useHealthAuditController } from '@/controllers/health/useHealthAuditController'
 import { formatDateTime } from '@/utils/formatDate'
+import { DELETED_ACCOUNT_LABEL } from '@/constants/roles'
 
 export function HealthAuditTab() {
   const controller = useHealthAuditController()
@@ -64,7 +65,9 @@ export function HealthAuditTab() {
           {
             key: 'user',
             header: 'Usuario',
-            cell: (log) => log.accessed_by_name || `Usuario ${log.accessed_by}`,
+            cell: (log) =>
+              log.accessed_by_name ||
+              (log.accessed_by === null ? DELETED_ACCOUNT_LABEL : `Usuario ${log.accessed_by}`),
           },
           {
             key: 'action',

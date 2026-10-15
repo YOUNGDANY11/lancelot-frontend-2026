@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { HEALTH_RECORD_STATUS } from '@/constants/enums'
 import { useHealthRecordsTabController } from '@/controllers/health/useHealthRecordsTabController'
 import type { HealthRecord } from '@/types/athlete'
+import { DELETED_ACCOUNT_LABEL } from '@/constants/roles'
 
 function recordSubject(record: HealthRecord) {
   return `el registro de ${record.condition_type} de ${record.athlete_name || 'este deportista'}`
@@ -105,7 +106,7 @@ export function HealthRecordsTab() {
           {
             key: 'registered-by',
             header: 'Registró',
-            cell: (record) => record.registered_by_name || '—',
+            cell: (record) => record.registered_by_name || DELETED_ACCOUNT_LABEL,
           },
           {
             key: 'actions',

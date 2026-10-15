@@ -75,6 +75,10 @@ export function useUsersTabController() {
     ],
     roleLabel: (code: RoleCode | null) => (code ? ROLE_LABELS[code] : 'Sin rol reconocido'),
     isSelf: (account: User) => account.id_user === user?.id_user,
+    deleteDescription: (account: User | null) =>
+      account && resolveRoleCode(account.role_name, account.id_role) === 'DEPORTISTA'
+        ? 'Se eliminarán de forma permanente su cuenta y todo su historial: asignaciones, cargas RPE, evaluaciones, objetivos, lesiones, registros de salud, alertas e índices. Esta acción no se puede deshacer.'
+        : 'La persona ya no podrá ingresar. Las evaluaciones y registros que hizo sobre los deportistas se conservan, sin su nombre como autor.',
     dialogs,
     createSheet,
     confirmDelete: () => dialogs.deleting && deleteMutation.mutate(dialogs.deleting),

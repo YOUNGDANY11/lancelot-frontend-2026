@@ -4,6 +4,8 @@ export const READINESS_LABELS: Record<string, string> = {
   dias_etiquetados: 'Días con datos etiquetados',
   lesiones_sin_contacto: 'Lesiones sin contacto registradas',
   deportistas: 'Deportistas con datos',
+  temporadas_etiquetadas: 'Temporadas con ascensos etiquetados',
+  ascensos: 'Ascensos reales registrados',
 }
 
 export type AnalyticsTab = 'motor' | 'readiness' | 'calidad' | 'modelos' | 'validacion' | 'datos'
@@ -31,4 +33,11 @@ export const ENGINE_MODE_DESCRIPTIONS = {
   shadow:
     'El modelo predice en segundo plano para compararlo con las reglas; las alertas siguen saliendo de las reglas.',
   ml: 'Las evaluaciones de riesgo incluyen las predicciones del modelo de aprendizaje automático.',
+} as const
+
+export const TALENT_ENGINE_MODE_DESCRIPTIONS = {
+  rules: 'Las señalizaciones de talento salen solo de las reglas multidimensionales.',
+  shadow:
+    'Al detectar talento, el modelo estima la probabilidad de ascenso de cada deportista para compararla con las reglas, sin crear señalizaciones.',
+  ml: 'Además de las reglas, el modelo crea señalizaciones pendientes de origen «Modelo de ML» cuando la probabilidad supera el umbral.',
 } as const

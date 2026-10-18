@@ -45,7 +45,7 @@ export const GLOSSARY = {
   talentDetection: {
     term: 'Detección de talento',
     definition:
-      'Reglas que señalan a deportistas con un percentil alto y sin dimensiones débiles. Es una sugerencia: el cuerpo técnico revisa cada señalización y decide.',
+      'Reglas que señalan a deportistas con un percentil alto y sin dimensiones débiles. Cuando el club acumule temporadas con ascensos reales, un modelo de aprendizaje automático puede sumar sus propias sugerencias. Siempre es una sugerencia: el cuerpo técnico revisa cada señalización y decide.',
     source: 'Vaeyens et al. (2008)',
   },
   readiness: {

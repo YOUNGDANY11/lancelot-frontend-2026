@@ -80,6 +80,7 @@ vi.mock('@/services/mlService', () => ({
     engineConfig: vi.fn(),
     updateEngine: vi.fn(),
     readiness: vi.fn(),
+    talentReadiness: vi.fn(),
     dataQuality: vi.fn(),
     listModels: vi.fn(),
     activateModel: vi.fn(),
@@ -97,6 +98,7 @@ const HEALTH_USER: User = { ...COACH_USER, id_user: 11, id_role: 5, role_name: '
 const MODEL: MlModel = {
   id_model: 3,
   version: 'xgb-2026-09',
+  task: 'injury_risk',
   algorithm: 'xgboost',
   feature_version: 'v1',
   features: ['acwr'],
@@ -172,7 +174,45 @@ beforeEach(() => {
     positive_labels: 0,
     labeled_period: { from: null, to: null },
   })
-  vi.mocked(mlService.listModels).mockResolvedValue([MODEL])
+  vi.mocked(mlService.talentReadiness).mockResolvedValue({
+    ready: false,
+    criteria: [
+      {
+        code: 'temporadas_etiquetadas',
+        descripcion: 'Temporadas con ascensos',
+        value: 1,
+        minimum: 2,
+        met: false,
+      },
+      {
+        code: 'ascensos',
+        descripcion: 'Ascensos reales',
+        value: 12,
+        minimum: 10,
+        met: true,
+      },
+    ],
+    labeled_rows: 40,
+    pending_rows: 22,
+  })
+  vi.mocked(mlService.engineConfig).mockResolvedValue({
+    id_config: 1,
+    engine: 'rules',
+    min_labeled_days: 270,
+    min_non_contact_injuries: 30,
+    min_athletes: 20,
+    prob_medium_threshold: 0.25,
+    prob_high_threshold: 0.5,
+    talent_engine: 'rules',
+    talent_min_seasons: 2,
+    talent_min_promotions: 10,
+    talent_min_athletes: 30,
+    talent_prob_threshold: 0.5,
+  })
+  vi.mocked(mlService.listModels).mockResolvedValue([
+    MODEL,
+    { ...MODEL, id_model: 4, version: 'talento-rf-1', task: 'talent', is_synthetic: false },
+  ])
   vi.mocked(configService.listOverrides).mockResolvedValue([])
   vi.mocked(configService.getActive).mockResolvedValue({
     id: 1,
@@ -212,7 +252,55 @@ describe('análisis IA', () => {
     ])
     await user.click(screen.getByRole('tab', { name: 'Modelos' }))
     expect(await screen.findByText('Sintético')).toBeInTheDocument()
+    expect(screen.getByText('Talento')).toBeInTheDocument()
+    expect(screen.getByText('Riesgo de lesión')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Activar' })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('tab', { name: 'Readiness' }))
+    expect(
+      screen.queryByRole('heading', { name: /Readiness del modelo de talento/ }),
+    ).not.toBeInTheDocument()
+    expect(mlService.talentReadiness).not.toHaveBeenCalled()
+  })
+
+  it('muestra al administrador la readiness de talento y le deja cambiar su motor', async () => {
+    vi.mocked(mlService.updateEngine).mockResolvedValue({
+      id_config: 1,
+      engine: 'rules',
+      min_labeled_days: 270,
+      min_non_contact_injuries: 30,
+      min_athletes: 20,
+      prob_medium_threshold: 0.25,
+      prob_high_threshold: 0.5,
+      talent_engine: 'shadow',
+      talent_min_seasons: 2,
+      talent_min_promotions: 10,
+      talent_min_athletes: 30,
+      talent_prob_threshold: 0.6,
+    })
+    signInAs(ADMIN_USER)
+    const user = userEvent.setup()
+    renderAppAt('/app/analisis?tab=readiness')
+
+    expect(
+      await screen.findByRole('heading', { name: /Readiness del modelo de talento/ }),
+    ).toBeInTheDocument()
+    expect(await screen.findByText(/Faltan 1 de 2 criterios/)).toBeInTheDocument()
+    expect(screen.getByText('Temporadas con ascensos etiquetados')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('tab', { name: 'Motor' }))
+    const talentModes = await screen.findByRole('group', { name: /Modo del motor de talento/ })
+    await user.click(within(talentModes).getByRole('radio', { name: /Modo sombra/ }))
+    const threshold = screen.getByLabelText('Sugerir señalización desde')
+    await user.clear(threshold)
+    await user.type(threshold, '0,6')
+    await user.click(screen.getByRole('button', { name: 'Guardar' }))
+
+    await waitFor(() =>
+      expect(mlService.updateEngine).toHaveBeenCalledWith({
+        talent_engine: 'shadow',
+        talent_prob_threshold: 0.6,
+      }),
+    )
   })
 
   it('muestra el motivo cuando el backend rechaza activar un modelo', async () => {
@@ -226,7 +314,8 @@ describe('análisis IA', () => {
     const user = userEvent.setup()
     renderAppAt('/app/analisis?tab=modelos')
 
-    await user.click(await screen.findByRole('button', { name: 'Activar' }))
+    const riskModel = await screen.findByRole('article', { name: 'xgb-2026-09' })
+    await user.click(within(riskModel).getByRole('button', { name: 'Activar' }))
     const confirm = await screen.findByRole('alertdialog')
     await user.click(within(confirm).getByRole('button', { name: 'Activar' }))
 

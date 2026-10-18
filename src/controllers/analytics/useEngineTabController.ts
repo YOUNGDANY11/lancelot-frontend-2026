@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { ML_ENGINE_MODE, type MlEngineMode } from '@/constants/enums'
-import { ENGINE_MODE_DESCRIPTIONS } from '@/constants/ml'
+import { ENGINE_MODE_DESCRIPTIONS, TALENT_ENGINE_MODE_DESCRIPTIONS } from '@/constants/ml'
 import { queryKeys } from '@/lib/queryKeys'
 import { mlService } from '@/services/mlService'
 import type { EngineConfig, UpdateEngineConfigRequest } from '@/types/ml'
@@ -22,6 +22,8 @@ export function useEngineDraft(
   const [mode, setMode] = useState<MlEngineMode>(config.engine)
   const [medium, setMedium] = useState(String(config.prob_medium_threshold))
   const [high, setHigh] = useState(String(config.prob_high_threshold))
+  const [talentMode, setTalentMode] = useState<MlEngineMode>(config.talent_engine)
+  const [talentThreshold, setTalentThreshold] = useState(String(config.talent_prob_threshold))
   const [submitted, setSubmitted] = useState(false)
 
   const mediumValue = parseProbability(medium)
@@ -32,6 +34,11 @@ export function useEngineDraft(
       : mediumValue >= highValue
         ? 'El umbral de riesgo medio debe ser menor que el de riesgo alto.'
         : undefined
+  const talentValue = parseProbability(talentThreshold)
+  const talentThresholdError =
+    talentValue === null
+      ? 'Escribe una probabilidad entre 0 y 1, con máximo 3 decimales.'
+      : undefined
 
   const payload: UpdateEngineConfigRequest = {
     ...(mode !== config.engine ? { engine: mode } : {}),
@@ -40,6 +47,10 @@ export function useEngineDraft(
       : {}),
     ...(highValue !== null && highValue !== config.prob_high_threshold
       ? { prob_high_threshold: highValue }
+      : {}),
+    ...(talentMode !== config.talent_engine ? { talent_engine: talentMode } : {}),
+    ...(talentValue !== null && talentValue !== config.talent_prob_threshold
+      ? { talent_prob_threshold: talentValue }
       : {}),
   }
   const isDirty = Object.keys(payload).length > 0
@@ -52,16 +63,23 @@ export function useEngineDraft(
     high,
     setHigh,
     thresholdError: submitted ? thresholdError : undefined,
+    talentMode,
+    setTalentMode,
+    talentThreshold,
+    setTalentThreshold,
+    talentThresholdError: submitted ? talentThresholdError : undefined,
     isDirty,
     discard: () => {
       setMode(config.engine)
       setMedium(String(config.prob_medium_threshold))
       setHigh(String(config.prob_high_threshold))
+      setTalentMode(config.talent_engine)
+      setTalentThreshold(String(config.talent_prob_threshold))
       setSubmitted(false)
     },
     submit: () => {
       setSubmitted(true)
-      if (thresholdError || !isDirty) return
+      if (thresholdError || talentThresholdError || !isDirty) return
       onSave(payload)
     },
   }
@@ -76,13 +94,19 @@ export function useEngineTabController() {
     queryKey: queryKeys.ml.readiness(),
     queryFn: mlService.readiness,
   })
+  const talentReadinessQuery = useQuery({
+    queryKey: queryKeys.ml.talentReadiness(),
+    queryFn: mlService.talentReadiness,
+  })
 
   const mutation = useMutation({
     mutationFn: (payload: UpdateEngineConfigRequest) => mlService.updateEngine(payload),
     onSuccess: async (config) => {
       setServerError(undefined)
       await queryClient.invalidateQueries({ queryKey: queryKeys.ml.all })
-      toast.success(`Motor guardado en modo ${ML_ENGINE_MODE.labels[config.engine].toLowerCase()}.`)
+      toast.success(
+        `Motor guardado: riesgo en ${ML_ENGINE_MODE.labels[config.engine].toLowerCase()} y talento en ${ML_ENGINE_MODE.labels[config.talent_engine].toLowerCase()}.`,
+      )
     },
     onError: (error) => setServerError(parseApiError(error)),
   })
@@ -94,10 +118,16 @@ export function useEngineTabController() {
     errorMessage: configQuery.isError ? parseApiError(configQuery.error) : undefined,
     retry: () => void configQuery.refetch(),
     isReady: readinessQuery.data?.ready ?? false,
+    isTalentReady: talentReadinessQuery.data?.ready ?? false,
     modes: ML_ENGINE_MODE.options.map((option) => ({
       value: option.value,
       label: option.label,
       description: ENGINE_MODE_DESCRIPTIONS[option.value],
+    })),
+    talentModes: ML_ENGINE_MODE.options.map((option) => ({
+      value: option.value,
+      label: option.label,
+      description: TALENT_ENGINE_MODE_DESCRIPTIONS[option.value],
     })),
     save: (payload: UpdateEngineConfigRequest) => mutation.mutate(payload),
     isSaving: mutation.isPending,

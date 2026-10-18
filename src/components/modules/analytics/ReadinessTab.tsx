@@ -80,6 +80,49 @@ export function ReadinessTab() {
           className="col-span-2 lg:col-span-1"
         />
       </div>
+
+      {controller.showTalent && (
+        <section aria-labelledby="readiness-talento" className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1">
+            <h3 id="readiness-talento" className="flex items-center gap-1 text-base font-semibold">
+              Readiness del modelo de talento
+              <HelpHint term="talentDetection" />
+            </h3>
+            <p className="text-sm text-pretty text-muted-foreground">
+              El modelo de talento aprende de los ascensos reales: deportistas que la temporada
+              siguiente juegan en una categoría superior a la de su edad. Necesita al menos una
+              temporada etiquetada para entrenar y otra para probar.
+            </p>
+          </div>
+          {controller.talentErrorMessage ? (
+            <ErrorState message={controller.talentErrorMessage} onRetry={controller.retryTalent} />
+          ) : !controller.talentReadiness ? (
+            <LoadingSkeleton rows={2} label="Consultando la readiness de talento" />
+          ) : (
+            <>
+              <p className="text-sm font-medium">
+                {controller.talentReadiness.ready
+                  ? 'Hay datos suficientes para entrenar un modelo de talento.'
+                  : `Faltan ${controller.talentPendingCount} de ${controller.talentReadiness.criteria.length} criterios. Mientras tanto, la detección de talento sigue con las reglas.`}
+              </p>
+              <div className="rounded-2xl glass-subtle p-4 sm:p-5">
+                <ReadinessProgress criteria={controller.talentReadiness.criteria} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <KpiCard
+                  label="Temporadas-deportista etiquetadas"
+                  value={formatNumber(controller.talentReadiness.labeled_rows, 0)}
+                />
+                <KpiCard
+                  label="Pendientes de etiqueta"
+                  value={formatNumber(controller.talentReadiness.pending_rows, 0)}
+                  hint="Se etiquetan cuando la temporada siguiente tiene plantilla"
+                />
+              </div>
+            </>
+          )}
+        </section>
+      )}
     </div>
   )
 }

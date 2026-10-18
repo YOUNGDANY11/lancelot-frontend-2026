@@ -10,6 +10,7 @@ import type {
   MlModelMetrics,
   Readiness,
   RelabelResult,
+  TalentReadiness,
   UpdateEngineConfigRequest,
   ValidationReport,
 } from '@/types/ml'
@@ -41,6 +42,7 @@ const METRIC_KEYS: (keyof MlModelMetrics)[] = [
 function normalizeModel(model: MlModel): MlModel {
   return {
     ...model,
+    task: model.task ?? 'injury_risk',
     metrics: withNumbers(model.metrics ?? {}, METRIC_KEYS),
     rules_baseline_metrics: model.rules_baseline_metrics
       ? withNumbers(model.rules_baseline_metrics, METRIC_KEYS)
@@ -58,7 +60,11 @@ function normalizeFeature(row: FeatureSnapshot): FeatureSnapshot {
 }
 
 function normalizeEngine(config: EngineConfig): EngineConfig {
-  return withNumbers(config, ['prob_medium_threshold', 'prob_high_threshold'])
+  return withNumbers(config, [
+    'prob_medium_threshold',
+    'prob_high_threshold',
+    'talent_prob_threshold',
+  ])
 }
 
 export const mlService = {
@@ -77,6 +83,13 @@ export const mlService = {
 
   async readiness(): Promise<Readiness> {
     const { data } = await apiClient.http.get<{ readiness: Readiness }>('/ml/readiness')
+    return data.readiness
+  },
+
+  async talentReadiness(): Promise<TalentReadiness> {
+    const { data } = await apiClient.http.get<{ readiness: TalentReadiness }>(
+      '/ml/talent-readiness',
+    )
     return data.readiness
   },
 

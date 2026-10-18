@@ -117,12 +117,17 @@ export const TALENT_FLAG_SOURCE = defineEnum<TalentFlagSource>([
 ])
 
 export type TalentRuleCode =
-  'percentil_alto' | 'perfil_multidimensional' | 'mejora_sostenida' | 'disponibilidad'
+  | 'percentil_alto'
+  | 'perfil_multidimensional'
+  | 'mejora_sostenida'
+  | 'disponibilidad'
+  | 'prediccion_ml'
 export const TALENT_RULE = defineEnum<TalentRuleCode>([
   { value: 'percentil_alto', label: 'Percentil alto en su categoría', tone: 'info' },
   { value: 'perfil_multidimensional', label: 'Sin dimensiones débiles', tone: 'info' },
   { value: 'mejora_sostenida', label: 'Mejora frente a la temporada anterior', tone: 'success' },
   { value: 'disponibilidad', label: 'Disponible y sin lesión severa', tone: 'success' },
+  { value: 'prediccion_ml', label: 'Predicción del modelo de talento', tone: 'info' },
 ])
 
 export type DevelopmentObjectiveStatus = 'open' | 'achieved' | 'missed'
@@ -155,6 +160,12 @@ export const HEALTH_ACCESS_ACTION = defineEnum<HealthAccessAction>([
 ])
 
 export type MlEngineMode = 'rules' | 'shadow' | 'ml'
+export type MlModelTask = 'injury_risk' | 'talent'
+export const ML_MODEL_TASK = defineEnum<MlModelTask>([
+  { value: 'injury_risk', label: 'Riesgo de lesión', tone: 'info' },
+  { value: 'talent', label: 'Talento', tone: 'success' },
+])
+
 export const ML_ENGINE_MODE = defineEnum<MlEngineMode>([
   { value: 'rules', label: 'Solo reglas', tone: 'neutral' },
   { value: 'shadow', label: 'Modo sombra', tone: 'info' },

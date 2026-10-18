@@ -1,4 +1,4 @@
-import type { MlEngineMode } from '@/constants/enums'
+import type { MlEngineMode, MlModelTask } from '@/constants/enums'
 
 export interface EngineConfig {
   id_config: number
@@ -8,12 +8,19 @@ export interface EngineConfig {
   min_athletes: number
   prob_medium_threshold: number
   prob_high_threshold: number
+  talent_engine: MlEngineMode
+  talent_min_seasons: number
+  talent_min_promotions: number
+  talent_min_athletes: number
+  talent_prob_threshold: number
 }
 
 export interface UpdateEngineConfigRequest {
   engine?: MlEngineMode
   prob_medium_threshold?: number
   prob_high_threshold?: number
+  talent_engine?: MlEngineMode
+  talent_prob_threshold?: number
 }
 
 export interface ReadinessCriterion {
@@ -31,6 +38,14 @@ export interface Readiness {
   labeled_rows: number
   positive_labels: number
   labeled_period: { from: string | null; to: string | null }
+}
+
+export interface TalentReadiness {
+  ready: boolean
+  criteria: ReadinessCriterion[]
+  feature_version?: string
+  labeled_rows: number
+  pending_rows: number
 }
 
 export interface DataQuality {
@@ -63,6 +78,7 @@ export interface MlModelMetrics {
 export interface MlModel {
   id_model: number
   version: string
+  task: MlModelTask
   algorithm: string
   feature_version: string
   features: string[]

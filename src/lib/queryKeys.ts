@@ -65,6 +65,7 @@ export const queryKeys = {
     all: ['ml'] as const,
     engine: () => [...queryKeys.ml.all, 'engine'] as const,
     readiness: () => [...queryKeys.ml.all, 'readiness'] as const,
+    talentReadiness: () => [...queryKeys.ml.all, 'talent-readiness'] as const,
     dataQuality: (range: QueryParams) => [...queryKeys.ml.all, 'data-quality', range] as const,
     models: () => [...queryKeys.ml.all, 'models'] as const,
     features: (filters: QueryParams) => [...queryKeys.ml.all, 'features', filters] as const,

@@ -47,6 +47,17 @@ export interface DetectionSummary {
   removed: number
   failed: FailedAthlete[]
   recalculation?: { recalculated: number; failed: FailedAthlete[] }
+  ml?: TalentModelSummary | { error: string }
+}
+
+export interface TalentModelSummary {
+  engine: 'rules' | 'shadow' | 'ml'
+  predicted: number
+  flags_created: number
+  flags_updated: number
+  flags_removed: number
+  failed: number
+  skipped_reason?: string
 }
 
 export interface CreateTalentFlagRequest {

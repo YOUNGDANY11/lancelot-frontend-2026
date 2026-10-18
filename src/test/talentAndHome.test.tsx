@@ -525,6 +525,11 @@ describe('inicio según el rol', () => {
       min_athletes: 20,
       prob_medium_threshold: 0.25,
       prob_high_threshold: 0.5,
+      talent_engine: 'rules',
+      talent_min_seasons: 2,
+      talent_min_promotions: 10,
+      talent_min_athletes: 30,
+      talent_prob_threshold: 0.5,
     })
     vi.mocked(mlService.readiness).mockResolvedValue({
       ready: false,

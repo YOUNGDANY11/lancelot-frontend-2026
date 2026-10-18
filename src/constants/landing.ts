@@ -209,14 +209,14 @@ export const INTELLIGENCE_PILLARS: IntelligencePillar[] = [
     title: 'Detección de talento multidimensional',
     phases: [
       {
-        label: 'Varias dimensiones a la vez',
+        label: 'Fase 1 · Reglas multidimensionales',
         description:
-          'Exige un percentil alto en su categoría y que ninguna dimensión (física, técnica, táctica o de participación) quede por debajo del mínimo.',
+          'Exige un percentil alto en su categoría y que ninguna dimensión (física, técnica, táctica o de participación) quede por debajo del mínimo, con avisos de edad relativa y de cercanía a la edad máxima.',
       },
       {
-        label: 'Con contexto',
+        label: 'Fase 2 · Aprendizaje automático',
         description:
-          'Advierte sobre el efecto de edad relativa y la cercanía a la edad máxima de la categoría para sugerir evaluar un ascenso.',
+          'Aprende de los ascensos reales del club. Se activa cuando hay al menos dos temporadas etiquetadas, y antes se valida en modo sombra frente a las reglas.',
       },
     ],
   },

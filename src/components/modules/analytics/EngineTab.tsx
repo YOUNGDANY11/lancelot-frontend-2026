@@ -14,16 +14,71 @@ import {
 import { cn } from '@/lib/utils'
 import type { EngineConfig, UpdateEngineConfigRequest } from '@/types/ml'
 
+type EngineModeOption = { value: EngineConfig['engine']; label: string; description: string }
+
+function ModeOptions({
+  name,
+  modes,
+  value,
+  onChange,
+}: {
+  name: string
+  modes: EngineModeOption[]
+  value: EngineConfig['engine']
+  onChange: (value: EngineConfig['engine']) => void
+}) {
+  return (
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+      {modes.map((mode) => {
+        const checked = value === mode.value
+        return (
+          <label
+            key={mode.value}
+            className={cn(
+              'flex cursor-pointer flex-col gap-1.5 rounded-xl border border-border p-4 transition-colors has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50',
+              checked && 'border-primary bg-primary/10',
+            )}
+          >
+            <span className="flex items-center gap-2 font-medium">
+              <input
+                type="radio"
+                name={name}
+                value={mode.value}
+                checked={checked}
+                onChange={() => onChange(mode.value)}
+                className="accent-primary"
+              />
+              {mode.label}
+            </span>
+            <span className="text-sm text-pretty text-muted-foreground">{mode.description}</span>
+          </label>
+        )
+      })}
+    </div>
+  )
+}
+
 interface EngineFormProps {
   config: EngineConfig
   isReady: boolean
-  modes: { value: EngineConfig['engine']; label: string; description: string }[]
+  isTalentReady: boolean
+  modes: EngineModeOption[]
+  talentModes: EngineModeOption[]
   isSaving: boolean
   serverError?: string
   onSave: (payload: UpdateEngineConfigRequest) => void
 }
 
-function EngineForm({ config, isReady, modes, isSaving, serverError, onSave }: EngineFormProps) {
+function EngineForm({
+  config,
+  isReady,
+  isTalentReady,
+  modes,
+  talentModes,
+  isSaving,
+  serverError,
+  onSave,
+}: EngineFormProps) {
   const draft = useEngineDraft(config, onSave)
 
   return (
@@ -41,35 +96,7 @@ function EngineForm({ config, isReady, modes, isSaving, serverError, onSave }: E
           Modo del motor de riesgo
           <HelpHint term="shadowMode" />
         </legend>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          {modes.map((mode) => {
-            const checked = draft.mode === mode.value
-            return (
-              <label
-                key={mode.value}
-                className={cn(
-                  'flex cursor-pointer flex-col gap-1.5 rounded-xl border border-border p-4 transition-colors has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50',
-                  checked && 'border-primary bg-primary/10',
-                )}
-              >
-                <span className="flex items-center gap-2 font-medium">
-                  <input
-                    type="radio"
-                    name="engine-mode"
-                    value={mode.value}
-                    checked={checked}
-                    onChange={() => draft.setMode(mode.value)}
-                    className="accent-primary"
-                  />
-                  {mode.label}
-                </span>
-                <span className="text-sm text-pretty text-muted-foreground">
-                  {mode.description}
-                </span>
-              </label>
-            )
-          })}
-        </div>
+        <ModeOptions name="engine-mode" modes={modes} value={draft.mode} onChange={draft.setMode} />
         <p className="text-xs text-muted-foreground">
           El modo sombra necesita un modelo activo. El modo de aprendizaje automático además exige
           la readiness{isReady ? ', que ya se cumple.' : ', que aún no se cumple.'}
@@ -117,6 +144,45 @@ function EngineForm({ config, isReady, modes, isSaving, serverError, onSave }: E
         )}
       </fieldset>
 
+      <fieldset className="flex flex-col gap-3">
+        <legend className="mb-2 flex items-center gap-1 text-sm font-semibold">
+          Modo del motor de talento
+          <HelpHint term="talentDetection" />
+        </legend>
+        <ModeOptions
+          name="talent-engine-mode"
+          modes={talentModes}
+          value={draft.talentMode}
+          onChange={draft.setTalentMode}
+        />
+        <p className="text-xs text-muted-foreground">
+          El modelo de talento corre cada vez que se detecta talento: al cerrar la temporada o con
+          «Detectar talento». El modo sombra necesita un modelo de talento activo; el de aprendizaje
+          automático además exige su readiness
+          {isTalentReady ? ', que ya se cumple.' : ', que aún no se cumple.'}
+        </p>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="engine-talent-threshold">Sugerir señalización desde</Label>
+          <Input
+            id="engine-talent-threshold"
+            inputMode="decimal"
+            value={draft.talentThreshold}
+            onChange={(event) => draft.setTalentThreshold(event.target.value)}
+            aria-invalid={Boolean(draft.talentThresholdError)}
+            className="w-32 tabular-nums"
+          />
+          <p className="text-xs text-muted-foreground">
+            Probabilidad de 0 a 1 de que el deportista juegue en una categoría superior a la de su
+            edad la temporada siguiente. {CALIBRATION_WARNING}
+          </p>
+        </div>
+        {draft.talentThresholdError && (
+          <p role="alert" className="text-sm text-destructive">
+            {draft.talentThresholdError}
+          </p>
+        )}
+      </fieldset>
+
       <div className="flex flex-wrap justify-end gap-2">
         <Button
           type="button"
@@ -153,7 +219,9 @@ export function EngineTab() {
       key={controller.formKey}
       config={controller.config}
       isReady={controller.isReady}
+      isTalentReady={controller.isTalentReady}
       modes={controller.modes}
+      talentModes={controller.talentModes}
       isSaving={controller.isSaving}
       serverError={controller.serverError}
       onSave={controller.save}

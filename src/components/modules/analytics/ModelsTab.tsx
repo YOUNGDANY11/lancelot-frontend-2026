@@ -5,6 +5,7 @@ import { ErrorState } from '@/components/common/ErrorState'
 import { LoadingSkeleton } from '@/components/common/LoadingSkeleton'
 import { StatusBadge } from '@/components/common/StatusBadge'
 import { Button } from '@/components/ui/button'
+import { ML_MODEL_TASK } from '@/constants/enums'
 import { useModelsTabController } from '@/controllers/analytics/useModelsTabController'
 import type { MlModel } from '@/types/ml'
 import { formatDate } from '@/utils/formatDate'
@@ -78,8 +79,9 @@ export function ModelsTab() {
   return (
     <div className="flex flex-col gap-4">
       <p className="text-sm text-pretty text-muted-foreground">
-        Los modelos los entrena el servicio de ML y se registran aquí. Para activarlos deben ser
-        reales (no sintéticos), cumplirse la readiness y superar a las reglas.
+        Los modelos los entrena el servicio de ML y se registran aquí: uno de riesgo de lesión y
+        otro de talento. Para activarlos deben ser reales (no sintéticos), cumplirse la readiness de
+        su tarea y superar a las reglas. Activar uno solo reemplaza al activo de su misma tarea.
       </p>
 
       {controller.models.length === 0 ? (
@@ -109,6 +111,10 @@ export function ModelsTab() {
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
+                      <StatusBadge
+                        label={ML_MODEL_TASK.labels[model.task]}
+                        tone={ML_MODEL_TASK.tones[model.task]}
+                      />
                       {model.is_active && <StatusBadge label="Activo" tone="success" />}
                       {model.is_synthetic && <StatusBadge label="Sintético" tone="warning" />}
                     </div>

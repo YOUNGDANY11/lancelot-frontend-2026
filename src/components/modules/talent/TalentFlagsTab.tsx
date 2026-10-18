@@ -123,6 +123,12 @@ export function TalentFlagsTab() {
         stats={[
           { label: 'Evaluados', value: summary?.evaluated ?? 0 },
           { label: 'Señalados', value: summary?.flagged ?? 0 },
+          ...(summary?.ml && 'predicted' in summary.ml && summary.ml.engine !== 'rules'
+            ? [
+                { label: 'Con predicción del modelo', value: summary.ml.predicted },
+                { label: 'Señalados por el modelo', value: summary.ml.flags_created },
+              ]
+            : []),
           { label: 'Nuevos', value: summary?.created ?? 0 },
           { label: 'Actualizados', value: summary?.updated ?? 0 },
           { label: 'Ya revisados', value: summary?.skipped ?? 0 },

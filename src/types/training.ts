@@ -46,6 +46,8 @@ export interface MatchStatistic {
   assists: number
   yellow_cards: number
   red_cards: number
+  saves?: number | null
+  goals_conceded?: number | null
   rpe?: number | null
 }
 
@@ -57,6 +59,8 @@ export interface MatchStatisticRequest {
   assists: number
   yellow_cards: number
   red_cards: number
+  saves?: number
+  goals_conceded?: number
   rpe?: number
 }
 

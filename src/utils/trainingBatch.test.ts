@@ -73,10 +73,12 @@ describe('lote de estadísticas de partido', () => {
     const rows = buildMatchStatRows(ROSTER, [])
     expect(rows.every((row) => !isStatRowDirty(row, 4))).toBe(true)
 
-    const played = { ...rows[0], played: true, minutes: '70', goals: '1', rpe: 7 }
+    const forward = rows.find((row) => row.id_user === 2)!
+    expect(forward.isGoalkeeper).toBe(false)
+    const played = { ...forward, played: true, minutes: '70', goals: '1', rpe: 7 }
     expect(toMatchStatPayload(played, 4).payload).toEqual({
       id_match: 4,
-      id_user: 1,
+      id_user: 2,
       minutes_played: 70,
       goals: 1,
       assists: 0,
@@ -87,6 +89,31 @@ describe('lote de estadísticas de partido', () => {
     expect(toMatchStatPayload({ ...played, red: '3' }, 4).error).toBe(
       'Revisa goles, asistencias y tarjetas.',
     )
+  })
+
+  it('pide atajadas y goles recibidos solo a los arqueros', () => {
+    const rows = buildMatchStatRows(ROSTER, [])
+    const goalkeeper = rows.find((row) => row.id_user === 1)!
+    expect(goalkeeper.isGoalkeeper).toBe(true)
+
+    const played = { ...goalkeeper, played: true, minutes: '90', saves: '5', conceded: '1' }
+    expect(toMatchStatPayload(played, 4).payload).toMatchObject({
+      id_user: 1,
+      saves: 5,
+      goals_conceded: 1,
+    })
+    expect(toMatchStatPayload({ ...played, saves: 'x' }, 4).error).toBe(
+      'Revisa atajadas y goles recibidos.',
+    )
+  })
+
+  it('reconoce al arquero por la posición de la plantilla cuando la convocatoria no la trae', () => {
+    const rows = buildMatchStatRows(
+      [{ id_user: 9, name: 'Iker', lastname: 'Paz' }],
+      [],
+      new Map([[9, 'Portero de fútbol sala']]),
+    )
+    expect(rows[0].isGoalkeeper).toBe(true)
   })
 })
 

@@ -8,6 +8,7 @@ import {
   type RiskLevelValue,
 } from '@/constants/enums'
 import { PARTNER_CONTENT } from '@/constants/landing'
+import { isGoalkeeperPosition } from '@/constants/positions'
 import type { useAthleteReportController } from '@/controllers/athletes/useAthleteReportController'
 import { formatDate } from '@/utils/formatDate'
 import { formatNumber, formatPercent } from '@/utils/formatNumber'
@@ -55,6 +56,8 @@ export function AthleteReport({ report }: { report: ReportData }) {
   if (!summary) return null
   const { athlete, training_participation: training, match_participation: matches } = summary
   const index = summary.weighted_progress_index
+  const isGoalkeeper = isGoalkeeperPosition(athlete.position)
+  const savesAndConceded = (matches.saves ?? 0) + (matches.goals_conceded ?? 0)
 
   return (
     <article className="report-sheet flex flex-col gap-6 rounded-2xl border border-border p-6 sm:p-10">
@@ -195,10 +198,40 @@ export function AthleteReport({ report }: { report: ReportData }) {
             value={`${matches.matches_played} de ${matches.matches_in_season}`}
             hint={`${formatNumber(matches.total_minutes, 0)} minutos`}
           />
-          <Stat label="Goles" value={String(matches.goals)} />
-          <Stat label="Asistencias" value={String(matches.assists)} />
+          {isGoalkeeper ? (
+            <>
+              <Stat label="Atajadas" value={String(matches.saves ?? 0)} />
+              <Stat label="Goles recibidos" value={String(matches.goals_conceded ?? 0)} />
+              <Stat
+                label="Porcentaje de atajadas"
+                value={
+                  savesAndConceded > 0
+                    ? formatPercent(((matches.saves ?? 0) / savesAndConceded) * 100)
+                    : 'Sin datos'
+                }
+              />
+            </>
+          ) : (
+            <>
+              <Stat label="Goles" value={String(matches.goals)} />
+              <Stat label="Asistencias" value={String(matches.assists)} />
+            </>
+          )}
           <Stat label="Tarjetas amarillas" value={String(matches.yellow_cards)} />
           <Stat label="Tarjetas rojas" value={String(matches.red_cards)} />
+          <Stat
+            label="Contribución en partidos"
+            value={
+              index?.contribution_score == null
+                ? 'Sin datos'
+                : formatNumber(index.contribution_score, 0)
+            }
+            hint={
+              isGoalkeeper
+                ? 'Percentil frente a los arqueros de su categoría'
+                : 'Percentil de goles y asistencias frente a su grupo de posición'
+            }
+          />
         </dl>
       </ReportSection>
 

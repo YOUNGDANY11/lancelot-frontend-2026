@@ -101,7 +101,7 @@ export const JOURNEY_STEPS: JourneyStep[] = [
     stage: 'Paso 1',
     title: 'Pre-temporada',
     description:
-      'Evaluación física (talla, peso, VO₂ máx. y velocidad), evaluación técnica, historial médico y objetivos de desarrollo.',
+      'Evaluación física (talla, peso, VO₂ máx. y velocidad), evaluación técnica y táctica, historial médico y objetivos de desarrollo.',
   },
   {
     icon: CalendarRange,
@@ -148,7 +148,7 @@ export const LANDING_MODULES: LandingModule[] = [
     icon: Users,
     title: 'Deportistas',
     description:
-      'Ficha 360° con evaluaciones físicas y técnicas, carga, salud, objetivos y evolución entre temporadas.',
+      'Ficha 360° con evaluaciones físicas, técnicas y tácticas, carga, salud, objetivos y evolución entre temporadas.',
   },
   {
     icon: Activity,
@@ -211,7 +211,7 @@ export const INTELLIGENCE_PILLARS: IntelligencePillar[] = [
       {
         label: 'Varias dimensiones a la vez',
         description:
-          'Exige un percentil alto en su categoría y que ninguna dimensión (física, técnica o de participación) quede por debajo del mínimo.',
+          'Exige un percentil alto en su categoría y que ninguna dimensión (física, técnica, táctica o de participación) quede por debajo del mínimo.',
       },
       {
         label: 'Con contexto',

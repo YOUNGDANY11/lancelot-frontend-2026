@@ -20,7 +20,10 @@ export const reportsService = {
     return {
       ...summary,
       weighted_progress_index: summary.weighted_progress_index
-        ? withNumbers<ProgressIndex>(summary.weighted_progress_index, [...SCORE_KEYS])
+        ? withNumbers<ProgressIndex>(summary.weighted_progress_index, [
+            ...SCORE_KEYS,
+            'contribution_score',
+          ])
         : null,
       fatigue_alerts: summary.fatigue_alerts.map((alert) =>
         withNumbers(alert, ['acwr_value', 'acute_load', 'chronic_load', 'rpe_avg']),

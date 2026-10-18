@@ -36,6 +36,8 @@ function normalizeStatistic(statistic: MatchStatistic): MatchStatistic {
     'assists',
     'yellow_cards',
     'red_cards',
+    'saves',
+    'goals_conceded',
     'rpe',
   ])
 }

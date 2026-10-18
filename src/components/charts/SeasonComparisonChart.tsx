@@ -40,7 +40,7 @@ export function SeasonComparisonChart({ comparison }: { comparison: SeasonCompar
   return (
     <ChartCard
       title="Comparación entre temporadas"
-      description="Índice de progreso y sus tres dimensiones, de 0 a 100."
+      description="Índice de progreso y sus cuatro dimensiones, de 0 a 100."
       helpTerm="progressIndex"
       isEmpty={comparison.length === 0}
       emptyMessage="Aún no hay índices de progreso calculados para este deportista."

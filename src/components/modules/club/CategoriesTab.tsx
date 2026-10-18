@@ -91,7 +91,7 @@ export function CategoriesTab() {
         open={dialogs.deleting !== null}
         onOpenChange={(open) => !open && dialogs.close()}
         title={`¿Eliminar la categoría ${dialogs.deleting?.name ?? ''}?`}
-        description="Esta acción no se puede deshacer. Si la categoría tiene deportistas, sesiones o partidos asociados, el sistema no permitirá eliminarla."
+        description="Esta acción no se puede deshacer. Si la categoría tiene deportistas, competencias, sesiones o partidos asociados, el sistema no permitirá eliminarla."
         confirmLabel="Eliminar"
         onConfirm={controller.confirmDelete}
         pending={controller.isDeleting}

@@ -34,7 +34,7 @@ export const GLOSSARY = {
   progressIndex: {
     term: 'Índice de progreso ponderado',
     definition:
-      'Combina cuatro dimensiones (física, técnica, táctica y de participación) con pesos que dependen de la posición y la categoría del deportista.',
+      'Combina cuatro dimensiones (física, técnica, táctica y de participación) con pesos que dependen de la posición y la categoría del deportista. La participación suma todas sus categorías: asistencia a entrenamientos, minutos jugados y su contribución en partidos frente a su grupo de posición (goles y asistencias en jugadores de campo; atajadas y vallas invictas en arqueros).',
     source: 'Vaeyens et al. (2008)',
   },
   percentile: {
@@ -78,7 +78,7 @@ export const GLOSSARY = {
   weightProfile: {
     term: 'Perfil de pesos',
     definition:
-      'Define cuánto pesa cada dimensión (física, técnica y de participación) en el índice de progreso para una posición y categoría. Los tres pesos suman 100 %.',
+      'Define cuánto pesa cada dimensión (física, técnica, táctica y de participación) en el índice de progreso para una posición y categoría. Los cuatro pesos suman 100 %.',
   },
 } satisfies Record<string, GlossaryEntry>
 

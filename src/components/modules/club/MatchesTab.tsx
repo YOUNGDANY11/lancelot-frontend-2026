@@ -110,7 +110,7 @@ export function MatchesTab() {
         open={dialogs.deleting !== null}
         onOpenChange={(open) => !open && dialogs.close()}
         title={`¿Eliminar el partido del ${dialogs.deleting ? formatDate(dialogs.deleting.date) : ''}?`}
-        description="Esta acción no se puede deshacer. Si el partido tiene estadísticas registradas, el sistema no permitirá eliminarlo."
+        description="Esta acción no se puede deshacer. También se eliminan sus estadísticas y el RPE registrado, que dejan de contar en la carga y en el índice de progreso."
         confirmLabel="Eliminar"
         onConfirm={controller.confirmDelete}
         pending={controller.isDeleting}

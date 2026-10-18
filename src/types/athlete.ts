@@ -157,6 +157,7 @@ export interface ProgressIndex {
   technical_score: number
   tactical_score: number
   participation_score: number
+  contribution_score?: number | null
   index_value: number
   warnings?: string[] | null
 }
@@ -185,6 +186,8 @@ export interface SeasonSummary {
     assists: number
     yellow_cards: number
     red_cards: number
+    saves?: number
+    goals_conceded?: number
   }
   fatigue_alerts: FatigueAlert[]
   injury_risk_assessments: InjuryRiskAssessment[]

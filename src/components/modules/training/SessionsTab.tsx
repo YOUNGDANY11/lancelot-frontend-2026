@@ -142,7 +142,7 @@ export function SessionsTab() {
         open={dialogs.deleting !== null}
         onOpenChange={(open) => !open && dialogs.close()}
         title={`¿Eliminar la sesión del ${dialogs.deleting ? formatDate(dialogs.deleting.date) : ''}?`}
-        description="Esta acción no se puede deshacer. Si la sesión tiene RPE registrado, el sistema no permitirá eliminarla."
+        description="Esta acción no se puede deshacer. También se elimina el RPE registrado en ella, que deja de contar en la carga y en la asistencia."
         confirmLabel="Eliminar"
         onConfirm={controller.confirmDelete}
         pending={controller.isDeleting}

@@ -168,7 +168,7 @@ export const CONFIG_DEFINITIONS: Record<ConfigKind, ConfigDefinition> = {
       {
         key: 'min_dimension_score',
         label: 'Piso de cada dimensión',
-        help: 'Obligatorio. Las tres dimensiones (física, técnica y participación) deben superarlo.',
+        help: 'Obligatorio. Las dimensiones física, técnica y de participación deben superarlo, y la táctica también si el perfil de pesos le da peso.',
         type: 'decimal',
         min: 0,
         max: 100,

@@ -43,7 +43,6 @@ export function useMatchStatsData(match: Match) {
         id_category: match.id_category,
         id_season: season?.id_season,
       }),
-    enabled: callUpsQuery.isSuccess && callUpsQuery.data.length === 0,
   })
   const statsQuery = useQuery({
     queryKey: queryKeys.training.matchStats(match.id_match),
@@ -56,7 +55,10 @@ export function useMatchStatsData(match: Match) {
     const [name, ...rest] = (stat.athlete_name ?? `Deportista ${stat.id_user}`).split(' ')
     return { id_user: stat.id_user, name, lastname: rest.join(' ') }
   })
-  const rosterReady = usesCallUps || rosterQuery.isSuccess
+  const positions = new Map(
+    (rosterQuery.data ?? []).map((member) => [member.id_user, member.position ?? null]),
+  )
+  const rosterReady = rosterQuery.isSuccess
   const isReady = callUpsQuery.isSuccess && statsQuery.isSuccess && rosterReady
   const failed = callUpsQuery.error ?? rosterQuery.error ?? statsQuery.error
 
@@ -70,7 +72,7 @@ export function useMatchStatsData(match: Match) {
       void statsQuery.refetch()
     },
     initialRows: isReady
-      ? buildMatchStatRows(mergeRoster(base, fromStats), statsQuery.data ?? [])
+      ? buildMatchStatRows(mergeRoster(base, fromStats), statsQuery.data ?? [], positions)
       : null,
   }
 }

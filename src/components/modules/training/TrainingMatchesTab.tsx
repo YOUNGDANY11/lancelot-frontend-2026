@@ -22,7 +22,7 @@ export function TrainingMatchesTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      <TabToolbar description="Registra minutos, goles, tarjetas y el RPE de cada deportista después del partido. El RPE del partido suma a su carga." />
+      <TabToolbar description="Registra minutos, goles, asistencias, tarjetas y el RPE de cada deportista después del partido; de los arqueros, también atajadas y goles recibidos. El RPE del partido suma a su carga." />
       <DataTable
         caption="Partidos de la temporada"
         rows={controller.matches}

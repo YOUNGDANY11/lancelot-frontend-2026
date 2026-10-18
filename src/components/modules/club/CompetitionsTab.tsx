@@ -117,7 +117,7 @@ export function CompetitionsTab() {
         open={dialogs.deleting !== null}
         onOpenChange={(open) => !open && dialogs.close()}
         title={`¿Eliminar la competencia ${dialogs.deleting?.name ?? ''}?`}
-        description="Esta acción no se puede deshacer. Si tiene partidos o convocados, el sistema no permitirá eliminarla."
+        description="Esta acción no se puede deshacer. Si tiene partidos, el sistema no permitirá eliminarla; sus convocatorias se eliminan con ella."
         confirmLabel="Eliminar"
         onConfirm={controller.confirmDelete}
         pending={controller.isDeleting}

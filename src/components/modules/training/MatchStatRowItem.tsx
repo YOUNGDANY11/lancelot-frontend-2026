@@ -5,13 +5,18 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { RowSaveState } from '@/controllers/training/useRpeLogController'
 import { cn } from '@/lib/utils'
-import type { MatchCounterField, MatchStatRow } from '@/utils/matchStatsBatch'
+import type { GoalkeeperField, MatchCounterField, MatchStatRow } from '@/utils/matchStatsBatch'
 
 const COUNTER_FIELDS: { field: MatchCounterField; label: string }[] = [
   { field: 'goals', label: 'Goles' },
   { field: 'assists', label: 'Asistencias' },
   { field: 'yellow', label: 'Amarillas' },
   { field: 'red', label: 'Rojas' },
+]
+
+const GOALKEEPER_FIELDS: { field: GoalkeeperField; label: string }[] = [
+  { field: 'saves', label: 'Atajadas' },
+  { field: 'conceded', label: 'Goles recibidos' },
 ]
 
 interface MatchStatRowItemProps {
@@ -98,6 +103,33 @@ export function MatchStatRowItem({
               </div>
             ))}
           </div>
+          {row.isGoalkeeper && (
+            <fieldset className="flex flex-col gap-1">
+              <legend className="text-xs font-medium text-muted-foreground">
+                Arquero: con estos datos se calcula su porcentaje de atajadas y sus vallas invictas
+              </legend>
+              <div className="grid grid-cols-2 gap-2 sm:max-w-xs">
+                {GOALKEEPER_FIELDS.map(({ field, label }) => (
+                  <div key={field} className="flex flex-col gap-1">
+                    <Label
+                      htmlFor={`${field}-${row.id_user}`}
+                      className="text-xs text-muted-foreground"
+                    >
+                      {label}
+                    </Label>
+                    <Input
+                      id={`${field}-${row.id_user}`}
+                      inputMode="numeric"
+                      value={row[field]}
+                      onChange={(event) => onChange({ [field]: event.target.value })}
+                      disabled={disabled}
+                      className="h-9 px-2"
+                    />
+                  </div>
+                ))}
+              </div>
+            </fieldset>
+          )}
           <div className="flex flex-col gap-1">
             <p className="text-xs text-muted-foreground">RPE del partido (opcional)</p>
             <RpeScalePicker

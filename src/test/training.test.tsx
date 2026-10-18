@@ -227,6 +227,68 @@ describe('registro rápido de RPE', () => {
       duration_min: 90,
     })
   })
+
+  it('pide atajadas y goles recibidos solo a la arquera al registrar un partido', async () => {
+    vi.mocked(competitionService.listCompetencies).mockResolvedValue([
+      {
+        id_competency: 5,
+        id_category: SUB15.id_category,
+        name: 'Liga',
+        start_date: '2026-01-01',
+        id_season: ACTIVE_SEASON.id_season,
+      },
+    ])
+    vi.mocked(competitionService.listAllMatches).mockResolvedValue([
+      {
+        id_match: 70,
+        id_competency: 5,
+        id_category: SUB15.id_category,
+        date: '2026-01-10',
+        time: '15:00:00',
+        location: 'Cancha principal',
+        name_category: SUB15.name,
+        name_competency: 'Liga',
+      },
+    ])
+    vi.mocked(competitionService.listCallUps).mockResolvedValue([])
+    vi.mocked(trainingService.listMatchStatistics).mockResolvedValue([])
+    vi.mocked(trainingService.createMatchStatistic).mockImplementation(async (payload) => ({
+      ...payload,
+      id_match_stat: 1,
+    }))
+    signInAs(COACH_USER)
+    const user = userEvent.setup()
+    renderAppAt('/app/entrenamiento?tab=partidos')
+
+    await user.click(await screen.findByRole('button', { name: 'Registrar estadísticas' }))
+    const sheet = await screen.findByRole('dialog')
+    const goalkeeperRow = (await within(sheet).findByText('Ana María Pérez')).closest('li')!
+    const forwardRow = within(sheet).getByText('Bruno Díaz').closest('li')!
+    await user.click(within(forwardRow).getByRole('checkbox', { name: 'Jugó' }))
+    expect(within(forwardRow).queryByLabelText('Atajadas')).not.toBeInTheDocument()
+    await user.click(within(forwardRow).getByRole('checkbox', { name: 'Jugó' }))
+    await user.click(within(goalkeeperRow).getByRole('checkbox', { name: 'Jugó' }))
+    expect(within(goalkeeperRow).getByLabelText('Atajadas')).toBeInTheDocument()
+
+    expect(within(goalkeeperRow).getByLabelText('Minutos')).toHaveValue('90')
+    await user.clear(within(goalkeeperRow).getByLabelText('Atajadas'))
+    await user.type(within(goalkeeperRow).getByLabelText('Atajadas'), '5')
+    await user.clear(within(goalkeeperRow).getByLabelText('Goles recibidos'))
+    await user.type(within(goalkeeperRow).getByLabelText('Goles recibidos'), '1')
+    await user.click(within(sheet).getByRole('button', { name: /Guardar todo/ }))
+
+    await waitFor(() =>
+      expect(trainingService.createMatchStatistic).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id_match: 70,
+          id_user: ATHLETE_USER.id_user,
+          minutes_played: 90,
+          saves: 5,
+          goals_conceded: 1,
+        }),
+      ),
+    )
+  })
 })
 
 describe('vistas de entrenamiento por rol', () => {

@@ -23,6 +23,7 @@ function normalizeIndex(index: RankedIndex): RankedIndex {
     'technical_score',
     'tactical_score',
     'participation_score',
+    'contribution_score',
     'index_value',
   ])
 }

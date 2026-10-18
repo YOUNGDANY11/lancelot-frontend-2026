@@ -21,7 +21,7 @@ export function WeightProfilesTab() {
         description={
           <span className="flex items-center gap-1">
             Cuánto pesa cada dimensión en el índice de progreso según la posición y la categoría.
-            Los tres pesos suman 100 %.
+            Los cuatro pesos suman 100 %.
             <HelpHint term="weightProfile" />
           </span>
         }

@@ -45,7 +45,7 @@ export const ROLE_ICONS: Record<RoleCode, LucideIcon> = {
 
 export const ROLE_SUMMARIES: Record<RoleCode, string> = {
   DIRECTOR_TECNICO:
-    'Planifica la temporada, ajusta umbrales y perfiles de evaluación, revisa las señalizaciones de talento y decide los ascensos.',
+    'Planifica la temporada, ajusta umbrales y perfiles de pesos, revisa las señalizaciones de talento y decide los ascensos.',
   ENTRENADOR:
     'Registra las sesiones y el RPE desde la cancha, sigue la carga de su equipo, los partidos y las alertas de sus deportistas.',
   DEPORTISTA:

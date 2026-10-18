@@ -1,6 +1,7 @@
 import { ModuleTabs } from '@/components/common/ModuleTabs'
 import { PageHeader } from '@/components/common/PageHeader'
 import { IndicesTab } from '@/components/modules/talent/IndicesTab'
+import { NextCycleTab } from '@/components/modules/talent/NextCycleTab'
 import { TalentFlagsTab } from '@/components/modules/talent/TalentFlagsTab'
 import { APP_MODULES } from '@/constants/navigation'
 
@@ -14,6 +15,7 @@ export default function TalentView() {
         tabs={[
           { value: 'indices', label: 'Índices', content: <IndicesTab /> },
           { value: 'senalizaciones', label: 'Señalizaciones', content: <TalentFlagsTab /> },
+          { value: 'siguiente-ciclo', label: 'Siguiente ciclo', content: <NextCycleTab /> },
         ]}
       />
     </div>

@@ -10,6 +10,7 @@ const EVOLUTION_SCALE = { min: 30, max: 80 }
 const PROGRESS_DIMENSIONS = [
   { label: 'Física', value: 74, className: 'bg-primary' },
   { label: 'Técnica', value: 68, className: 'bg-secondary' },
+  { label: 'Táctica', value: 63, className: 'bg-chart-4' },
   { label: 'Participación', value: 81, className: 'bg-accent' },
 ]
 const PROGRESS_INDEX = 72

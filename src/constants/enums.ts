@@ -23,6 +23,14 @@ export const EVALUATION_DIMENSION = defineEnum<EvaluationDimension>([
   { value: 'tactica', label: 'Táctica', tone: 'neutral' },
 ])
 
+export type PlanFocusDimension = 'fisica' | 'tecnica' | 'tactica' | 'participacion'
+export const PLAN_FOCUS_DIMENSION = defineEnum<PlanFocusDimension>([
+  { value: 'fisica', label: 'Física', tone: 'warning' },
+  { value: 'tecnica', label: 'Técnica', tone: 'warning' },
+  { value: 'tactica', label: 'Táctica', tone: 'warning' },
+  { value: 'participacion', label: 'Participación', tone: 'warning' },
+])
+
 export type SeasonStatus = 'planned' | 'active' | 'closed'
 export const SEASON_STATUS = defineEnum<SeasonStatus>([
   { value: 'planned', label: 'Planeada', tone: 'info' },

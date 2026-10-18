@@ -17,7 +17,7 @@ export const DATA_POLICY: DataPolicyContent = {
   title: 'Política de tratamiento de datos personales',
   version: 'Versión 2026-10 · vigente desde octubre de 2026',
   intro:
-    'Lancelot es la plataforma que el club usa para el seguimiento físico, técnico y médico de sus deportistas. Esta política explica qué datos se tratan, para qué y cómo puedes ejercer tus derechos, conforme a la Ley 1581 de 2012 y el Decreto 1377 de 2013.',
+    'Lancelot es la plataforma que el club usa para el seguimiento físico, técnico, táctico y médico de sus deportistas. Esta política explica qué datos se tratan, para qué y cómo puedes ejercer tus derechos, conforme a la Ley 1581 de 2012 y el Decreto 1377 de 2013.',
   sections: [
     {
       title: 'Responsable del tratamiento',
@@ -29,7 +29,7 @@ export const DATA_POLICY: DataPolicyContent = {
       title: 'Datos que se tratan',
       items: [
         'Identificación y contacto: nombres, apellidos, correo y fecha de nacimiento.',
-        'Datos deportivos: evaluaciones físicas y técnicas, cargas de entrenamiento (RPE), estadísticas de partidos, objetivos y categorías.',
+        'Datos deportivos: evaluaciones físicas, técnicas y tácticas, cargas de entrenamiento (RPE), estadísticas de partidos, objetivos y categorías.',
         'Datos de salud: lesiones y registros de salud. Son datos sensibles y solo los ven los roles autorizados por el club.',
       ],
     },

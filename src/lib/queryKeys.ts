@@ -56,6 +56,8 @@ export const queryKeys = {
     indices: (idSeason: number) => [...queryKeys.talent.all, 'indices', idSeason] as const,
     flags: (filters: QueryParams) => [...queryKeys.talent.all, 'flags', filters] as const,
     flagCount: (filters: QueryParams) => [...queryKeys.talent.all, 'flag-count', filters] as const,
+    plan: (idSeason: number, idTarget: number | null) =>
+      [...queryKeys.talent.all, 'plan', idSeason, idTarget] as const,
   },
   ml: {
     all: ['ml'] as const,

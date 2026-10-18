@@ -71,7 +71,7 @@ export const PROBLEM_CARDS: ProblemCard[] = [
     icon: FolderX,
     title: 'Registros dispersos',
     description:
-      'Los datos físicos, técnicos y médicos viven en papel o en plantillas sueltas, sin trazabilidad entre categorías ni temporadas.',
+      'Los datos físicos, técnicos, tácticos y médicos viven en papel o en plantillas sueltas, sin trazabilidad entre categorías ni temporadas.',
   },
   {
     icon: Unlink,

@@ -13,7 +13,7 @@ import { ACTIVE_SEASON, SUB15, primeAppDataMocks } from '@/test/appDataMocks'
 import { ADMIN_USER, ATHLETE_USER, COACH_USER } from '@/test/fixtures'
 import { inboxItem, mockOpenInbox } from '@/test/inboxMocks'
 import { renderAppAt } from '@/test/renderWithProviders'
-import type { TalentFlag } from '@/types/talent'
+import type { NextCyclePlan, TalentFlag } from '@/types/talent'
 import type { User } from '@/types/user'
 import { REFRESH_TOKEN_STORAGE_KEY } from '@/utils/tokenStorage'
 
@@ -78,6 +78,8 @@ vi.mock('@/services/talentService', () => ({
     detect: vi.fn(),
     createFlag: vi.fn(),
     reviewFlag: vi.fn(),
+    getNextCyclePlan: vi.fn(),
+    applyNextCyclePlan: vi.fn(),
   },
 }))
 vi.mock('@/services/healthService', () => ({
@@ -294,6 +296,127 @@ describe('talento y progreso', () => {
     )
     expect(screen.queryByRole('button', { name: 'Detectar talento' })).not.toBeInTheDocument()
     await waitFor(() => expect(talentService.reviewFlag).toHaveBeenCalledWith(40, 'reviewed'))
+  })
+})
+
+const NEXT_SEASON = {
+  id_season: 3,
+  name: 'Temporada 2027',
+  start_date: '2027-02-01',
+  end_date: '2027-11-30',
+  status: 'planned' as const,
+}
+const SUB17 = { id_category: 5, name: 'Sub-17', min_age: 16, max_age: 17 }
+
+const PLAN: NextCyclePlan = {
+  source: { ...ACTIVE_SEASON, end_date: null },
+  target: NEXT_SEASON,
+  reference_year: 2027,
+  athletes: [
+    {
+      id_user: ATHLETE_USER.id_user,
+      name: ATHLETE_USER.name,
+      lastname: ATHLETE_USER.lastname,
+      position: 'Portero',
+      current_category: { id_category: SUB15.id_category, name: SUB15.name },
+      sporting_age: 15,
+      suggested_category: { id_category: SUB15.id_category, name: SUB15.name },
+      suggestion_reason: 'Sigue en Sub-15: cumple 15 años en 2027',
+      promotion_category: null,
+      promotion_reason: null,
+      eligible_category_ids: [SUB15.id_category, SUB17.id_category],
+      index_value: 58,
+      focus_dimension: 'tactica',
+      focus_score: 35,
+      open_objectives: [
+        {
+          id_objective: 70,
+          description: 'Mejorar el juego con los pies',
+          target_date: '2026-11-30',
+        },
+      ],
+      planned_categories: [],
+    },
+    {
+      ...BRUNO,
+      position: 'Delantero',
+      current_category: { id_category: SUB15.id_category, name: SUB15.name },
+      sporting_age: 15,
+      suggested_category: { id_category: SUB15.id_category, name: SUB15.name },
+      suggestion_reason: 'Sigue en Sub-15: cumple 15 años en 2027',
+      promotion_category: { id_category: SUB17.id_category, name: SUB17.name },
+      promotion_reason: 'Señalización de talento revisada: puede entrenar también en Sub-17',
+      eligible_category_ids: [SUB15.id_category, SUB17.id_category],
+      index_value: 81,
+      focus_dimension: 'fisica',
+      focus_score: 62,
+      open_objectives: [],
+      planned_categories: [],
+    },
+  ],
+}
+
+describe('planificación del siguiente ciclo', () => {
+  beforeEach(() => {
+    primeAppDataMocks({ seasons: [ACTIVE_SEASON, NEXT_SEASON], categories: [SUB15, SUB17] })
+    vi.mocked(talentService.getNextCyclePlan).mockResolvedValue(PLAN)
+  })
+
+  it('deja al director técnico ajustar y aplicar el plan en la temporada siguiente', async () => {
+    vi.mocked(talentService.applyNextCyclePlan).mockResolvedValue({
+      mensaje: 'Plan aplicado en Temporada 2027: 3 asignaciones nuevas y 0 objetivos llevados',
+      assigned: 3,
+      skipped: 0,
+      objectives_carried: 0,
+      failed: [],
+    })
+    signInAs(DT_USER)
+    const user = userEvent.setup()
+    renderAppAt('/app/talento?tab=siguiente-ciclo')
+
+    const table = await screen.findByRole('table', { name: 'Plan del siguiente ciclo' })
+    expect(within(table).getByText('Táctica')).toBeInTheDocument()
+    expect(within(table).getByText(/puede entrenar también en Sub-17/)).toBeInTheDocument()
+
+    await user.click(within(table).getByRole('checkbox', { name: 'Llevar 1' }))
+    await user.click(screen.getByRole('button', { name: 'Aplicar plan (2)' }))
+    const confirm = await screen.findByRole('alertdialog')
+    await user.click(within(confirm).getByRole('button', { name: 'Aplicar plan' }))
+
+    await waitFor(() =>
+      expect(talentService.applyNextCyclePlan).toHaveBeenCalledWith(ACTIVE_SEASON.id_season, {
+        id_target_season: NEXT_SEASON.id_season,
+        athletes: [
+          {
+            id_user: ATHLETE_USER.id_user,
+            id_category: SUB15.id_category,
+            id_promotion_category: null,
+            carry_objectives: false,
+          },
+          {
+            id_user: BRUNO.id_user,
+            id_category: SUB15.id_category,
+            id_promotion_category: SUB17.id_category,
+            carry_objectives: false,
+          },
+        ],
+      }),
+    )
+    const summary = await screen.findByRole('dialog', { name: 'Plan del siguiente ciclo' })
+    expect(within(summary).getByText('Asignaciones nuevas').nextSibling?.textContent).toBe('3')
+  })
+
+  it('le muestra la propuesta al entrenador sin dejarlo aplicarla', async () => {
+    signInAs(COACH_USER)
+    renderAppAt('/app/talento?tab=siguiente-ciclo')
+
+    expect(
+      await screen.findByRole('table', { name: 'Plan del siguiente ciclo' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('El director técnico o el administrador aplican el plan.'),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Aplicar plan/ })).not.toBeInTheDocument()
   })
 })
 

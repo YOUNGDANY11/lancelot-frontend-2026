@@ -2,8 +2,12 @@ import type { ReviewStatus } from '@/constants/enums'
 import { apiClient } from '@/lib/apiClient'
 import { fetchAllPages, fetchTotal, type QueryParams } from '@/lib/listRequest'
 import type {
+  ApplyPlanRequest,
+  ApplyPlanSummary,
   CreateTalentFlagRequest,
   DetectionSummary,
+  NextCyclePlan,
+  PlannedAthlete,
   RankedIndex,
   RecalculationSummary,
   TalentFlag,
@@ -30,6 +34,10 @@ function normalizeIndex(index: RankedIndex): RankedIndex {
 
 function normalizeFlag(flag: TalentFlag): TalentFlag {
   return withNumbers(flag, ['score'])
+}
+
+function normalizePlannedAthlete(athlete: PlannedAthlete): PlannedAthlete {
+  return withNumbers(athlete, ['index_value', 'focus_score', 'sporting_age'])
 }
 
 export const talentService = {
@@ -72,5 +80,27 @@ export const talentService = {
 
   async reviewFlag(id: number, status: ReviewStatus): Promise<void> {
     await apiClient.http.put(`/talent-flags/id/${id}`, { status })
+  },
+
+  async getNextCyclePlan(idSeason: number, idTarget: number | null): Promise<NextCyclePlan> {
+    const { data } = await apiClient.http.get<{ plan: NextCyclePlan }>(
+      `/season-planning/${idSeason}`,
+      { params: idTarget ? { id_target_season: idTarget } : undefined },
+    )
+    return { ...data.plan, athletes: data.plan.athletes.map(normalizePlannedAthlete) }
+  },
+
+  async applyNextCyclePlan(idSeason: number, payload: ApplyPlanRequest): Promise<ApplyPlanSummary> {
+    const { data } = await apiClient.http.post<ApplyPlanSummary>(
+      `/season-planning/${idSeason}/apply`,
+      payload,
+    )
+    return {
+      mensaje: data.mensaje,
+      assigned: data.assigned,
+      skipped: data.skipped,
+      objectives_carried: data.objectives_carried,
+      failed: data.failed ?? [],
+    }
   },
 }

@@ -15,6 +15,7 @@ export const PERMISSIONS = {
   viewConsents: ['ADMIN', 'ENCARGADO_SALUD'],
   viewHealthAudit: ['ADMIN'],
   runTalentDetection: ['ADMIN', 'DIRECTOR_TECNICO'],
+  planNextCycle: ['ADMIN', 'DIRECTOR_TECNICO'],
   manageConfig: ['ADMIN', 'DIRECTOR_TECNICO'],
   manageUsers: ['ADMIN'],
   manageMlEngine: ['ADMIN'],

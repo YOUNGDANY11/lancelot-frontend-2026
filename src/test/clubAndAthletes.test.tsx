@@ -450,6 +450,48 @@ describe('informe de evolución individual', () => {
     print.mockRestore()
   })
 
+  it('adapta el informe a la etapa de iniciación y deja elegir otra versión', async () => {
+    vi.mocked(reportsService.seasonSummary).mockResolvedValue({
+      ...SUMMARY,
+      athlete: { ...SUMMARY.athlete, sporting_age: 9 },
+    })
+    vi.mocked(evaluationsService.listPhysical).mockResolvedValue([
+      {
+        id_eval: 1,
+        id_user: ATHLETE_USER.id_user,
+        id_season: ACTIVE_SEASON.id_season,
+        stage: 'pre',
+        height_cm: 132,
+        weight_kg: 29,
+        vo2max_estimado: 44,
+        speed_20m: 4.1,
+        eval_date: '2026-02-20',
+      },
+    ])
+    signInAs(COACH_USER)
+    const user = userEvent.setup()
+    renderAppAt(`/app/deportistas/${ATHLETE_USER.id_user}/informe`)
+
+    expect(await screen.findByText(/Iniciación · 9 años/)).toBeInTheDocument()
+    expect(screen.getByText(/sin puntajes ni comparaciones con sus compañeros/)).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: 'Índice de progreso ponderado' }),
+    ).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Control de carga' })).not.toBeInTheDocument()
+    expect(screen.queryByText('Goles')).not.toBeInTheDocument()
+    const physical = screen.getByRole('table', { name: 'Evaluaciones físicas de la temporada' })
+    expect(within(physical).queryByText('VO₂ máx.')).not.toBeInTheDocument()
+    expect(within(physical).getByText('132')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('combobox', { name: 'Versión' }))
+    await user.click(await screen.findByRole('option', { name: 'Rendimiento, 15 años o más' }))
+
+    expect(
+      await screen.findByRole('heading', { name: 'Índice de progreso ponderado' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Control de carga' })).toBeInTheDocument()
+  })
+
   it('no deja abrir el informe a roles sin acceso al resumen deportivo', async () => {
     signInAs(HEALTH_USER)
     const { router } = renderAppAt(`/app/deportistas/${ATHLETE_USER.id_user}/informe`)

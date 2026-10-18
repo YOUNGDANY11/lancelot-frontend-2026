@@ -58,6 +58,10 @@ export function AthleteReport({ report }: { report: ReportData }) {
   const index = summary.weighted_progress_index
   const isGoalkeeper = isGoalkeeperPosition(athlete.position)
   const savesAndConceded = (matches.saves ?? 0) + (matches.goals_conceded ?? 0)
+  const stage = report.stage
+  const physicalHeaders = stage.showPerformanceTests
+    ? ['Etapa', 'Fecha', 'Talla (cm)', 'Peso (kg)', 'VO₂ máx.', 'Velocidad 20 m (s)']
+    : ['Etapa', 'Fecha', 'Talla (cm)', 'Peso (kg)']
 
   return (
     <article className="report-sheet flex flex-col gap-6 rounded-2xl border border-border p-6 sm:p-10">
@@ -78,79 +82,85 @@ export function AthleteReport({ report }: { report: ReportData }) {
           <dd className="font-medium">{PARTNER_CONTENT.name}</dd>
           <dt className="text-muted-foreground">Temporada</dt>
           <dd className="font-medium">{summary.season.name}</dd>
+          <dt className="text-muted-foreground">Etapa</dt>
+          <dd className="font-medium">
+            {stage.label} ·{' '}
+            {athlete.sporting_age != null ? `${athlete.sporting_age} años` : stage.ages}
+          </dd>
           <dt className="text-muted-foreground">Generado el</dt>
           <dd className="font-medium">{report.generatedOn}</dd>
         </dl>
       </header>
 
-      <ReportSection
-        title="Índice de progreso ponderado"
-        description="Combina las dimensiones física, técnica, táctica y de participación con los pesos de su posición y categoría. Escala de 0 a 100."
-      >
-        {index ? (
-          <>
-            <dl className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-              <Stat label="Índice" value={formatNumber(index.index_value, 1)} />
-              <Stat label="Física" value={formatNumber(index.physical_score, 1)} />
-              <Stat label="Técnica" value={formatNumber(index.technical_score, 1)} />
-              <Stat label="Táctica" value={formatNumber(index.tactical_score, 1)} />
-              <Stat label="Participación" value={formatNumber(index.participation_score, 1)} />
-            </dl>
-            {index.warnings && index.warnings.length > 0 && (
-              <ul className="flex list-disc flex-col gap-1 pl-5 text-sm text-muted-foreground">
-                {index.warnings.map((warning) => (
-                  <li key={warning}>{warning}</li>
-                ))}
-              </ul>
-            )}
-          </>
-        ) : (
-          <EmptyNote>Aún no se ha calculado el índice de esta temporada.</EmptyNote>
-        )}
-      </ReportSection>
+      <p className="rounded-xl bg-muted/50 p-4 text-sm text-pretty">{stage.intro}</p>
 
-      <ReportSection
-        title="Evolución entre temporadas"
-        description="Índice de progreso de cada temporada en la que el deportista tiene datos."
-      >
-        {report.comparison.length > 0 ? (
-          <DataTableSimple
-            caption="Evolución del índice entre temporadas"
-            headers={['Temporada', 'Índice', 'Física', 'Técnica', 'Táctica', 'Participación']}
-            rows={report.comparison.map((point) => [
-              point.season_name,
-              formatNumber(point.index_value, 1),
-              formatNumber(point.physical_score, 1),
-              formatNumber(point.technical_score, 1),
-              formatNumber(point.tactical_score, 1),
-              formatNumber(point.participation_score, 1),
-            ])}
-          />
-        ) : (
-          <EmptyNote>Aún no hay índices calculados en ninguna temporada.</EmptyNote>
-        )}
-      </ReportSection>
+      {stage.showIndex && (
+        <ReportSection
+          title="Índice de progreso ponderado"
+          description="Combina las dimensiones física, técnica, táctica y de participación con los pesos de su posición y categoría. Escala de 0 a 100."
+        >
+          {index ? (
+            <>
+              <dl className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+                <Stat label="Índice" value={formatNumber(index.index_value, 1)} />
+                <Stat label="Física" value={formatNumber(index.physical_score, 1)} />
+                <Stat label="Técnica" value={formatNumber(index.technical_score, 1)} />
+                <Stat label="Táctica" value={formatNumber(index.tactical_score, 1)} />
+                <Stat label="Participación" value={formatNumber(index.participation_score, 1)} />
+              </dl>
+              {index.warnings && index.warnings.length > 0 && (
+                <ul className="flex list-disc flex-col gap-1 pl-5 text-sm text-muted-foreground">
+                  {index.warnings.map((warning) => (
+                    <li key={warning}>{warning}</li>
+                  ))}
+                </ul>
+              )}
+            </>
+          ) : (
+            <EmptyNote>Aún no se ha calculado el índice de esta temporada.</EmptyNote>
+          )}
+        </ReportSection>
+      )}
 
-      <ReportSection title="Evaluación física">
+      {stage.showIndex && (
+        <ReportSection
+          title="Evolución entre temporadas"
+          description="Índice de progreso de cada temporada en la que el deportista tiene datos."
+        >
+          {report.comparison.length > 0 ? (
+            <DataTableSimple
+              caption="Evolución del índice entre temporadas"
+              headers={['Temporada', 'Índice', 'Física', 'Técnica', 'Táctica', 'Participación']}
+              rows={report.comparison.map((point) => [
+                point.season_name,
+                formatNumber(point.index_value, 1),
+                formatNumber(point.physical_score, 1),
+                formatNumber(point.technical_score, 1),
+                formatNumber(point.tactical_score, 1),
+                formatNumber(point.participation_score, 1),
+              ])}
+            />
+          ) : (
+            <EmptyNote>Aún no hay índices calculados en ninguna temporada.</EmptyNote>
+          )}
+        </ReportSection>
+      )}
+
+      <ReportSection title="Evaluación física" description={stage.physicalNote}>
         {report.physical.length > 0 ? (
           <DataTableSimple
             caption="Evaluaciones físicas de la temporada"
-            headers={[
-              'Etapa',
-              'Fecha',
-              'Talla (cm)',
-              'Peso (kg)',
-              'VO₂ máx.',
-              'Velocidad 20 m (s)',
-            ]}
-            rows={report.physical.map((evaluation) => [
-              PHYSICAL_EVALUATION_STAGE.labels[evaluation.stage],
-              formatDate(evaluation.eval_date),
-              formatNumber(evaluation.height_cm, 1),
-              formatNumber(evaluation.weight_kg, 1),
-              formatNumber(evaluation.vo2max_estimado, 1),
-              formatNumber(evaluation.speed_20m, 2),
-            ])}
+            headers={physicalHeaders}
+            rows={report.physical.map((evaluation) =>
+              [
+                PHYSICAL_EVALUATION_STAGE.labels[evaluation.stage],
+                formatDate(evaluation.eval_date),
+                formatNumber(evaluation.height_cm, 1),
+                formatNumber(evaluation.weight_kg, 1),
+                formatNumber(evaluation.vo2max_estimado, 1),
+                formatNumber(evaluation.speed_20m, 2),
+              ].slice(0, physicalHeaders.length),
+            )}
           />
         ) : (
           <EmptyNote>No tiene evaluaciones físicas en esta temporada.</EmptyNote>
@@ -191,14 +201,21 @@ export function AthleteReport({ report }: { report: ReportData }) {
             value={formatPercent(training.attendance_rate)}
             hint={`${training.sessions_attended} de ${training.total_sessions} sesiones`}
           />
-          <Stat label="RPE promedio" value={formatNumber(training.avg_rpe, 1)} />
-          <Stat label="Carga total" value={`${formatNumber(training.total_session_load, 0)} UA`} />
+          {stage.showLoadControl && (
+            <>
+              <Stat label="RPE promedio" value={formatNumber(training.avg_rpe, 1)} />
+              <Stat
+                label="Carga total"
+                value={`${formatNumber(training.total_session_load, 0)} UA`}
+              />
+            </>
+          )}
           <Stat
             label="Partidos jugados"
             value={`${matches.matches_played} de ${matches.matches_in_season}`}
             hint={`${formatNumber(matches.total_minutes, 0)} minutos`}
           />
-          {isGoalkeeper ? (
+          {!stage.showCompetitionStats ? null : isGoalkeeper ? (
             <>
               <Stat label="Atajadas" value={String(matches.saves ?? 0)} />
               <Stat label="Goles recibidos" value={String(matches.goals_conceded ?? 0)} />
@@ -217,21 +234,25 @@ export function AthleteReport({ report }: { report: ReportData }) {
               <Stat label="Asistencias" value={String(matches.assists)} />
             </>
           )}
-          <Stat label="Tarjetas amarillas" value={String(matches.yellow_cards)} />
-          <Stat label="Tarjetas rojas" value={String(matches.red_cards)} />
-          <Stat
-            label="Contribución en partidos"
-            value={
-              index?.contribution_score == null
-                ? 'Sin datos'
-                : formatNumber(index.contribution_score, 0)
-            }
-            hint={
-              isGoalkeeper
-                ? 'Percentil frente a los arqueros de su categoría'
-                : 'Percentil de goles y asistencias frente a su grupo de posición'
-            }
-          />
+          {stage.showCompetitionStats && (
+            <>
+              <Stat label="Tarjetas amarillas" value={String(matches.yellow_cards)} />
+              <Stat label="Tarjetas rojas" value={String(matches.red_cards)} />
+              <Stat
+                label="Contribución en partidos"
+                value={
+                  index?.contribution_score == null
+                    ? 'Sin datos'
+                    : formatNumber(index.contribution_score, 0)
+                }
+                hint={
+                  isGoalkeeper
+                    ? 'Percentil frente a los arqueros de su categoría'
+                    : 'Percentil de goles y asistencias frente a su grupo de posición'
+                }
+              />
+            </>
+          )}
         </dl>
       </ReportSection>
 
@@ -251,19 +272,21 @@ export function AthleteReport({ report }: { report: ReportData }) {
         )}
       </ReportSection>
 
-      <ReportSection
-        title="Control de carga"
-        description="Alertas de fatiga y evaluaciones de riesgo generadas en la temporada a partir del RPE y la relación carga aguda:crónica. Este informe no incluye diagnósticos ni registros de salud."
-      >
-        <DataTableSimple
-          caption="Alertas de la temporada por nivel"
-          headers={['Tipo', ...LEVELS.map((level) => RISK_LEVEL.labels[level])]}
-          rows={[
-            ['Alertas de fatiga', ...LEVELS.map((level) => report.alerts.fatigue[level])],
-            ['Evaluaciones de riesgo', ...LEVELS.map((level) => report.alerts.risk[level])],
-          ]}
-        />
-      </ReportSection>
+      {stage.showLoadControl && (
+        <ReportSection
+          title="Control de carga"
+          description="Alertas de fatiga y evaluaciones de riesgo generadas en la temporada a partir del RPE y la relación carga aguda:crónica. Este informe no incluye diagnósticos ni registros de salud."
+        >
+          <DataTableSimple
+            caption="Alertas de la temporada por nivel"
+            headers={['Tipo', ...LEVELS.map((level) => RISK_LEVEL.labels[level])]}
+            rows={[
+              ['Alertas de fatiga', ...LEVELS.map((level) => report.alerts.fatigue[level])],
+              ['Evaluaciones de riesgo', ...LEVELS.map((level) => report.alerts.risk[level])],
+            ]}
+          />
+        </ReportSection>
+      )}
 
       <footer className="border-t border-border pt-4 text-xs text-muted-foreground">
         Generado con Lancelot. El sistema sugiere; las decisiones las toma el cuerpo técnico.

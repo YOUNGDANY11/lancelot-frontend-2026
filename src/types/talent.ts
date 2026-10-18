@@ -121,3 +121,20 @@ export interface ApplyPlanSummary {
   objectives_carried: number
   failed: FailedAthlete[]
 }
+
+export interface CategoryEvolutionPoint {
+  id_season: number
+  season_name: string
+  start_date: string
+  status: SeasonStatus
+  athletes: number
+  guests: number
+  indexed: number
+  index_value: number | null
+  physical_score: number | null
+  technical_score: number | null
+  tactical_score: number | null
+  participation_score: number | null
+  talent_flags: number
+  reviewed_talent_flags: number
+}

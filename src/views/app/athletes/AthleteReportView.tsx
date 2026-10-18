@@ -3,8 +3,10 @@ import { Link, useParams } from 'react-router'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
 import { LoadingSkeleton } from '@/components/common/LoadingSkeleton'
+import { SelectInput } from '@/components/common/SelectInput'
 import { AthleteReport } from '@/components/modules/athletes/AthleteReport'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import { useAthleteReportController } from '@/controllers/athletes/useAthleteReportController'
 
 export default function AthleteReportView() {
@@ -21,10 +23,22 @@ export default function AthleteReportView() {
           </Link>
         </Button>
         {report.summary && (
-          <Button onClick={report.print}>
-            <Printer aria-hidden="true" />
-            Imprimir o guardar en PDF
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Label htmlFor="report-stage" className="text-sm text-muted-foreground">
+              Versión
+            </Label>
+            <SelectInput
+              id="report-stage"
+              value={report.stageValue}
+              onValueChange={report.onStageChange}
+              options={report.stageOptions}
+              className="w-64"
+            />
+            <Button onClick={report.print}>
+              <Printer aria-hidden="true" />
+              Imprimir o guardar en PDF
+            </Button>
+          </div>
         )}
       </div>
 

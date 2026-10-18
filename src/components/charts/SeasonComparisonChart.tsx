@@ -15,11 +15,24 @@ const SERIES = [
   { key: 'participation_score', label: 'Participación', color: 'var(--chart-4)', width: 2 },
 ] as const
 
+type SeriesKey = (typeof SERIES)[number]['key']
+
+export type ComparisonPoint = Pick<SeasonComparisonPoint, 'season_name'> &
+  Record<SeriesKey, number | null>
+
+interface SeasonComparisonChartProps {
+  comparison: ComparisonPoint[]
+  title?: string
+  description?: string
+  emptyMessage?: string
+  singleMessage?: string
+}
+
 const CONFIG = Object.fromEntries(
   SERIES.map((series) => [series.key, { label: series.label, color: series.color }]),
 ) satisfies ChartConfig
 
-function ComparisonTooltip(props: TooltipRenderProps<SeasonComparisonPoint>) {
+function ComparisonTooltip(props: TooltipRenderProps<ComparisonPoint>) {
   const point = tooltipDatum(props)
   if (!point) return null
   return (
@@ -34,19 +47,25 @@ function ComparisonTooltip(props: TooltipRenderProps<SeasonComparisonPoint>) {
   )
 }
 
-export function SeasonComparisonChart({ comparison }: { comparison: SeasonComparisonPoint[] }) {
+export function SeasonComparisonChart({
+  comparison,
+  title = 'Comparación entre temporadas',
+  description = 'Índice de progreso y sus cuatro dimensiones, de 0 a 100.',
+  emptyMessage = 'Aún no hay índices de progreso calculados para este deportista.',
+  singleMessage = 'Solo hay una temporada con índice calculado. La comparación aparece desde la segunda.',
+}: SeasonComparisonChartProps) {
   const latest = comparison[comparison.length - 1]
 
   return (
     <ChartCard
-      title="Comparación entre temporadas"
-      description="Índice de progreso y sus cuatro dimensiones, de 0 a 100."
+      title={title}
+      description={description}
       helpTerm="progressIndex"
       isEmpty={comparison.length === 0}
-      emptyMessage="Aún no hay índices de progreso calculados para este deportista."
+      emptyMessage={emptyMessage}
       table={
         <DataTableSimple
-          caption="Comparación entre temporadas"
+          caption={title}
           headers={['Temporada', ...SERIES.map((series) => series.label)]}
           rows={comparison.map((point) => [
             point.season_name,
@@ -76,7 +95,7 @@ export function SeasonComparisonChart({ comparison }: { comparison: SeasonCompar
     >
       {comparison.length === 1 ? (
         <p className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
-          Solo hay una temporada con índice calculado. La comparación aparece desde la segunda.
+          {singleMessage}
         </p>
       ) : (
         <ChartContainer config={CONFIG} className="aspect-auto h-64 w-full">

@@ -115,7 +115,7 @@ export const JOURNEY_STEPS: JourneyStep[] = [
     stage: 'Paso 3',
     title: 'Post-temporada',
     description:
-      'Comparativa entre temporadas, informes de evolución, detección de potencial de ascenso y planificación del siguiente ciclo.',
+      'Comparativa entre temporadas, informes de evolución adaptados a la edad, detección de potencial de ascenso y planificación del siguiente ciclo.',
   },
   {
     icon: Cpu,

@@ -6,6 +6,7 @@ import { athleteAssignmentsService } from '@/services/athleteAssignmentsService'
 import { authService } from '@/services/authService'
 import { healthService } from '@/services/healthService'
 import { mlService } from '@/services/mlService'
+import { reportsService } from '@/services/reportsService'
 import { talentService } from '@/services/talentService'
 import { trainingService } from '@/services/trainingService'
 import { usersService } from '@/services/usersService'
@@ -66,6 +67,13 @@ vi.mock('@/services/parentalConsentsService', () => ({
     create: vi.fn(),
     update: vi.fn(),
     remove: vi.fn(),
+  },
+}))
+vi.mock('@/services/reportsService', () => ({
+  reportsService: {
+    seasonSummary: vi.fn(),
+    seasonComparison: vi.fn(),
+    categoryEvolution: vi.fn(),
   },
 }))
 vi.mock('@/services/talentService', () => ({
@@ -355,6 +363,55 @@ const PLAN: NextCyclePlan = {
     },
   ],
 }
+
+describe('evolución por categoría', () => {
+  it('muestra cómo cambia la categoría de una temporada a otra', async () => {
+    vi.mocked(reportsService.categoryEvolution).mockResolvedValue([
+      {
+        id_season: 1,
+        season_name: 'Temporada 2025',
+        start_date: '2025-02-01',
+        status: 'closed',
+        athletes: 14,
+        guests: 2,
+        indexed: 12,
+        index_value: 58.4,
+        physical_score: 60,
+        technical_score: 55,
+        tactical_score: null,
+        participation_score: 62,
+        talent_flags: 3,
+        reviewed_talent_flags: 1,
+      },
+      {
+        id_season: ACTIVE_SEASON.id_season,
+        season_name: ACTIVE_SEASON.name,
+        start_date: ACTIVE_SEASON.start_date,
+        status: 'active',
+        athletes: 16,
+        guests: 0,
+        indexed: 15,
+        index_value: 63.1,
+        physical_score: 64,
+        technical_score: 61,
+        tactical_score: 57,
+        participation_score: 68,
+        talent_flags: 0,
+        reviewed_talent_flags: 0,
+      },
+    ])
+    signInAs(DT_USER)
+    renderAppAt('/app/talento?tab=categorias')
+
+    const table = await screen.findByRole('table', { name: `Temporadas de ${SUB15.name}` })
+    expect(reportsService.categoryEvolution).toHaveBeenCalledWith(SUB15.id_category)
+    const rows = within(table).getAllByRole('row').slice(1)
+    expect(within(rows[0]).getByText('y 2 de categorías menores')).toBeInTheDocument()
+    expect(within(rows[0]).getByText('1 revisadas de 3')).toBeInTheDocument()
+    expect(within(rows[1]).getByText('63,1')).toBeInTheDocument()
+    expect(within(rows[1]).getByText('15 de 16')).toBeInTheDocument()
+  })
+})
 
 describe('planificación del siguiente ciclo', () => {
   beforeEach(() => {

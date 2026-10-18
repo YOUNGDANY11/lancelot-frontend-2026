@@ -75,7 +75,7 @@ export const APP_MODULES: Record<ModuleKey, AppModule> = {
     path: '/app/talento',
     label: 'Talento y progreso',
     description:
-      'Índice de progreso, señalizaciones de talento y planificación del siguiente ciclo.',
+      'Índice de progreso por deportista y por categoría, señalizaciones de talento y planificación del siguiente ciclo.',
     icon: TrendingUp,
     roles: ['ADMIN', 'DIRECTOR_TECNICO', 'ENTRENADOR'],
   },

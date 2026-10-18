@@ -167,6 +167,8 @@ export interface SeasonSummary {
     id_user: number
     name: string
     lastname: string
+    birth_date?: string | null
+    sporting_age?: number | null
     position: string | null
     category: string | null
   }

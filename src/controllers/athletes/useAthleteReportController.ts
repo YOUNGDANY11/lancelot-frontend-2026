@@ -1,5 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
 import { APP_MODULES } from '@/constants/navigation'
+import {
+  REPORT_STAGE_ORDER,
+  REPORT_STAGES,
+  reportStageForAge,
+  type ReportStage,
+} from '@/constants/reportStages'
 import { parseAthleteId } from '@/controllers/athletes/useAthleteProfileController'
 import { useAppContext } from '@/hooks/useAppContext'
 import { queryKeys } from '@/lib/queryKeys'
@@ -16,6 +23,7 @@ export function useAthleteReportController(rawId: string | undefined) {
   const idSeason = season?.id_season
   const ready = idUser !== null && idSeason !== undefined
   const id = idUser ?? 0
+  const [stageChoice, setStageChoice] = useState<ReportStage | 'auto'>('auto')
 
   const summaryQuery = useQuery({
     queryKey: queryKeys.athlete.summary(id, idSeason ?? 0),
@@ -46,6 +54,8 @@ export function useAthleteReportController(rawId: string | undefined) {
   const queries = [summaryQuery, comparisonQuery, physicalQuery, technicalQuery, objectivesQuery]
   const failed = queries.find((query) => query.isError)
   const summary = summaryQuery.data
+  const autoStage = reportStageForAge(summary?.athlete.sporting_age)
+  const stage = REPORT_STAGES[stageChoice === 'auto' ? autoStage : stageChoice]
 
   return {
     idUser,
@@ -67,6 +77,19 @@ export function useAthleteReportController(rawId: string | undefined) {
       ),
     },
     profilePath: `${APP_MODULES.athletes.path}/${id}`,
+    stage,
+    stageValue: stageChoice,
+    stageOptions: [
+      {
+        value: 'auto',
+        label: `Según su edad (${REPORT_STAGES[autoStage].label.toLowerCase()})`,
+      },
+      ...REPORT_STAGE_ORDER.map((value) => ({
+        value,
+        label: `${REPORT_STAGES[value].label}, ${REPORT_STAGES[value].ages}`,
+      })),
+    ],
+    onStageChange: (value: string) => setStageChoice(value as ReportStage | 'auto'),
     print: () => window.print(),
   }
 }

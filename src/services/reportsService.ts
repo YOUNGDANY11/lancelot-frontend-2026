@@ -1,5 +1,6 @@
 import { apiClient } from '@/lib/apiClient'
 import type { ProgressIndex, SeasonComparisonPoint, SeasonSummary } from '@/types/athlete'
+import type { CategoryEvolutionPoint } from '@/types/talent'
 import { getApiErrorStatus } from '@/utils/parseApiError'
 import { withNumbers } from '@/utils/toNumber'
 
@@ -32,6 +33,13 @@ export const reportsService = {
         withNumbers(assessment, ['acwr_value']),
       ),
     }
+  },
+
+  async categoryEvolution(idCategory: number): Promise<CategoryEvolutionPoint[]> {
+    const { data } = await apiClient.http.get<{ evolution: CategoryEvolutionPoint[] }>(
+      `/reports/category-evolution/${idCategory}`,
+    )
+    return data.evolution.map((point) => withNumbers(point, [...SCORE_KEYS]))
   },
 
   async seasonComparison(idUser: number): Promise<SeasonComparisonPoint[]> {

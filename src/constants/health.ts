@@ -28,7 +28,7 @@ export const LEVEL_PRIORITY: Record<RiskLevelValue, number> = { alto: 0, medio: 
 export const INBOX_COPY = {
   decisionNote: 'El sistema sugiere; tú decides.',
   description:
-    'Las alertas se generan cada noche a partir de la carga (RPE × minutos) y del historial de lesiones. Revisa cada una y márcala como revisada o descártala.',
+    'Las alertas se generan cada noche a partir de la carga (RPE × minutos) y del historial de lesiones, o al momento con «Ejecutar análisis ahora». Revisa cada una y márcala como revisada o descártala.',
   empty: 'No hay alertas pendientes',
   emptyDescription: 'Cuando el sistema detecte una carga de riesgo, la verás aquí.',
 } as const

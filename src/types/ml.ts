@@ -48,6 +48,41 @@ export interface TalentReadiness {
   pending_rows: number
 }
 
+export interface StepError {
+  error: string
+}
+
+export interface DailyAlertsSummary {
+  athletes: number
+  created: number
+  updated: number
+  removed: number
+  failed: number
+}
+
+export interface RunNowResult {
+  mensaje: string
+  date: string
+  duration_ms: number
+  fatigue_alerts: DailyAlertsSummary | StepError
+  risk_assessments: DailyAlertsSummary | StepError
+  snapshot: { athletes: number; snapshots: number; failed: number } | StepError
+  inference:
+    | {
+        engine: MlEngineMode
+        predicted: number
+        assessments_created: number
+        failed: number
+        skipped_reason?: string
+      }
+    | StepError
+  labels: { processed: number; labeled_positive: number; unknown_mechanism: number } | StepError
+  talent_dataset:
+    | { rows: number; labeled: number; promoted: number; pending: number; excluded: number }
+    | StepError
+  open_today: { fatigue_alerts: number; risk_assessments: number }
+}
+
 export interface DataQuality {
   period: { from: string; to: string; days: number }
   snapshots: { rows: number; days_with_snapshot: number; athletes_with_data: number }

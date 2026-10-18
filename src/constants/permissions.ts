@@ -19,6 +19,7 @@ export const PERMISSIONS = {
   manageConfig: ['ADMIN', 'DIRECTOR_TECNICO'],
   manageUsers: ['ADMIN'],
   manageMlEngine: ['ADMIN'],
+  runAnalysisNow: ['ADMIN', 'DIRECTOR_TECNICO', 'ENTRENADOR', 'ENCARGADO_SALUD'],
   viewMlData: ['ADMIN', 'ENCARGADO_SALUD'],
   viewValidation: ['ADMIN', 'DIRECTOR_TECNICO', 'ENCARGADO_SALUD'],
   createAthleteAccounts: ['ADMIN'],

@@ -4,6 +4,7 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
 import { LoadingSkeleton } from '@/components/common/LoadingSkeleton'
 import { PaginationNav } from '@/components/common/PaginationNav'
+import { RunAnalysisButton } from '@/components/modules/analytics/RunAnalysisButton'
 import { AlertCard } from '@/components/modules/health/AlertCard'
 import { Button } from '@/components/ui/button'
 import { RISK_LEVEL, type RiskLevelValue } from '@/constants/enums'
@@ -66,6 +67,8 @@ export function AlertInboxTab() {
             <p className="text-pretty text-muted-foreground">{INBOX_COPY.description}</p>
           </div>
         </div>
+
+        <RunAnalysisButton className="self-start" />
 
         <div className="flex flex-col gap-2">
           <FilterChips

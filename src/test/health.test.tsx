@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { authService } from '@/services/authService'
 import { healthService } from '@/services/healthService'
+import { mlService } from '@/services/mlService'
 import { usersService } from '@/services/usersService'
 import { primeAppDataMocks } from '@/test/appDataMocks'
 import { ADMIN_USER, ATHLETE_USER, COACH_USER } from '@/test/fixtures'
@@ -61,6 +62,9 @@ vi.mock('@/services/parentalConsentsService', () => ({
     update: vi.fn(),
     remove: vi.fn(),
   },
+}))
+vi.mock('@/services/mlService', () => ({
+  mlService: { runNow: vi.fn() },
 }))
 vi.mock('@/services/healthService', () => ({
   healthService: {
@@ -207,6 +211,43 @@ describe('bandeja de alertas', () => {
       expect(screen.queryByRole('heading', { name: 'Bruno Díaz' })).not.toBeInTheDocument(),
     )
   })
+  it('deja ejecutar el análisis al momento y muestra lo que encontró', async () => {
+    vi.mocked(mlService.runNow).mockImplementation(async () => {
+      mockOpenInbox([RISK, FATIGUE])
+      return {
+        mensaje: 'ok',
+        date: '2026-10-18',
+        duration_ms: 1500,
+        fatigue_alerts: { athletes: 2, created: 1, updated: 0, removed: 0, failed: 0 },
+        risk_assessments: { athletes: 2, created: 0, updated: 1, removed: 0, failed: 0 },
+        snapshot: { athletes: 2, snapshots: 2, failed: 0 },
+        inference: { engine: 'rules', predicted: 0, assessments_created: 0, failed: 0 },
+        labels: { processed: 0, labeled_positive: 0, unknown_mechanism: 0 },
+        talent_dataset: { rows: 0, labeled: 0, promoted: 0, pending: 0, excluded: 0 },
+        open_today: { fatigue_alerts: 1, risk_assessments: 1 },
+      }
+    })
+    mockOpenInbox([])
+    signInAs(COACH_USER)
+    const user = userEvent.setup()
+    renderAppAt('/app/salud')
+
+    expect(await screen.findByText('No hay alertas pendientes')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Ejecutar análisis ahora' }))
+
+    const dialog = await screen.findByRole('dialog', { name: 'Análisis inmediato' })
+    expect(within(dialog).getByText('1 alerta nueva')).toBeInTheDocument()
+    expect(within(dialog).getByText('1 actualizada')).toBeInTheDocument()
+    expect(
+      within(dialog).getByText('Alertas de fatiga abiertas hoy').nextSibling?.textContent,
+    ).toBe('1')
+    await user.click(within(dialog).getByRole('button', { name: 'Entendido' }))
+
+    const list = await screen.findByRole('list', { name: 'Alertas pendientes' })
+    expect(within(list).getAllByRole('article')).toHaveLength(2)
+    expect(mlService.runNow).toHaveBeenCalledTimes(1)
+  })
+
   it('pagina las alertas desde el backend y reinicia la página al filtrar', async () => {
     const many = Array.from({ length: 12 }, (_, index) =>
       inboxItem({

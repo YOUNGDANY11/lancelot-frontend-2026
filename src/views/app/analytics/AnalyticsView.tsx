@@ -5,6 +5,7 @@ import { DataQualityTab } from '@/components/modules/analytics/DataQualityTab'
 import { DataTab } from '@/components/modules/analytics/DataTab'
 import { EngineTab } from '@/components/modules/analytics/EngineTab'
 import { ModelsTab } from '@/components/modules/analytics/ModelsTab'
+import { RunAnalysisButton } from '@/components/modules/analytics/RunAnalysisButton'
 import { ReadinessTab } from '@/components/modules/analytics/ReadinessTab'
 import { ValidationTab } from '@/components/modules/analytics/ValidationTab'
 import { ANALYTICS_TABS, type AnalyticsTab } from '@/constants/ml'
@@ -29,6 +30,7 @@ export default function AnalyticsView() {
       <PageHeader
         title={APP_MODULES.analytics.label}
         description={APP_MODULES.analytics.description}
+        action={<RunAnalysisButton />}
       />
       <ModuleTabs
         label="Secciones de análisis"

@@ -10,11 +10,14 @@ import type {
   MlModelMetrics,
   Readiness,
   RelabelResult,
+  RunNowResult,
   TalentReadiness,
   UpdateEngineConfigRequest,
   ValidationReport,
 } from '@/types/ml'
 import { withNumbers } from '@/utils/toNumber'
+
+export const LONG_OPERATION_TIMEOUT_MS = 180_000
 
 export interface DateRange extends QueryParams {
   from?: string
@@ -135,15 +138,24 @@ export const mlService = {
   },
 
   async backfill(range: { from: string; to: string }): Promise<BackfillResult> {
-    const { data } = await apiClient.http.post<BackfillResult>('/ml/features/backfill', null, {
+    const { data } = await apiClient.http.post<BackfillResult>('/ml/features/backfill', undefined, {
       params: range,
+      timeout: LONG_OPERATION_TIMEOUT_MS,
     })
     return data
   },
 
   async relabel(range: { from: string; to: string }): Promise<RelabelResult> {
-    const { data } = await apiClient.http.post<RelabelResult>('/ml/features/relabel', null, {
+    const { data } = await apiClient.http.post<RelabelResult>('/ml/features/relabel', undefined, {
       params: range,
+      timeout: LONG_OPERATION_TIMEOUT_MS,
+    })
+    return data
+  },
+
+  async runNow(): Promise<RunNowResult> {
+    const { data } = await apiClient.http.post<RunNowResult>('/ml/run-now', undefined, {
+      timeout: LONG_OPERATION_TIMEOUT_MS,
     })
     return data
   },

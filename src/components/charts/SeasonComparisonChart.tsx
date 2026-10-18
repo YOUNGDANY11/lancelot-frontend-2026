@@ -11,6 +11,7 @@ const SERIES = [
   { key: 'index_value', label: 'Índice', color: 'var(--chart-1)', width: 3 },
   { key: 'physical_score', label: 'Física', color: 'var(--chart-2)', width: 2 },
   { key: 'technical_score', label: 'Técnica', color: 'var(--chart-3)', width: 2 },
+  { key: 'tactical_score', label: 'Táctica', color: 'var(--chart-5)', width: 2 },
   { key: 'participation_score', label: 'Participación', color: 'var(--chart-4)', width: 2 },
 ] as const
 

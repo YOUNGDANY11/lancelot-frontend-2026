@@ -20,6 +20,7 @@ interface DialogProps {
 const WEIGHT_FIELDS = [
   { name: 'w_physical', label: 'Física (%)' },
   { name: 'w_technical', label: 'Técnica (%)' },
+  { name: 'w_tactical', label: 'Táctica (%)' },
   { name: 'w_participation', label: 'Participación (%)' },
 ] as const
 
@@ -85,7 +86,7 @@ function WeightProfileContent({ onOpenChange, profile }: Omit<DialogProps, 'open
           />
         </div>
         <p className="text-sm text-muted-foreground">{POSITION_HINT}</p>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 items-end gap-3 sm:grid-cols-4">
           {WEIGHT_FIELDS.map((weightField) => (
             <FormField
               key={weightField.name}
@@ -102,6 +103,7 @@ function WeightProfileContent({ onOpenChange, profile }: Omit<DialogProps, 'open
         <WeightDistributionBar
           physical={controller.weights.physical}
           technical={controller.weights.technical}
+          tactical={controller.weights.tactical}
           participation={controller.weights.participation}
           total={controller.total}
         />

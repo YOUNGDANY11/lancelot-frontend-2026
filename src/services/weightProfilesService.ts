@@ -9,6 +9,7 @@ function normalizeProfile(profile: PositionWeightProfile): PositionWeightProfile
     ...profile,
     w_physical: toNumberOr(profile.w_physical, 0),
     w_technical: toNumberOr(profile.w_technical, 0),
+    w_tactical: toNumberOr(profile.w_tactical, 0),
     w_participation: toNumberOr(profile.w_participation, 0),
   }
 }

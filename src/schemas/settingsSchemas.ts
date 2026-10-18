@@ -17,9 +17,10 @@ const WEIGHT_TOTAL = 100
 export function weightsTotal(values: {
   w_physical: string
   w_technical: string
+  w_tactical: string
   w_participation: string
 }): number {
-  return [values.w_physical, values.w_technical, values.w_participation].reduce(
+  return [values.w_physical, values.w_technical, values.w_tactical, values.w_participation].reduce(
     (sum, value) => sum + (Number(value) || 0),
     0,
   )
@@ -31,10 +32,11 @@ export const weightProfileSchema = z
     age_category: requiredChoice('Elige la categoría.'),
     w_physical: integerField('el peso físico', 0, 100),
     w_technical: integerField('el peso técnico', 0, 100),
+    w_tactical: integerField('el peso táctico', 0, 100),
     w_participation: integerField('el peso de participación', 0, 100),
   })
   .refine((values) => weightsTotal(values) === WEIGHT_TOTAL, {
-    message: 'Los tres pesos deben sumar 100 %.',
+    message: 'Los cuatro pesos deben sumar 100 %.',
     path: ['w_participation'],
   })
 
@@ -48,6 +50,7 @@ export function toCreateWeightProfileRequest(
     age_category: values.age_category,
     w_physical: Number(values.w_physical) / WEIGHT_TOTAL,
     w_technical: Number(values.w_technical) / WEIGHT_TOTAL,
+    w_tactical: Number(values.w_tactical) / WEIGHT_TOTAL,
     w_participation: Number(values.w_participation) / WEIGHT_TOTAL,
   }
 }

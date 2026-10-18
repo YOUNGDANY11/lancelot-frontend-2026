@@ -15,7 +15,7 @@ export type AthleteProfileTab = (typeof ATHLETE_PROFILE_TABS)[number]
 export const ATHLETE_PROFILE_TAB_LABELS: Record<AthleteProfileTab, string> = {
   resumen: 'Resumen',
   fisico: 'Físico',
-  tecnico: 'Técnico',
+  tecnico: 'Técnico-táctico',
   carga: 'Carga',
   salud: 'Salud',
   objetivos: 'Objetivos',
@@ -38,19 +38,6 @@ export function athleteTabsForRole(role: RoleCode | null): AthleteProfileTab[] {
   if (!role) return []
   return ATHLETE_PROFILE_TABS.filter((tab) => ATHLETE_PROFILE_TAB_ROLES[tab].includes(role))
 }
-
-export const TECHNICAL_INDICATOR_SUGGESTIONS = [
-  'Control del balón',
-  'Pase corto',
-  'Pase largo',
-  'Conducción',
-  'Regate',
-  'Remate',
-  'Cabeceo',
-  'Marcaje',
-  'Toma de decisiones',
-  'Juego aéreo',
-]
 
 export const ACWR_ZONE_LABELS = {
   underload: 'Destreno',

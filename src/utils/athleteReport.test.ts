@@ -1,12 +1,20 @@
 import { describe, expect, it } from 'vitest'
+import type { EvaluationDimension } from '@/constants/enums'
 import type { TechnicalEvaluation } from '@/types/athlete'
 import { averageByIndicator, countLevels, inSeason } from '@/utils/athleteReport'
 
-function technical(indicator: string, score: number, eval_date: string, id_season = 2) {
+function technical(
+  indicator: string,
+  score: number,
+  eval_date: string,
+  id_season = 2,
+  dimension: EvaluationDimension = 'tecnica',
+) {
   return {
     id_eval_tech: score,
     id_user: 7,
     id_season,
+    dimension,
     indicator,
     score,
     evaluator_id: 1,
@@ -23,8 +31,27 @@ describe('informe de evolución', () => {
         technical('Pase corto', 8, '2026-05-01'),
       ]),
     ).toEqual([
-      { indicator: 'Pase corto', average: 7.5, count: 2, lastDate: '2026-05-01' },
-      { indicator: 'Remate', average: 6, count: 1, lastDate: '2026-02-01' },
+      {
+        dimension: 'tecnica',
+        indicator: 'Pase corto',
+        average: 7.5,
+        count: 2,
+        lastDate: '2026-05-01',
+      },
+      { dimension: 'tecnica', indicator: 'Remate', average: 6, count: 1, lastDate: '2026-02-01' },
+    ])
+  })
+
+  it('separa los promedios técnicos de los tácticos', () => {
+    expect(
+      averageByIndicator([
+        technical('Desmarque', 6, '2026-02-01', 2, 'tactica'),
+        technical('Desmarque', 8, '2026-03-01', 2, 'tactica'),
+        technical('Regate', 9, '2026-03-01'),
+      ]).map(({ dimension, indicator, average }) => [dimension, indicator, average]),
+    ).toEqual([
+      ['tactica', 'Desmarque', 7],
+      ['tecnica', 'Regate', 9],
     ])
   })
 

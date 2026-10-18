@@ -34,7 +34,7 @@ export const GLOSSARY = {
   progressIndex: {
     term: 'Índice de progreso ponderado',
     definition:
-      'Combina tres dimensiones (física, técnica y de participación) con pesos que dependen de la posición y la categoría del deportista.',
+      'Combina cuatro dimensiones (física, técnica, táctica y de participación) con pesos que dependen de la posición y la categoría del deportista.',
     source: 'Vaeyens et al. (2008)',
   },
   percentile: {

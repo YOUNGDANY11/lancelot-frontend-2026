@@ -62,7 +62,8 @@ export function toPhysicalEvaluationRequest(
 }
 
 export const technicalEvaluationSchema = z.object({
-  indicator: textField('el indicador', 1, 60),
+  dimension: z.enum(['tecnica', 'tactica'], { error: 'Elige si evalúas técnica o táctica.' }),
+  indicator: z.string().trim().min(1, 'Elige el indicador.'),
   score: decimalField('el puntaje', 1, 10, 1),
   eval_date: pastOrTodayDate('Indica la fecha de la evaluación.'),
 })
@@ -77,6 +78,7 @@ export function toTechnicalEvaluationRequest(
     id_user: context.idUser,
     id_season: context.idSeason,
     evaluator_id: context.evaluatorId,
+    dimension: values.dimension,
     indicator: values.indicator,
     score: toDecimal(values.score),
     eval_date: values.eval_date,

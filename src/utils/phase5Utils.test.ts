@@ -63,6 +63,7 @@ describe('indicadores técnicos', () => {
     id_eval_tech: Math.random(),
     id_user: 1,
     id_season: 1,
+    dimension: 'tecnica',
     indicator,
     score,
     evaluator_id: 2,

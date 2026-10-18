@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 interface WeightDistributionBarProps {
   physical: number
   technical: number
+  tactical: number
   participation: number
   total: number
 }
@@ -11,16 +12,18 @@ interface WeightDistributionBarProps {
 const SEGMENTS = [
   { key: 'physical', label: 'Física', className: 'bg-primary' },
   { key: 'technical', label: 'Técnica', className: 'bg-secondary' },
+  { key: 'tactical', label: 'Táctica', className: 'bg-chart-4' },
   { key: 'participation', label: 'Participación', className: 'bg-accent' },
 ] as const
 
 export function WeightDistributionBar({
   physical,
   technical,
+  tactical,
   participation,
   total,
 }: WeightDistributionBarProps) {
-  const values = { physical, technical, participation }
+  const values = { physical, technical, tactical, participation }
   const isComplete = total === 100
 
   return (
@@ -28,7 +31,7 @@ export function WeightDistributionBar({
       <div
         className="flex h-3 w-full overflow-hidden rounded-full bg-muted"
         role="img"
-        aria-label={`Física ${physical} %, técnica ${technical} %, participación ${participation} %. Total ${total} %.`}
+        aria-label={`Física ${physical} %, técnica ${technical} %, táctica ${tactical} %, participación ${participation} %. Total ${total} %.`}
       >
         {SEGMENTS.map((segment) => (
           <div

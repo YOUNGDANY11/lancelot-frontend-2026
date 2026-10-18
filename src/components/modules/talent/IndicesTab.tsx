@@ -167,6 +167,12 @@ export function IndicesTab() {
             cell: (entry) => formatNumber(entry.index.technical_score, 0),
           },
           {
+            key: 'tactical',
+            header: 'Táctica',
+            className: 'tabular-nums',
+            cell: (entry) => formatNumber(entry.index.tactical_score, 0),
+          },
+          {
             key: 'participation',
             header: 'Participación',
             className: 'tabular-nums',

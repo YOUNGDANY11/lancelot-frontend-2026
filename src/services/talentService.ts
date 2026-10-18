@@ -21,6 +21,7 @@ function normalizeIndex(index: RankedIndex): RankedIndex {
   return withNumbers(index, [
     'physical_score',
     'technical_score',
+    'tactical_score',
     'participation_score',
     'index_value',
   ])

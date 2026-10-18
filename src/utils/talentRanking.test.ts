@@ -58,6 +58,7 @@ function index(id_user: number, value: number): RankedIndex {
     id_season: 2,
     physical_score: value,
     technical_score: value,
+    tactical_score: value,
     participation_score: value,
     index_value: value,
   }

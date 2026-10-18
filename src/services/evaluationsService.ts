@@ -2,6 +2,7 @@ import { apiClient } from '@/lib/apiClient'
 import { fetchAllPages } from '@/lib/listRequest'
 import type { ApiMessage } from '@/types/api'
 import type {
+  EvaluationCatalogEntry,
   PhysicalEvaluation,
   PhysicalEvaluationRequest,
   TechnicalEvaluation,
@@ -65,6 +66,13 @@ export const evaluationsService = {
       normalizeTechnical,
     )
     return byDateAsc(items)
+  },
+
+  async technicalCatalog(): Promise<EvaluationCatalogEntry[]> {
+    const { data } = await apiClient.http.get<{ catalog: EvaluationCatalogEntry[] }>(
+      '/technical-evaluations/catalog',
+    )
+    return data.catalog
   },
 
   async createTechnical(payload: TechnicalEvaluationRequest): Promise<ApiMessage> {

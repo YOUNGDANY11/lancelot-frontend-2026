@@ -61,6 +61,7 @@ export interface PositionWeightProfile {
   age_category: string
   w_physical: number
   w_technical: number
+  w_tactical: number
   w_participation: number
 }
 
@@ -69,6 +70,7 @@ export interface CreateWeightProfileRequest {
   age_category: string
   w_physical: number
   w_technical: number
+  w_tactical: number
   w_participation: number
 }
 

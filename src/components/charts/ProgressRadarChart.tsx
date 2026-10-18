@@ -36,6 +36,7 @@ export function ProgressRadarChart({ index }: { index: ProgressIndex | null }) {
     ? [
         { dimension: 'Física', value: index.physical_score },
         { dimension: 'Técnica', value: index.technical_score },
+        { dimension: 'Táctica', value: index.tactical_score },
         { dimension: 'Participación', value: index.participation_score },
       ]
     : []
@@ -57,7 +58,7 @@ export function ProgressRadarChart({ index }: { index: ProgressIndex | null }) {
         />
       }
       footer={
-        <ul className="grid grid-cols-3 gap-2 text-center text-xs">
+        <ul className="grid grid-cols-2 gap-2 text-center text-xs sm:grid-cols-4">
           {data.map((datum) => (
             <li key={datum.dimension} className="flex flex-col">
               <span className="text-muted-foreground">{datum.dimension}</span>

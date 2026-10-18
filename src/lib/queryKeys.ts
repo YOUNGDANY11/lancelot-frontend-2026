@@ -94,6 +94,7 @@ export const queryKeys = {
       [...queryKeys.training.all, 'team-acwr', idCategory, date] as const,
     myLoads: (idUser: number) => [...queryKeys.training.all, 'my-loads', idUser] as const,
   },
+  evaluationCatalog: () => ['evaluation-catalog'] as const,
   athlete: {
     root: ['athlete'] as const,
     all: (idUser: number) => ['athlete', idUser] as const,

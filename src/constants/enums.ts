@@ -17,6 +17,12 @@ function defineEnum<T extends string>(options: EnumOption<T>[]) {
   return { options, labels, tones, values: options.map((option) => option.value) }
 }
 
+export type EvaluationDimension = 'tecnica' | 'tactica'
+export const EVALUATION_DIMENSION = defineEnum<EvaluationDimension>([
+  { value: 'tecnica', label: 'Técnica', tone: 'info' },
+  { value: 'tactica', label: 'Táctica', tone: 'neutral' },
+])
+
 export type SeasonStatus = 'planned' | 'active' | 'closed'
 export const SEASON_STATUS = defineEnum<SeasonStatus>([
   { value: 'planned', label: 'Planeada', tone: 'info' },

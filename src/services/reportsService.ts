@@ -6,6 +6,7 @@ import { withNumbers } from '@/utils/toNumber'
 const SCORE_KEYS = [
   'physical_score',
   'technical_score',
+  'tactical_score',
   'participation_score',
   'index_value',
 ] as const

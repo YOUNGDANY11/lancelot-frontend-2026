@@ -18,8 +18,9 @@ import { applyServerError, serverErrorOf } from '@/utils/formErrors'
 const EMPTY_PROFILE: WeightProfileFormValues = {
   position: '',
   age_category: '',
-  w_physical: '40',
-  w_technical: '40',
+  w_physical: '35',
+  w_technical: '25',
+  w_tactical: '20',
   w_participation: '20',
 }
 
@@ -34,6 +35,7 @@ function defaultsFor(profile: PositionWeightProfile | null | undefined): WeightP
     age_category: profile.age_category,
     w_physical: toPercent(profile.w_physical),
     w_technical: toPercent(profile.w_technical),
+    w_tactical: toPercent(profile.w_tactical),
     w_participation: toPercent(profile.w_participation),
   }
 }
@@ -53,13 +55,14 @@ export function useWeightProfileFormController({
     mode: 'onTouched',
   })
 
-  const [physical, technical, participation] = useWatch({
+  const [physical, technical, tactical, participation] = useWatch({
     control: form.control,
-    name: ['w_physical', 'w_technical', 'w_participation'],
+    name: ['w_physical', 'w_technical', 'w_tactical', 'w_participation'],
   })
   const total = weightsTotal({
     w_physical: physical,
     w_technical: technical,
+    w_tactical: tactical,
     w_participation: participation,
   })
 
@@ -100,6 +103,7 @@ export function useWeightProfileFormController({
     weights: {
       physical: Number(physical) || 0,
       technical: Number(technical) || 0,
+      tactical: Number(tactical) || 0,
       participation: Number(participation) || 0,
     },
     total,

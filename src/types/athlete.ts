@@ -1,5 +1,6 @@
 import type {
   DevelopmentObjectiveStatus,
+  EvaluationDimension,
   HealthRecordStatus,
   InjuryMechanism,
   InjurySeverity,
@@ -44,6 +45,7 @@ export interface TechnicalEvaluation {
   id_user: number
   id_season: number
   season_name?: string
+  dimension: EvaluationDimension
   indicator: string
   score: number
   evaluator_id: number
@@ -51,9 +53,15 @@ export interface TechnicalEvaluation {
   eval_date: string
 }
 
+export interface EvaluationCatalogEntry {
+  dimension: EvaluationDimension
+  indicators: string[]
+}
+
 export interface TechnicalEvaluationRequest {
   id_user: number
   id_season: number
+  dimension: EvaluationDimension
   indicator: string
   score: number
   evaluator_id: number
@@ -147,6 +155,7 @@ export interface ProgressIndex {
   id_season: number
   physical_score: number
   technical_score: number
+  tactical_score: number
   participation_score: number
   index_value: number
   warnings?: string[] | null
@@ -188,6 +197,7 @@ export interface SeasonComparisonPoint {
   start_date: string
   physical_score: number
   technical_score: number
+  tactical_score: number
   participation_score: number
   index_value: number
 }

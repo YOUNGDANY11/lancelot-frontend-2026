@@ -86,6 +86,7 @@ vi.mock('@/services/evaluationsService', () => ({
     updatePhysical: vi.fn(),
     removePhysical: vi.fn(),
     listTechnical: vi.fn(),
+    technicalCatalog: vi.fn(),
     createTechnical: vi.fn(),
     updateTechnical: vi.fn(),
     removeTechnical: vi.fn(),
@@ -283,6 +284,42 @@ describe('módulo Deportistas', () => {
     ).toBeInTheDocument()
   })
 
+  it('registra una evaluación táctica con un indicador del catálogo de su dimensión', async () => {
+    vi.mocked(evaluationsService.technicalCatalog).mockResolvedValue([
+      { dimension: 'tecnica', indicators: ['Pase corto', 'Regate'] },
+      { dimension: 'tactica', indicators: ['Desmarque', 'Marcaje'] },
+    ])
+    vi.mocked(evaluationsService.createTechnical).mockResolvedValue({
+      status: 'Success',
+      mensaje: 'ok',
+    })
+    signInAs(COACH_USER)
+    const user = userEvent.setup()
+    renderAppAt(`/app/deportistas/${ATHLETE_USER.id_user}?tab=tecnico`)
+
+    await user.click(await screen.findByRole('button', { name: 'Registrar evaluación táctica' }))
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Registrar evaluación técnico-táctica',
+    })
+    expect(within(dialog).getByRole('combobox', { name: 'Dimensión' })).toHaveTextContent('Táctica')
+    await user.click(within(dialog).getByRole('combobox', { name: 'Indicador' }))
+    expect(screen.queryByRole('option', { name: 'Pase corto' })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('option', { name: 'Desmarque' }))
+    await user.type(within(dialog).getByLabelText('Puntaje (1 a 10)'), '7,5')
+    await user.click(within(dialog).getByRole('button', { name: 'Guardar' }))
+
+    await waitFor(() =>
+      expect(evaluationsService.createTechnical).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id_user: ATHLETE_USER.id_user,
+          dimension: 'tactica',
+          indicator: 'Desmarque',
+          score: 7.5,
+        }),
+      ),
+    )
+  })
+
   it('impide al deportista abrir la ficha de otra persona', async () => {
     signInAs(ATHLETE_USER)
     const { router } = renderAppAt('/app/deportistas/99')
@@ -353,6 +390,7 @@ describe('informe de evolución individual', () => {
       id_season: ACTIVE_SEASON.id_season,
       physical_score: 70,
       technical_score: 75.5,
+      tactical_score: 75.5,
       participation_score: 80,
       index_value: 74.5,
       warnings: ['Sin evaluación física de mitad de temporada'],
@@ -366,6 +404,7 @@ describe('informe de evolución individual', () => {
         id_eval_tech: 1,
         id_user: ATHLETE_USER.id_user,
         id_season: ACTIVE_SEASON.id_season,
+        dimension: 'tecnica',
         indicator: 'Pase corto',
         score: 7,
         evaluator_id: 2,
@@ -375,6 +414,7 @@ describe('informe de evolución individual', () => {
         id_eval_tech: 2,
         id_user: ATHLETE_USER.id_user,
         id_season: ACTIVE_SEASON.id_season,
+        dimension: 'tecnica',
         indicator: 'Pase corto',
         score: 8,
         evaluator_id: 2,
@@ -399,8 +439,11 @@ describe('informe de evolución individual', () => {
     expect(screen.getByText('Informe de evolución individual')).toBeInTheDocument()
     expect(screen.getByText('74,5')).toBeInTheDocument()
     expect(screen.getByText('Sin evaluación física de mitad de temporada')).toBeInTheDocument()
-    const technical = screen.getByRole('table', { name: 'Promedio por indicador técnico' })
+    const technical = screen.getByRole('table', { name: 'Promedio por indicador de técnica' })
     expect(within(technical).getByRole('row', { name: /Pase corto 7,5 2/ })).toBeInTheDocument()
+    expect(
+      screen.getByText('No tiene evaluaciones tácticas en esta temporada.'),
+    ).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Imprimir o guardar en PDF' }))
     expect(print).toHaveBeenCalledTimes(1)

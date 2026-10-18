@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { DataTableSimple } from '@/components/charts/DataTableSimple'
 import {
   DEVELOPMENT_OBJECTIVE_STATUS,
+  EVALUATION_DIMENSION,
   PHYSICAL_EVALUATION_STAGE,
   RISK_LEVEL,
   type RiskLevelValue,
@@ -81,14 +82,15 @@ export function AthleteReport({ report }: { report: ReportData }) {
 
       <ReportSection
         title="Índice de progreso ponderado"
-        description="Combina las dimensiones física, técnica y de participación con los pesos de su posición y categoría. Escala de 0 a 100."
+        description="Combina las dimensiones física, técnica, táctica y de participación con los pesos de su posición y categoría. Escala de 0 a 100."
       >
         {index ? (
           <>
-            <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <dl className="grid grid-cols-2 gap-3 sm:grid-cols-5">
               <Stat label="Índice" value={formatNumber(index.index_value, 1)} />
               <Stat label="Física" value={formatNumber(index.physical_score, 1)} />
               <Stat label="Técnica" value={formatNumber(index.technical_score, 1)} />
+              <Stat label="Táctica" value={formatNumber(index.tactical_score, 1)} />
               <Stat label="Participación" value={formatNumber(index.participation_score, 1)} />
             </dl>
             {index.warnings && index.warnings.length > 0 && (
@@ -111,12 +113,13 @@ export function AthleteReport({ report }: { report: ReportData }) {
         {report.comparison.length > 0 ? (
           <DataTableSimple
             caption="Evolución del índice entre temporadas"
-            headers={['Temporada', 'Índice', 'Física', 'Técnica', 'Participación']}
+            headers={['Temporada', 'Índice', 'Física', 'Técnica', 'Táctica', 'Participación']}
             rows={report.comparison.map((point) => [
               point.season_name,
               formatNumber(point.index_value, 1),
               formatNumber(point.physical_score, 1),
               formatNumber(point.technical_score, 1),
+              formatNumber(point.tactical_score, 1),
               formatNumber(point.participation_score, 1),
             ])}
           />
@@ -151,25 +154,32 @@ export function AthleteReport({ report }: { report: ReportData }) {
         )}
       </ReportSection>
 
-      <ReportSection
-        title="Evaluación técnica"
-        description="Promedio de cada indicador en la temporada, en escala de 1 a 10."
-      >
-        {report.technical.length > 0 ? (
-          <DataTableSimple
-            caption="Promedio por indicador técnico"
-            headers={['Indicador', 'Promedio', 'Evaluaciones', 'Última']}
-            rows={report.technical.map((item) => [
-              item.indicator,
-              formatNumber(item.average, 1),
-              item.count,
-              formatDate(item.lastDate),
-            ])}
-          />
-        ) : (
-          <EmptyNote>No tiene evaluaciones técnicas en esta temporada.</EmptyNote>
-        )}
-      </ReportSection>
+      {EVALUATION_DIMENSION.options.map((dimension) => {
+        const items = report.technical.filter((item) => item.dimension === dimension.value)
+        const plural = dimension.value === 'tecnica' ? 'técnicas' : 'tácticas'
+        return (
+          <ReportSection
+            key={dimension.value}
+            title={`Evaluación ${dimension.label.toLowerCase()}`}
+            description="Promedio de cada indicador en la temporada, en escala de 1 a 10."
+          >
+            {items.length > 0 ? (
+              <DataTableSimple
+                caption={`Promedio por indicador de ${dimension.label.toLowerCase()}`}
+                headers={['Indicador', 'Promedio', 'Evaluaciones', 'Última']}
+                rows={items.map((item) => [
+                  item.indicator,
+                  formatNumber(item.average, 1),
+                  item.count,
+                  formatDate(item.lastDate),
+                ])}
+              />
+            ) : (
+              <EmptyNote>No tiene evaluaciones {plural} en esta temporada.</EmptyNote>
+            )}
+          </ReportSection>
+        )
+      })}
 
       <ReportSection title="Participación">
         <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">

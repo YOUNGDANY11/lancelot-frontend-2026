@@ -1,4 +1,5 @@
-import { TECHNICAL_INDICATOR_SUGGESTIONS } from '@/constants/athleteProfile'
+import { useQuery } from '@tanstack/react-query'
+import { EVALUATION_DIMENSION, type EvaluationDimension } from '@/constants/enums'
 import { useEntityFormController } from '@/controllers/shared/useEntityFormController'
 import { useAppContext } from '@/hooks/useAppContext'
 import { useAuth } from '@/hooks/useAuth'
@@ -11,31 +12,38 @@ import {
 import { evaluationsService } from '@/services/evaluationsService'
 import type { TechnicalEvaluation } from '@/types/athlete'
 import { todayApiDate } from '@/utils/formatDate'
+import { parseApiError } from '@/utils/parseApiError'
 
 export function useTechnicalEvaluationFormController({
   idUser,
   evaluation,
-  knownIndicators,
+  defaultDimension = 'tecnica',
   onDone,
 }: {
   idUser: number
   evaluation?: TechnicalEvaluation | null
-  knownIndicators: string[]
+  defaultDimension?: EvaluationDimension
   onDone: () => void
 }) {
   const { season } = useAppContext()
   const { user } = useAuth()
   const idSeason = evaluation?.id_season ?? season?.id_season
+  const catalogQuery = useQuery({
+    queryKey: queryKeys.evaluationCatalog(),
+    queryFn: evaluationsService.technicalCatalog,
+    staleTime: Infinity,
+  })
 
   const controller = useEntityFormController<TechnicalEvaluationFormValues>({
     schema: technicalEvaluationSchema,
     defaultValues: evaluation
       ? {
+          dimension: evaluation.dimension,
           indicator: evaluation.indicator,
           score: String(evaluation.score),
           eval_date: evaluation.eval_date,
         }
-      : { indicator: '', score: '', eval_date: todayApiDate() },
+      : { dimension: defaultDimension, indicator: '', score: '', eval_date: todayApiDate() },
     submit: (values) => {
       const evaluatorId = evaluation?.evaluator_id ?? user?.id_user
       if (idSeason === undefined || evaluatorId === undefined) {
@@ -54,10 +62,31 @@ export function useTechnicalEvaluationFormController({
     onDone,
   })
 
+  const { form } = controller
+  const dimension = form.watch('dimension')
+  const catalogIndicators =
+    catalogQuery.data?.find((entry) => entry.dimension === dimension)?.indicators ?? []
+  const legacyIndicator =
+    evaluation &&
+    evaluation.dimension === dimension &&
+    !catalogIndicators.includes(evaluation.indicator)
+      ? [evaluation.indicator]
+      : []
+
   return {
     ...controller,
     isEditing: Boolean(evaluation),
     seasonName: evaluation?.season_name ?? season?.name,
-    indicatorSuggestions: [...new Set([...knownIndicators, ...TECHNICAL_INDICATOR_SUGGESTIONS])],
+    dimensionOptions: EVALUATION_DIMENSION.options.map(({ value, label }) => ({ value, label })),
+    indicatorOptions: [...legacyIndicator, ...catalogIndicators].map((indicator) => ({
+      value: indicator,
+      label: indicator,
+    })),
+    isCatalogLoading: catalogQuery.isPending,
+    catalogError: catalogQuery.isError ? parseApiError(catalogQuery.error) : undefined,
+    changeDimension: (value: string) => {
+      form.setValue('dimension', value as EvaluationDimension, { shouldValidate: true })
+      form.setValue('indicator', '', { shouldValidate: false })
+    },
   }
 }

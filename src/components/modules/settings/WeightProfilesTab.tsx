@@ -71,6 +71,12 @@ export function WeightProfilesTab() {
             cell: (profile) => formatPercent(profile.w_technical * 100),
           },
           {
+            key: 'tactical',
+            header: 'Táctica',
+            className: 'tabular-nums',
+            cell: (profile) => formatPercent(profile.w_tactical * 100),
+          },
+          {
             key: 'participation',
             header: 'Participación',
             className: 'tabular-nums',

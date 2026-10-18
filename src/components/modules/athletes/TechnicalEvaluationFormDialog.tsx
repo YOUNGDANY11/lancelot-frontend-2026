@@ -1,10 +1,12 @@
-import { useId } from 'react'
+import { Controller } from 'react-hook-form'
 import { DateField } from '@/components/common/DateField'
 import { FormAlert } from '@/components/common/FormAlert'
 import { FormField } from '@/components/common/FormField'
 import { FormModal } from '@/components/common/FormModal'
+import { SelectInput } from '@/components/common/SelectInput'
 import { FieldGroup } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import type { EvaluationDimension } from '@/constants/enums'
 import { useTechnicalEvaluationFormController } from '@/controllers/forms/useTechnicalEvaluationFormController'
 import type { TechnicalEvaluation } from '@/types/athlete'
 import { todayApiDate } from '@/utils/formatDate'
@@ -13,58 +15,81 @@ interface DialogProps {
   open: boolean
   idUser: number
   evaluation: TechnicalEvaluation | null
-  knownIndicators: string[]
+  defaultDimension?: EvaluationDimension
   onClose: () => void
 }
 
 function TechnicalEvaluationContent({
   idUser,
   evaluation,
-  knownIndicators,
+  defaultDimension,
   onClose,
 }: Omit<DialogProps, 'open'>) {
   const controller = useTechnicalEvaluationFormController({
     idUser,
     evaluation,
-    knownIndicators,
+    defaultDimension,
     onDone: onClose,
   })
   const { form } = controller
   const { errors } = form.formState
-  const suggestionsId = useId()
 
   return (
     <FormModal
       open
       onOpenChange={(open) => !open && onClose()}
-      title={controller.isEditing ? 'Editar evaluación técnica' : 'Registrar evaluación técnica'}
+      title={
+        controller.isEditing
+          ? 'Editar evaluación técnico-táctica'
+          : 'Registrar evaluación técnico-táctica'
+      }
       description={controller.seasonName ? `Temporada ${controller.seasonName}.` : undefined}
       isSubmitting={controller.isSubmitting}
       onSubmit={controller.onSubmit}
     >
       <FieldGroup>
-        <FormAlert message={controller.serverError} />
-        <FormField
-          id="technical-indicator"
-          label="Indicador"
-          description="Escribe o elige una habilidad. Usa siempre el mismo nombre para ver su evolución."
-          error={errors.indicator?.message}
-        >
-          {(controlProps) => (
-            <Input
-              {...controlProps}
-              list={suggestionsId}
-              autoComplete="off"
-              autoFocus
-              {...form.register('indicator')}
-            />
+        <FormAlert message={controller.serverError ?? controller.catalogError} />
+        <Controller
+          control={form.control}
+          name="dimension"
+          render={({ field, fieldState }) => (
+            <FormField
+              id="technical-dimension"
+              label="Dimensión"
+              description="Técnica: dominio del balón. Táctica: comprensión del juego."
+              error={fieldState.error?.message}
+            >
+              {(controlProps) => (
+                <SelectInput
+                  {...controlProps}
+                  value={field.value}
+                  onValueChange={controller.changeDimension}
+                  options={controller.dimensionOptions}
+                />
+              )}
+            </FormField>
           )}
-        </FormField>
-        <datalist id={suggestionsId}>
-          {controller.indicatorSuggestions.map((indicator) => (
-            <option key={indicator} value={indicator} />
-          ))}
-        </datalist>
+        />
+        <Controller
+          control={form.control}
+          name="indicator"
+          render={({ field, fieldState }) => (
+            <FormField id="technical-indicator" label="Indicador" error={fieldState.error?.message}>
+              {(controlProps) => (
+                <SelectInput
+                  {...controlProps}
+                  value={field.value || undefined}
+                  onValueChange={field.onChange}
+                  options={controller.indicatorOptions}
+                  disabled={controller.isCatalogLoading}
+                  placeholder={
+                    controller.isCatalogLoading ? 'Cargando indicadores…' : 'Elige el indicador'
+                  }
+                />
+              )}
+            </FormField>
+          )}
+        />
         <div className="grid grid-cols-2 gap-5">
           <FormField id="technical-score" label="Puntaje (1 a 10)" error={errors.score?.message}>
             {(controlProps) => (

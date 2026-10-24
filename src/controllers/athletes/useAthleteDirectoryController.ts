@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
+import type { ViewMode } from '@/components/common/ViewModeToggle'
 import { APP_MODULES } from '@/constants/navigation'
 import { useAppContext } from '@/hooks/useAppContext'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -13,15 +14,13 @@ import { parseApiError } from '@/utils/parseApiError'
 
 const PAGE_SIZE = 12
 
-export type DirectoryViewMode = 'cards' | 'table'
-
 export function useAthleteDirectoryController() {
   const { season, category, categories } = useAppContext()
   const { can } = useRole()
   const assignDialog = useDisclosure()
   const [search, setSearch] = useState('')
   const [onlyUnassigned, setOnlyUnassigned] = useState(false)
-  const [viewMode, setViewMode] = useState<DirectoryViewMode>('cards')
+  const [viewMode, setViewMode] = useState<ViewMode>('cards')
   const [page, setPage] = useState(1)
   const debouncedSearch = useDebounce(search, 250)
   const idSeason = season?.id_season

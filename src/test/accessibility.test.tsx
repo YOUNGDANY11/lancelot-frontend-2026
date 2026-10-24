@@ -309,7 +309,10 @@ beforeEach(() => {
     load_days: { avg_days_without_load_pct: 40.5 },
     warnings: [],
   })
-  vi.mocked(mlService.listModels).mockResolvedValue([])
+  vi.mocked(mlService.listModels).mockResolvedValue({
+    items: [],
+    pagination: { total: 0, page: 1, limit: 10, totalPages: 0 },
+  })
   vi.mocked(configService.getActive).mockResolvedValue({
     id: 1,
     id_category: null,

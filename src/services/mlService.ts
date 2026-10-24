@@ -1,6 +1,6 @@
 import { apiClient } from '@/lib/apiClient'
 import type { MlModelTask } from '@/constants/enums'
-import { fetchAllPages, fetchList, type QueryParams } from '@/lib/listRequest'
+import { fetchList, type QueryParams } from '@/lib/listRequest'
 import type {
   BackfillResult,
   DataQuality,
@@ -24,6 +24,11 @@ export const LONG_OPERATION_TIMEOUT_MS = 180_000
 export interface DateRange extends QueryParams {
   from?: string
   to?: string
+}
+
+export interface ModelFilters extends QueryParams {
+  page?: number
+  limit?: number
 }
 
 export interface FeatureFilters extends DateRange {
@@ -105,12 +110,22 @@ export const mlService = {
     return data.data_quality
   },
 
-  listModels(): Promise<MlModel[]> {
-    return fetchAllPages<MlModel>('/ml/models', 'models', {}, normalizeModel)
+  listModels(filters: ModelFilters) {
+    return fetchList<MlModel>('/ml/models', 'models', filters, normalizeModel)
   },
 
   async activateModel(id: number): Promise<string> {
     const { data } = await apiClient.http.put<{ mensaje: string }>(`/ml/models/id/${id}/activate`)
+    return data.mensaje
+  },
+
+  async deactivateModel(id: number): Promise<string> {
+    const { data } = await apiClient.http.put<{ mensaje: string }>(`/ml/models/id/${id}/deactivate`)
+    return data.mensaje
+  },
+
+  async deleteModel(id: number): Promise<string> {
+    const { data } = await apiClient.http.delete<{ mensaje: string }>(`/ml/models/id/${id}`)
     return data.mensaje
   },
 

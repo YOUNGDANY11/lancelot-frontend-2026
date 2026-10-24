@@ -84,6 +84,8 @@ vi.mock('@/services/mlService', () => ({
     dataQuality: vi.fn(),
     listModels: vi.fn(),
     activateModel: vi.fn(),
+    deactivateModel: vi.fn(),
+    deleteModel: vi.fn(),
     trainModel: vi.fn(),
     listFeatures: vi.fn(),
     exportFeatures: vi.fn(),
@@ -210,10 +212,20 @@ beforeEach(() => {
     talent_min_athletes: 30,
     talent_prob_threshold: 0.5,
   })
-  vi.mocked(mlService.listModels).mockResolvedValue([
-    MODEL,
-    { ...MODEL, id_model: 4, version: 'talento-rf-1', task: 'talent', is_synthetic: false },
-  ])
+  vi.mocked(mlService.listModels).mockResolvedValue({
+    items: [
+      MODEL,
+      {
+        ...MODEL,
+        id_model: 4,
+        version: 'talento-rf-1',
+        task: 'talent',
+        is_synthetic: false,
+        is_active: true,
+      },
+    ],
+    pagination: { total: 2, page: 1, limit: 10, totalPages: 1 },
+  })
   vi.mocked(configService.listOverrides).mockResolvedValue([])
   vi.mocked(configService.getActive).mockResolvedValue({
     id: 1,
@@ -257,6 +269,7 @@ describe('análisis IA', () => {
     expect(screen.getByText('Riesgo de lesión')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Activar' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Entrenar modelo/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Eliminar' })).not.toBeInTheDocument()
     await user.click(screen.getByRole('tab', { name: 'Readiness' }))
     expect(
       screen.queryByRole('heading', { name: /Readiness del modelo de talento/ }),
@@ -320,6 +333,48 @@ describe('análisis IA', () => {
     expect(mlService.trainModel).toHaveBeenCalledWith('talent')
     expect(await screen.findByText(/talento-lr-2 entrenado y registrado/)).toBeInTheDocument()
     expect(mlService.listModels).toHaveBeenCalledTimes(2)
+  })
+
+  it('desactiva el modelo activo y elimina uno inactivo', async () => {
+    vi.mocked(mlService.deactivateModel).mockResolvedValue(
+      'Modelo de ML de talento desactivado; el motor de talento volvió a «Solo reglas»',
+    )
+    vi.mocked(mlService.deleteModel).mockResolvedValue('Modelo xgb-2026-09 eliminado')
+    signInAs(ADMIN_USER)
+    const user = userEvent.setup()
+    renderAppAt('/app/analisis?tab=modelos')
+
+    const talentModel = await screen.findByRole('article', { name: 'talento-rf-1' })
+    expect(within(talentModel).queryByRole('button', { name: 'Eliminar' })).not.toBeInTheDocument()
+    await user.click(within(talentModel).getByRole('button', { name: 'Desactivar' }))
+    await user.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Desactivar' }),
+    )
+    expect(await screen.findByText(/volvió a «Solo reglas»/)).toBeInTheDocument()
+    expect(mlService.deactivateModel).toHaveBeenCalledWith(4)
+
+    const riskModel = screen.getByRole('article', { name: 'xgb-2026-09' })
+    await user.click(within(riskModel).getByRole('button', { name: 'Eliminar' }))
+    const confirm = await screen.findByRole('alertdialog')
+    expect(confirm).toHaveTextContent('no se puede deshacer')
+    await user.click(within(confirm).getByRole('button', { name: 'Eliminar' }))
+    expect(mlService.deleteModel).toHaveBeenCalledWith(3)
+  })
+
+  it('muestra los modelos en una tabla con sus acciones', async () => {
+    signInAs(ADMIN_USER)
+    const user = userEvent.setup()
+    renderAppAt('/app/analisis?tab=modelos')
+
+    await user.click(await screen.findByRole('button', { name: 'Ver como tabla' }))
+
+    const table = await screen.findByRole('table', { name: 'Modelos de ML' })
+    expect(within(table).getByText('xgb-2026-09')).toBeInTheDocument()
+    expect(within(table).getByText('talento-rf-1')).toBeInTheDocument()
+    await user.click(within(table).getByRole('button', { name: 'Más acciones para xgb-2026-09' }))
+    expect(await screen.findByRole('menuitem', { name: 'Activar' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Eliminar' })).toBeInTheDocument()
+    expect(mlService.listModels).toHaveBeenCalledWith({ page: 1, limit: 10 })
   })
 
   it('muestra el motivo cuando el backend rechaza activar un modelo', async () => {

@@ -1,10 +1,11 @@
-import { LayoutGrid, List, Search, UserPlus, Users } from 'lucide-react'
+import { Search, UserPlus, Users } from 'lucide-react'
 import { Link, Navigate } from 'react-router'
 import { DataTable } from '@/components/common/DataTable'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
 import { LoadingSkeleton } from '@/components/common/LoadingSkeleton'
 import { PageHeader } from '@/components/common/PageHeader'
+import { ViewModeToggle } from '@/components/common/ViewModeToggle'
 import { AthleteCard } from '@/components/modules/athletes/AthleteCard'
 import { AthleteAssignmentFormDialog } from '@/components/modules/club/AthleteAssignmentFormDialog'
 import { Button } from '@/components/ui/button'
@@ -12,7 +13,6 @@ import { Input } from '@/components/ui/input'
 import { APP_MODULES } from '@/constants/navigation'
 import { useAthleteDirectoryController } from '@/controllers/athletes/useAthleteDirectoryController'
 import { useAthleteSelfRedirect } from '@/controllers/athletes/useAthleteSelfRedirect'
-import { cn } from '@/lib/utils'
 import { fullName } from '@/utils/text'
 
 function DirectoryContent() {
@@ -73,32 +73,7 @@ function DirectoryContent() {
           >
             Sin categoría ({controller.unassignedCount})
           </Button>
-          <div
-            className="flex rounded-lg border border-border p-0.5"
-            role="group"
-            aria-label="Vista"
-          >
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label="Ver como tarjetas"
-              aria-pressed={controller.viewMode === 'cards'}
-              className={cn(controller.viewMode === 'cards' && 'bg-muted')}
-              onClick={() => controller.setViewMode('cards')}
-            >
-              <LayoutGrid aria-hidden="true" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label="Ver como tabla"
-              aria-pressed={controller.viewMode === 'table'}
-              className={cn(controller.viewMode === 'table' && 'bg-muted')}
-              onClick={() => controller.setViewMode('table')}
-            >
-              <List aria-hidden="true" />
-            </Button>
-          </div>
+          <ViewModeToggle value={controller.viewMode} onChange={controller.setViewMode} />
         </div>
       </div>
 

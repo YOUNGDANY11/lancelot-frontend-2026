@@ -1,4 +1,5 @@
 import { apiClient } from '@/lib/apiClient'
+import type { MlModelTask } from '@/constants/enums'
 import { fetchAllPages, fetchList, type QueryParams } from '@/lib/listRequest'
 import type {
   BackfillResult,
@@ -12,6 +13,7 @@ import type {
   RelabelResult,
   RunNowResult,
   TalentReadiness,
+  TrainModelResult,
   UpdateEngineConfigRequest,
   ValidationReport,
 } from '@/types/ml'
@@ -110,6 +112,15 @@ export const mlService = {
   async activateModel(id: number): Promise<string> {
     const { data } = await apiClient.http.put<{ mensaje: string }>(`/ml/models/id/${id}/activate`)
     return data.mensaje
+  },
+
+  async trainModel(task: MlModelTask): Promise<TrainModelResult> {
+    const { data } = await apiClient.http.post<TrainModelResult>(
+      '/ml/models/train',
+      { task },
+      { timeout: LONG_OPERATION_TIMEOUT_MS },
+    )
+    return { mensaje: data.mensaje, model: data.model ? normalizeModel(data.model) : null }
   },
 
   listFeatures(filters: FeatureFilters) {

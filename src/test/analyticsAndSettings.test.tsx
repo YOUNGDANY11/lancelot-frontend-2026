@@ -84,6 +84,7 @@ vi.mock('@/services/mlService', () => ({
     dataQuality: vi.fn(),
     listModels: vi.fn(),
     activateModel: vi.fn(),
+    trainModel: vi.fn(),
     listFeatures: vi.fn(),
     exportFeatures: vi.fn(),
     backfill: vi.fn(),
@@ -255,6 +256,7 @@ describe('análisis IA', () => {
     expect(screen.getByText('Talento')).toBeInTheDocument()
     expect(screen.getByText('Riesgo de lesión')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Activar' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Entrenar modelo/ })).not.toBeInTheDocument()
     await user.click(screen.getByRole('tab', { name: 'Readiness' }))
     expect(
       screen.queryByRole('heading', { name: /Readiness del modelo de talento/ }),
@@ -301,6 +303,23 @@ describe('análisis IA', () => {
         talent_prob_threshold: 0.6,
       }),
     )
+  })
+
+  it('entrena un modelo desde la pestaña de modelos y muestra el resultado', async () => {
+    vi.mocked(mlService.trainModel).mockResolvedValue({
+      mensaje:
+        'Modelo de talento talento-lr-2 entrenado y registrado: PR-AUC 0.812 frente a 0.500 de las reglas',
+      model: null,
+    })
+    signInAs(ADMIN_USER)
+    const user = userEvent.setup()
+    renderAppAt('/app/analisis?tab=modelos')
+
+    await user.click(await screen.findByRole('button', { name: 'Entrenar modelo de talento' }))
+
+    expect(mlService.trainModel).toHaveBeenCalledWith('talent')
+    expect(await screen.findByText(/talento-lr-2 entrenado y registrado/)).toBeInTheDocument()
+    expect(mlService.listModels).toHaveBeenCalledTimes(2)
   })
 
   it('muestra el motivo cuando el backend rechaza activar un modelo', async () => {

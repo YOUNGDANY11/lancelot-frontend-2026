@@ -129,6 +129,11 @@ export interface MlModel {
   created_at?: string
 }
 
+export interface TrainModelResult {
+  mensaje: string
+  model: MlModel | null
+}
+
 export type FeatureLabelQuality = 'pending' | 'labeled' | 'unknown_mechanism'
 
 export interface FeatureSnapshot {

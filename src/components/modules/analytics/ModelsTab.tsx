@@ -1,4 +1,4 @@
-import { BrainCircuit, CircleAlert, Power } from 'lucide-react'
+import { BrainCircuit, CircleAlert, GraduationCap, Power } from 'lucide-react'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
@@ -84,11 +84,47 @@ export function ModelsTab() {
         su tarea y superar a las reglas. Activar uno solo reemplaza al activo de su misma tarea.
       </p>
 
+      {controller.canTrain && (
+        <section
+          aria-labelledby="entrenar-modelos"
+          className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4"
+        >
+          <div>
+            <h3 id="entrenar-modelos" className="font-semibold">
+              Entrenar con los datos actuales
+            </h3>
+            <p className="text-xs text-pretty text-muted-foreground">
+              El servicio de ML verifica la readiness, entrena con los datos de la base y registra
+              el modelo sin activarlo. Puede tardar unos minutos.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {ML_MODEL_TASK.options.map((task) => (
+              <Button
+                key={task.value}
+                variant="outline"
+                disabled={controller.trainingTask !== null}
+                onClick={() => controller.train(task.value)}
+              >
+                <GraduationCap aria-hidden="true" />
+                {controller.trainingTask === task.value
+                  ? 'Entrenando…'
+                  : `Entrenar modelo de ${task.label.toLowerCase()}`}
+              </Button>
+            ))}
+          </div>
+        </section>
+      )}
+
       {controller.models.length === 0 ? (
         <EmptyState
           icon={BrainCircuit}
           title="Aún no hay modelos registrados"
-          description="Cuando haya datos suficientes, el servicio de ML registrará aquí sus modelos entrenados."
+          description={
+            controller.canTrain
+              ? 'Entrena un modelo cuando se cumpla la readiness de su tarea y aparecerá aquí.'
+              : 'Cuando haya datos suficientes, el servicio de ML registrará aquí sus modelos entrenados.'
+          }
         />
       ) : (
         <ul aria-label="Modelos de ML" className="grid grid-cols-1 gap-4 xl:grid-cols-2">

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import type { MlModelTask } from '@/constants/enums'
 import { useRole } from '@/hooks/useRole'
 import { queryKeys } from '@/lib/queryKeys'
 import { mlService } from '@/services/mlService'
@@ -29,6 +30,15 @@ export function useModelsTabController() {
     },
   })
 
+  const training = useMutation({
+    mutationFn: (task: MlModelTask) => mlService.trainModel(task),
+    onSuccess: async (result) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.ml.all })
+      toast.success(result.mensaje)
+    },
+    onError: (error) => toast.error(parseApiError(error)),
+  })
+
   const models = [...(query.data ?? [])].sort(
     (first, second) =>
       Number(second.is_active) - Number(first.is_active) ||
@@ -41,6 +51,9 @@ export function useModelsTabController() {
     errorMessage: query.isError ? parseApiError(query.error) : undefined,
     retry: () => void query.refetch(),
     canActivate: can('manageMlEngine'),
+    canTrain: can('manageMlEngine'),
+    train: (task: MlModelTask) => training.mutate(task),
+    trainingTask: training.isPending ? training.variables : null,
     activating,
     askActivate: setActivating,
     cancelActivate: () => setActivating(null),

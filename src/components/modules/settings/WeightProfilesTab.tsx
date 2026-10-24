@@ -44,6 +44,8 @@ export function WeightProfilesTab() {
       <DataTable
         caption="Perfiles de pesos"
         rows={controller.profiles}
+        pagination={controller.pagination}
+        onPageChange={controller.setPage}
         getRowKey={(profile) => profile.id_profile}
         isLoading={controller.isLoading}
         errorMessage={controller.errorMessage}

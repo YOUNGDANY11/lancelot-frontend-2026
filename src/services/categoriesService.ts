@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/apiClient'
-import { fetchAllPages } from '@/lib/listRequest'
+import { fetchAllPages, fetchList, type QueryParams } from '@/lib/listRequest'
 import type { ApiMessage } from '@/types/api'
 import type { Category, CreateCategoryRequest } from '@/types/club'
 import { withNumbers } from '@/utils/toNumber'
@@ -9,6 +9,10 @@ function normalizeCategory(category: Category): Category {
 }
 
 export const categoriesService = {
+  list(filters: QueryParams) {
+    return fetchList<Category>('/categories', 'category', filters, normalizeCategory)
+  },
+
   listAll(): Promise<Category[]> {
     return fetchAllPages<Category>('/categories', 'category', {}, normalizeCategory)
   },

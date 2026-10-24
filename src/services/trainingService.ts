@@ -124,11 +124,15 @@ export const trainingService = {
     return data
   },
 
-  async categoryAcwr(idCategory: number, date?: string): Promise<TeamAcwr> {
+  async categoryAcwr(
+    idCategory: number,
+    date?: string,
+    page?: { page: number; limit: number },
+  ): Promise<TeamAcwr> {
     const { data } = await apiClient.http.get<TeamAcwr>(
       `/load-monitoring/acwr/category/${idCategory}`,
       {
-        params: { date },
+        params: { date, ...page },
       },
     )
     return {

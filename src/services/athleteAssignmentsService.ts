@@ -8,6 +8,8 @@ import { getApiErrorStatus } from '@/utils/parseApiError'
 export interface AthleteAssignmentFilters extends QueryParams {
   id_category?: number
   id_season?: number
+  search?: string
+  missing_position?: boolean
   name?: string
   page?: number
   limit?: number

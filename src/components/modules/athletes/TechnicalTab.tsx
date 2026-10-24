@@ -133,7 +133,10 @@ export function TechnicalTab({ idUser }: { idUser: number }) {
           ))}
           <DataTable
             caption="Historial de evaluaciones técnicas y tácticas"
-            rows={controller.evaluations}
+            rows={controller.tableRows}
+            pagination={controller.pagination}
+            onPageChange={controller.setPage}
+            isLoading={controller.isTableLoading}
             getRowKey={(evaluation) => evaluation.id_eval_tech}
             columns={[
               {

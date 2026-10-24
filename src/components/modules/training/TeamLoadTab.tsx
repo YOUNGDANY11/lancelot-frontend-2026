@@ -78,8 +78,11 @@ export function TeamLoadTab() {
           <TeamAcwrScatter athletes={controller.athletes} thresholds={controller.team.thresholds} />
           <DataTable
             caption="ACWR de la plantilla"
-            rows={controller.athletes}
+            rows={controller.tableRows}
             getRowKey={(athlete) => athlete.id_user}
+            pagination={controller.pagination}
+            onPageChange={controller.setPage}
+            isLoading={controller.isTableLoading}
             onRowClick={controller.openAthlete}
             emptyState={
               <EmptyState

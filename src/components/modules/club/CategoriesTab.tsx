@@ -27,6 +27,8 @@ export function CategoriesTab() {
       <DataTable
         caption="Categorías"
         rows={controller.categories}
+        pagination={controller.pagination}
+        onPageChange={controller.setPage}
         getRowKey={(category) => category.id_category}
         isLoading={controller.isLoading}
         errorMessage={controller.errorMessage}

@@ -1,6 +1,7 @@
 import type { ReviewStatus } from '@/constants/enums'
 import { apiClient } from '@/lib/apiClient'
 import { fetchAllPages, fetchTotal, type QueryParams } from '@/lib/listRequest'
+import type { Pagination } from '@/types/api'
 import type {
   ApplyPlanRequest,
   ApplyPlanSummary,
@@ -9,6 +10,7 @@ import type {
   NextCyclePlan,
   PlannedAthlete,
   RankedIndex,
+  RankingPage,
   RecalculationSummary,
   TalentFlag,
 } from '@/types/talent'
@@ -40,14 +42,43 @@ function normalizePlannedAthlete(athlete: PlannedAthlete): PlannedAthlete {
   return withNumbers(athlete, ['index_value', 'focus_score', 'sporting_age'])
 }
 
+export interface RankingFilters extends QueryParams {
+  id_season: number
+  id_category?: number
+  page?: number
+  limit?: number
+}
+
+interface RankingResponse {
+  ranking: {
+    index: RankedIndex
+    rank: number
+    athlete_name: string
+    id_category: number | null
+    category_name: string | null
+    position: string | null
+  }[]
+  pagination: Pagination
+  missing: RankingPage['missing']
+}
+
 export const talentService = {
-  listIndices(idSeason: number): Promise<RankedIndex[]> {
-    return fetchAllPages<RankedIndex>(
-      '/progress-index',
-      'indices',
-      { id_season: idSeason },
-      normalizeIndex,
-    )
+  async ranking(filters: RankingFilters): Promise<RankingPage> {
+    const { data } = await apiClient.http.get<RankingResponse>('/progress-index/ranking', {
+      params: filters,
+    })
+    return {
+      entries: data.ranking.map((entry) => ({
+        index: normalizeIndex(entry.index),
+        rank: entry.rank,
+        athleteName: entry.athlete_name,
+        id_category: entry.id_category,
+        category_name: entry.category_name,
+        position: entry.position,
+      })),
+      pagination: data.pagination,
+      missing: data.missing,
+    }
   },
 
   async recalculateSeason(idSeason: number): Promise<RecalculationSummary> {
@@ -82,12 +113,22 @@ export const talentService = {
     await apiClient.http.put(`/talent-flags/id/${id}`, { status })
   },
 
-  async getNextCyclePlan(idSeason: number, idTarget: number | null): Promise<NextCyclePlan> {
-    const { data } = await apiClient.http.get<{ plan: NextCyclePlan }>(
-      `/season-planning/${idSeason}`,
-      { params: idTarget ? { id_target_season: idTarget } : undefined },
-    )
-    return { ...data.plan, athletes: data.plan.athletes.map(normalizePlannedAthlete) }
+  async getNextCyclePlan(
+    idSeason: number,
+    idTarget: number | null,
+    page: { page: number; limit: number },
+  ): Promise<NextCyclePlan> {
+    const { data } = await apiClient.http.get<{
+      plan: Omit<NextCyclePlan, 'pagination'>
+      pagination: Pagination
+    }>(`/season-planning/${idSeason}`, {
+      params: { ...page, ...(idTarget ? { id_target_season: idTarget } : {}) },
+    })
+    return {
+      ...data.plan,
+      athletes: data.plan.athletes.map(normalizePlannedAthlete),
+      pagination: data.pagination,
+    }
   },
 
   async applyNextCyclePlan(idSeason: number, payload: ApplyPlanRequest): Promise<ApplyPlanSummary> {

@@ -1,20 +1,15 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { useAppContext } from '@/hooks/useAppContext'
+import { usePagination } from '@/hooks/usePagination'
 import { useRole } from '@/hooks/useRole'
 import { queryKeys } from '@/lib/queryKeys'
-import { athleteAssignmentsService } from '@/services/athleteAssignmentsService'
 import { talentService } from '@/services/talentService'
-import type { RecalculationSummary } from '@/types/talent'
+import type { FailedAthlete, RankingEntry, RecalculationSummary } from '@/types/talent'
 import { parseApiError } from '@/utils/parseApiError'
-import {
-  athletesWithoutIndex,
-  baseAssignmentByUser,
-  buildRanking,
-  type RankingEntry,
-} from '@/utils/talentRanking'
-import { fullName } from '@/utils/text'
+
+const PAGE_SIZE = 10
 
 export function useIndicesTabController() {
   const { season, category, categories } = useAppContext()
@@ -26,34 +21,24 @@ export function useIndicesTabController() {
   const [confirmingSeason, setConfirmingSeason] = useState(false)
   const [summary, setSummary] = useState<RecalculationSummary | null>(null)
   const idCategory = category?.id_category ?? localCategoryId
+  const { page, setPage } = usePagination(PAGE_SIZE, `${idSeason ?? ''}:${idCategory ?? ''}`)
 
-  const indicesQuery = useQuery({
-    queryKey: queryKeys.talent.indices(idSeason ?? 0),
-    queryFn: () => talentService.listIndices(idSeason ?? 0),
+  const filters = {
+    id_season: idSeason ?? 0,
+    id_category: idCategory ?? undefined,
+    page,
+    limit: PAGE_SIZE,
+  }
+  const rankingQuery = useQuery({
+    queryKey: queryKeys.talent.ranking(filters),
+    queryFn: () => talentService.ranking(filters),
     enabled: idSeason !== undefined,
-  })
-  const assignmentsFilters = { id_season: idSeason, scope: 'all' }
-  const assignmentsQuery = useQuery({
-    queryKey: queryKeys.assignments.list(assignmentsFilters),
-    queryFn: () => athleteAssignmentsService.listAll({ id_season: idSeason }),
-    enabled: idSeason !== undefined,
+    placeholderData: keepPreviousData,
   })
 
-  const maxAgeById = new Map(
-    categories.flatMap((item) =>
-      item.max_age !== undefined ? [[item.id_category, item.max_age] as const] : [],
-    ),
-  )
-  const baseByUser = baseAssignmentByUser(assignmentsQuery.data ?? [], maxAgeById)
-  const indices = indicesQuery.data ?? []
-  const ranking = buildRanking(indices, baseByUser, idCategory)
-  const missing = athletesWithoutIndex(baseByUser, indices, idCategory)
+  const ranking = rankingQuery.data?.entries ?? []
   const selected =
     ranking.find((entry) => entry.index.id_user === selectedUser) ?? ranking[0] ?? null
-  const nameOf = (idUser: number) => {
-    const assignment = baseByUser.get(idUser)
-    return assignment ? fullName(assignment) : `Deportista ${idUser}`
-  }
 
   const refresh = () =>
     Promise.all([
@@ -72,11 +57,11 @@ export function useIndicesTabController() {
   })
 
   const athleteMutation = useMutation({
-    mutationFn: (entry: { id_user: number; name: string }) =>
-      talentService.recalculateAthlete(entry.id_user, idSeason ?? 0),
+    mutationFn: (entry: RankingEntry) =>
+      talentService.recalculateAthlete(entry.index.id_user, idSeason ?? 0),
     onSuccess: async (_data, entry) => {
       await refresh()
-      toast.success(`Índice de ${entry.name} recalculado.`)
+      toast.success(`Índice de ${entry.athleteName} recalculado.`)
     },
     onError: (error) => toast.error(parseApiError(error)),
   })
@@ -96,19 +81,14 @@ export function useIndicesTabController() {
     },
     categoryName: categories.find((item) => item.id_category === idCategory)?.name,
     ranking,
-    missing,
+    pagination: rankingQuery.data?.pagination,
+    setPage,
+    missing: rankingQuery.data?.missing ?? { total: 0, first: null },
     selected,
     selectEntry: (entry: RankingEntry) => setSelectedUser(entry.index.id_user),
-    isLoading: idSeason !== undefined && (indicesQuery.isPending || assignmentsQuery.isPending),
-    errorMessage: indicesQuery.isError
-      ? parseApiError(indicesQuery.error)
-      : assignmentsQuery.isError
-        ? parseApiError(assignmentsQuery.error)
-        : undefined,
-    retry: () => {
-      void indicesQuery.refetch()
-      void assignmentsQuery.refetch()
-    },
+    isLoading: idSeason !== undefined && rankingQuery.isPending,
+    errorMessage: rankingQuery.isError ? parseApiError(rankingQuery.error) : undefined,
+    retry: () => void rankingQuery.refetch(),
     canRecalculateSeason: can('runTalentDetection'),
     confirmingSeason,
     askRecalculateSeason: () => setConfirmingSeason(true),
@@ -117,9 +97,11 @@ export function useIndicesTabController() {
     isRecalculatingSeason: seasonMutation.isPending,
     summary,
     closeSummary: () => setSummary(null),
-    nameOf,
-    recalculateAthlete: (idUser: number) =>
-      athleteMutation.mutate({ id_user: idUser, name: nameOf(idUser) }),
-    recalculatingUser: athleteMutation.isPending ? athleteMutation.variables?.id_user : undefined,
+    failureName: (failure: FailedAthlete) =>
+      failure.athlete_name || `Deportista ${failure.id_user}`,
+    recalculateAthlete: (entry: RankingEntry) => athleteMutation.mutate(entry),
+    recalculatingUser: athleteMutation.isPending
+      ? athleteMutation.variables?.index.id_user
+      : undefined,
   }
 }

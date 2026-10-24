@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { RankedIndex } from '@/types/talent'
-import { athletesWithoutIndex, baseAssignmentByUser, buildRanking } from '@/utils/talentRanking'
+import { baseAssignmentByUser } from '@/utils/talentRanking'
 
 const MAX_AGE = new Map([
   [3, 15],
@@ -51,38 +50,10 @@ const ASSIGNMENTS = [
   },
 ]
 
-function index(id_user: number, value: number): RankedIndex {
-  return {
-    id_index: id_user * 10,
-    id_user,
-    id_season: 2,
-    physical_score: value,
-    technical_score: value,
-    tactical_score: value,
-    participation_score: value,
-    index_value: value,
-  }
-}
-
-describe('ranking del índice de progreso', () => {
+describe('categoría base del ranking', () => {
   const baseByUser = baseAssignmentByUser(ASSIGNMENTS, MAX_AGE)
-  const indices = [index(7, 71.5), index(8, 80.2), index(9, 64)]
 
   it('ubica a cada deportista en su categoría de edad aunque juegue en varias', () => {
     expect(baseByUser.get(7)).toMatchObject({ id_category: 3, position: 'Portero' })
-  })
-
-  it('ordena de mayor a menor dentro de la categoría', () => {
-    expect(
-      buildRanking(indices, baseByUser, 3).map((entry) => [entry.rank, entry.athleteName]),
-    ).toEqual([
-      [1, 'Bruno Díaz'],
-      [2, 'Ana Pérez'],
-    ])
-    expect(buildRanking(indices, baseByUser, null)).toHaveLength(3)
-  })
-
-  it('lista a quienes aún no tienen índice', () => {
-    expect(athletesWithoutIndex(baseByUser, indices, 3).map((item) => item.id_user)).toEqual([10])
   })
 })

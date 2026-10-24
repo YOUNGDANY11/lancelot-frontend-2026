@@ -8,7 +8,7 @@ import { loadMonitoringService } from '@/services/loadMonitoringService'
 import { trainingService } from '@/services/trainingService'
 import { usersService } from '@/services/usersService'
 import { createApiError } from '@/test/apiErrors'
-import { ACTIVE_SEASON, SUB15, primeAppDataMocks } from '@/test/appDataMocks'
+import { ACTIVE_SEASON, SUB15, listResult, primeAppDataMocks } from '@/test/appDataMocks'
 import { ATHLETE_USER, COACH_USER } from '@/test/fixtures'
 import { renderAppAt } from '@/test/renderWithProviders'
 import type { TrainingSession } from '@/types/training'
@@ -65,6 +65,7 @@ vi.mock('@/services/competitionService', () => ({
   competitionService: {
     listCompetencies: vi.fn(),
     listAllMatches: vi.fn(),
+    listMatches: vi.fn(),
     listCallUps: vi.fn(),
   },
 }))
@@ -158,6 +159,7 @@ beforeEach(() => {
   }))
   vi.mocked(competitionService.listCompetencies).mockResolvedValue([])
   vi.mocked(competitionService.listAllMatches).mockResolvedValue([])
+  vi.mocked(competitionService.listMatches).mockResolvedValue(listResult([]))
   vi.mocked(loadMonitoringService.athleteSeries).mockResolvedValue({
     thresholds: { low_min: 0.8, low_max: 1.3, medium_max: 1.5 },
     series: [],
@@ -238,18 +240,20 @@ describe('registro rápido de RPE', () => {
         id_season: ACTIVE_SEASON.id_season,
       },
     ])
-    vi.mocked(competitionService.listAllMatches).mockResolvedValue([
-      {
-        id_match: 70,
-        id_competency: 5,
-        id_category: SUB15.id_category,
-        date: '2026-01-10',
-        time: '15:00:00',
-        location: 'Cancha principal',
-        name_category: SUB15.name,
-        name_competency: 'Liga',
-      },
-    ])
+    vi.mocked(competitionService.listMatches).mockResolvedValue(
+      listResult([
+        {
+          id_match: 70,
+          id_competency: 5,
+          id_category: SUB15.id_category,
+          date: '2026-01-10',
+          time: '15:00:00',
+          location: 'Cancha principal',
+          name_category: SUB15.name,
+          name_competency: 'Liga',
+        },
+      ]),
+    )
     vi.mocked(competitionService.listCallUps).mockResolvedValue([])
     vi.mocked(trainingService.listMatchStatistics).mockResolvedValue([])
     vi.mocked(trainingService.createMatchStatistic).mockImplementation(async (payload) => ({

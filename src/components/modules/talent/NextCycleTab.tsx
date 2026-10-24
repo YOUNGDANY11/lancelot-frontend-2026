@@ -77,6 +77,8 @@ export function NextCycleTab() {
       <DataTable
         caption="Plan del siguiente ciclo"
         rows={controller.rows}
+        pagination={controller.pagination}
+        onPageChange={controller.setPage}
         getRowKey={(row) => row.athlete.id_user}
         isLoading={controller.isLoading}
         errorMessage={controller.errorMessage}
@@ -251,7 +253,7 @@ export function NextCycleTab() {
         ]}
         failures={(controller.summary?.failed ?? []).map((failure) => ({
           ...failure,
-          name: controller.nameOf(failure.id_user),
+          name: controller.failureName(failure),
         }))}
         onClose={controller.closeSummary}
       />

@@ -17,7 +17,7 @@ import { talentService } from '@/services/talentService'
 import { trainingService } from '@/services/trainingService'
 import { usersService } from '@/services/usersService'
 import { weightProfilesService } from '@/services/weightProfilesService'
-import { ACTIVE_SEASON, SUB15, primeAppDataMocks } from '@/test/appDataMocks'
+import { ACTIVE_SEASON, SUB15, listResult, primeAppDataMocks } from '@/test/appDataMocks'
 import { findAxeViolations } from '@/test/axe'
 import { ADMIN_USER, ATHLETE_USER, COACH_USER } from '@/test/fixtures'
 import { inboxItem, mockOpenInbox } from '@/test/inboxMocks'
@@ -118,7 +118,7 @@ vi.mock('@/services/healthService', () => ({
   },
 }))
 vi.mock('@/services/talentService', () => ({
-  talentService: { listIndices: vi.fn(), listFlags: vi.fn(), countFlags: vi.fn() },
+  talentService: { ranking: vi.fn(), listFlags: vi.fn(), countFlags: vi.fn() },
 }))
 vi.mock('@/services/mlService', () => ({
   mlService: {
@@ -263,7 +263,11 @@ beforeEach(() => {
     nonContact: 0,
     missing: 0,
   })
-  vi.mocked(talentService.listIndices).mockResolvedValue([])
+  vi.mocked(talentService.ranking).mockResolvedValue({
+    entries: [],
+    pagination: { total: 0, page: 1, limit: 10, totalPages: 0 },
+    missing: { total: 0, first: null },
+  })
   vi.mocked(talentService.listFlags).mockResolvedValue([])
   vi.mocked(talentService.countFlags).mockResolvedValue(0)
   vi.mocked(mlService.engineConfig).mockResolvedValue({
@@ -320,7 +324,7 @@ beforeEach(() => {
     values: { low_min: 0.8, low_max: 1.3, medium_max: 1.5 },
   })
   vi.mocked(configService.listOverrides).mockResolvedValue([])
-  vi.mocked(rolesService.list).mockResolvedValue([])
+  vi.mocked(rolesService.list).mockResolvedValue(listResult([]))
   vi.mocked(evaluationsService.listPhysical).mockResolvedValue([])
   vi.mocked(evaluationsService.listTechnical).mockResolvedValue([])
   vi.mocked(objectivesService.list).mockResolvedValue([])

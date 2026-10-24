@@ -59,6 +59,8 @@ export function SeasonsTab() {
       <DataTable
         caption="Temporadas"
         rows={controller.seasons}
+        pagination={controller.pagination}
+        onPageChange={controller.setPage}
         getRowKey={(season) => season.id_season}
         isLoading={controller.isLoading}
         errorMessage={controller.isError ? 'No pudimos cargar las temporadas.' : undefined}

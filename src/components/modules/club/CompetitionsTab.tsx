@@ -58,6 +58,8 @@ export function CompetitionsTab() {
       <DataTable
         caption="Competencias"
         rows={controller.competencies}
+        pagination={controller.pagination}
+        onPageChange={controller.setPage}
         getRowKey={(competency) => competency.id_competency}
         isLoading={controller.isLoading}
         errorMessage={controller.errorMessage}

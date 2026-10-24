@@ -38,7 +38,10 @@ export function PhysicalTab({ idUser }: { idUser: number }) {
       {controller.evaluations.length > 0 && (
         <DataTable
           caption="Evaluaciones físicas"
-          rows={[...controller.evaluations].reverse()}
+          rows={controller.tableRows}
+          pagination={controller.pagination}
+          onPageChange={controller.setPage}
+          isLoading={controller.isTableLoading}
           getRowKey={(evaluation) => evaluation.id_eval}
           columns={[
             {

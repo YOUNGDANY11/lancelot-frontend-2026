@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/apiClient'
-import { fetchAllPages, fetchTotal } from '@/lib/listRequest'
+import { fetchAllPages, fetchList, fetchTotal, type QueryParams } from '@/lib/listRequest'
 import type { ApiMessage } from '@/types/api'
 import type { CreateWeightProfileRequest, PositionWeightProfile } from '@/types/club'
 import { toNumberOr } from '@/utils/toNumber'
@@ -15,6 +15,15 @@ function normalizeProfile(profile: PositionWeightProfile): PositionWeightProfile
 }
 
 export const weightProfilesService = {
+  list(filters: QueryParams) {
+    return fetchList<PositionWeightProfile>(
+      '/position-weight-profiles',
+      'profiles',
+      filters,
+      normalizeProfile,
+    )
+  },
+
   listAll(): Promise<PositionWeightProfile[]> {
     return fetchAllPages<PositionWeightProfile>(
       '/position-weight-profiles',

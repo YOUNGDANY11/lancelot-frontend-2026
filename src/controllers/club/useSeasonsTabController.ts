@@ -1,8 +1,9 @@
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import type { SeasonStatus } from '@/constants/enums'
 import { useResourceMutation } from '@/controllers/shared/useResourceMutation'
-import { useAppContext } from '@/hooks/useAppContext'
 import { useCrudDialogs } from '@/hooks/useCrudDialogs'
+import { usePagination } from '@/hooks/usePagination'
 import { useRole } from '@/hooks/useRole'
 import { queryKeys } from '@/lib/queryKeys'
 import { seasonsService } from '@/services/seasonsService'
@@ -13,8 +14,17 @@ export interface SeasonStatusChange {
   status: SeasonStatus
 }
 
+const PAGE_SIZE = 10
+
 export function useSeasonsTabController() {
-  const { seasons, isLoading, isError, retry } = useAppContext()
+  const { page, setPage, afterRemoval } = usePagination(PAGE_SIZE)
+  const filters = { page, limit: PAGE_SIZE }
+  const query = useQuery({
+    queryKey: queryKeys.seasons.page(filters),
+    queryFn: () => seasonsService.list(filters),
+    placeholderData: keepPreviousData,
+  })
+  const seasons = query.data?.items ?? []
   const { can } = useRole()
   const dialogs = useCrudDialogs<Season>()
   const [statusChange, setStatusChange] = useState<SeasonStatusChange | null>(null)
@@ -34,14 +44,19 @@ export function useSeasonsTabController() {
     mutationFn: (season: Season) => seasonsService.remove(season.id_season),
     invalidate: [queryKeys.seasons.all],
     successMessage: (season) => `Temporada ${season.name} eliminada.`,
-    onSuccess: dialogs.close,
+    onSuccess: () => {
+      dialogs.close()
+      afterRemoval(seasons.length)
+    },
   })
 
   return {
     seasons,
-    isLoading,
-    isError,
-    retry,
+    pagination: query.data?.pagination,
+    setPage,
+    isLoading: query.isPending,
+    isError: query.isError,
+    retry: () => void query.refetch(),
     canManage: can('manageSeasons'),
     dialogs,
     statusChange,

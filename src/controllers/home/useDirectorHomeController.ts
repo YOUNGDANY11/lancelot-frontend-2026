@@ -8,7 +8,7 @@ import { alertsService } from '@/services/alertsService'
 import { athleteAssignmentsService } from '@/services/athleteAssignmentsService'
 import { talentService } from '@/services/talentService'
 import { trainingService } from '@/services/trainingService'
-import { baseAssignmentByUser, buildRanking } from '@/utils/talentRanking'
+import { baseAssignmentByUser } from '@/utils/talentRanking'
 
 const TOP_LIMIT = 5
 
@@ -45,9 +45,10 @@ export function useDirectorHomeController() {
     queryFn: () => talentService.countFlags(flagFilters),
     enabled: idSeason !== undefined,
   })
-  const indicesQuery = useQuery({
-    queryKey: queryKeys.talent.indices(idSeason ?? 0),
-    queryFn: () => talentService.listIndices(idSeason ?? 0),
+  const rankingFilters = { id_season: idSeason ?? 0, page: 1, limit: TOP_LIMIT }
+  const rankingQuery = useQuery({
+    queryKey: queryKeys.talent.ranking(rankingFilters),
+    queryFn: () => talentService.ranking(rankingFilters),
     enabled: idSeason !== undefined,
   })
 
@@ -94,8 +95,8 @@ export function useDirectorHomeController() {
     },
     alertsByCategory,
     isLoadingAlerts: inbox.isLoading || loading(assignmentsQuery.isPending),
-    topIndices: buildRanking(indicesQuery.data ?? [], baseByUser, null).slice(0, TOP_LIMIT),
-    isLoadingIndices: loading(indicesQuery.isPending) || loading(assignmentsQuery.isPending),
+    topIndices: rankingQuery.data?.entries ?? [],
+    isLoadingIndices: loading(rankingQuery.isPending),
     paths: {
       talent: APP_MODULES.talent.path,
       inbox: `${APP_MODULES.health.path}?tab=alertas`,

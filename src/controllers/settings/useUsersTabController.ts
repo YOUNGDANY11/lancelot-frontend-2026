@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useCrudDialogs } from '@/hooks/useCrudDialogs'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useDisclosure } from '@/hooks/useDisclosure'
+import { usePagination } from '@/hooks/usePagination'
 import { queryKeys } from '@/lib/queryKeys'
 import { usersService } from '@/services/usersService'
 import type { User } from '@/types/user'
@@ -22,7 +23,7 @@ export function useUsersTabController() {
   const createSheet = useDisclosure()
   const [search, setSearch] = useState('')
   const [role, setRole] = useState<RoleCode | typeof ALL>(ALL)
-  const [page, setPage] = useState(1)
+  const { page, setPage, afterRemoval } = usePagination(PAGE_SIZE)
   const debouncedSearch = useDebounce(search, 250)
 
   const filters = {
@@ -44,7 +45,7 @@ export function useUsersTabController() {
     successMessage: (account) => `Cuenta de ${fullName(account)} eliminada.`,
     onSuccess: () => {
       dialogs.close()
-      if (rows.length === 1 && page > 1) setPage(page - 1)
+      afterRemoval(rows.length)
     },
   })
 

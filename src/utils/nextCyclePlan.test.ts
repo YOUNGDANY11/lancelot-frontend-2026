@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import type { PlannedAthlete } from '@/types/talent'
-import { buildApplyPayload, defaultDecision, resolveDecision } from '@/utils/nextCyclePlan'
+import {
+  buildApplyPayload,
+  countApplicable,
+  defaultDecision,
+  resolveDecision,
+} from '@/utils/nextCyclePlan'
 
 function athlete(overrides: Partial<PlannedAthlete> = {}): PlannedAthlete {
   return {
@@ -20,55 +25,54 @@ function athlete(overrides: Partial<PlannedAthlete> = {}): PlannedAthlete {
     focus_score: 40,
     open_objectives: [],
     planned_categories: [],
+    default_decision: { include: true, id_category: 2, promote: false, carry: false },
     ...overrides,
   }
 }
 
 describe('plan del siguiente ciclo', () => {
-  it('incluye por defecto a quien tiene categoría propuesta y aún no está asignado', () => {
+  it('usa la decisión sugerida por el backend y le aplica los cambios', () => {
     expect(defaultDecision(athlete())).toEqual({
       include: true,
       idCategory: 2,
       promote: false,
       carry: false,
     })
-    expect(defaultDecision(athlete({ planned_categories: ['Sub-15'] })).include).toBe(false)
-    expect(defaultDecision(athlete({ suggested_category: null })).include).toBe(false)
+    expect(resolveDecision(athlete(), { idCategory: 3 })).toMatchObject({ idCategory: 3 })
   })
 
-  it('propone el ascenso y llevar los objetivos cuando existen', () => {
-    const decision = defaultDecision(
-      athlete({
-        promotion_category: { id_category: 3, name: 'Sub-17' },
-        open_objectives: [
-          { id_objective: 1, description: 'Bajar a 3,3 s', target_date: '2026-11-30' },
-        ],
+  it('ajusta el total del backend solo con los deportistas que cambiaron', () => {
+    const excluded = { athlete: athlete(), patch: { include: false } }
+    const added = {
+      athlete: athlete({
+        id_user: 8,
+        default_decision: { include: false, id_category: 2, promote: false, carry: false },
       }),
-    )
-    expect(decision).toMatchObject({ promote: true, carry: true })
+      patch: { include: true },
+    }
+    const unchanged = { athlete: athlete({ id_user: 9 }), patch: { carry: true } }
+
+    expect(countApplicable(10, [excluded])).toBe(9)
+    expect(countApplicable(10, [excluded, added, unchanged])).toBe(10)
   })
 
-  it('arma el envío solo con los deportistas incluidos y respeta los cambios del cuerpo técnico', () => {
-    const promoted = athlete({
-      id_user: 8,
-      promotion_category: { id_category: 3, name: 'Sub-17' },
-      open_objectives: [
-        { id_objective: 1, description: 'Bajar a 3,3 s', target_date: '2026-11-30' },
-      ],
-    })
-    const rows = [
-      { athlete: athlete(), decision: resolveDecision(athlete(), { idCategory: 3 }) },
-      { athlete: promoted, decision: resolveDecision(promoted, { carry: false }) },
-      {
-        athlete: athlete({ id_user: 9 }),
-        decision: resolveDecision(athlete(), { include: false }),
-      },
-    ]
-    expect(buildApplyPayload(4, rows)).toEqual({
+  it('envía solo los cambios del cuerpo técnico', () => {
+    expect(
+      buildApplyPayload(4, [
+        { athlete: athlete(), patch: { idCategory: 3 } },
+        {
+          athlete: athlete({
+            id_user: 8,
+            default_decision: { include: false, id_category: null, promote: false, carry: false },
+          }),
+          patch: { include: true },
+        },
+      ]),
+    ).toEqual({
       id_target_season: 4,
-      athletes: [
-        { id_user: 7, id_category: 3, id_promotion_category: null, carry_objectives: false },
-        { id_user: 8, id_category: 2, id_promotion_category: 3, carry_objectives: false },
+      overrides: [
+        { id_user: 7, include: true, id_category: 3, promote: false, carry: false },
+        { id_user: 8, include: true, promote: false, carry: false },
       ],
     })
   })

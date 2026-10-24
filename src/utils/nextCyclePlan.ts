@@ -7,12 +7,18 @@ export interface PlanDecision {
   carry: boolean
 }
 
+export interface PlanOverride {
+  athlete: PlannedAthlete
+  patch: Partial<PlanDecision>
+}
+
 export function defaultDecision(athlete: PlannedAthlete): PlanDecision {
+  const suggested = athlete.default_decision
   return {
-    include: athlete.suggested_category !== null && athlete.planned_categories.length === 0,
-    idCategory: athlete.suggested_category?.id_category ?? null,
-    promote: athlete.promotion_category !== null,
-    carry: athlete.open_objectives.length > 0,
+    include: suggested.include,
+    idCategory: suggested.id_category,
+    promote: suggested.promote,
+    carry: suggested.carry,
   }
 }
 
@@ -27,22 +33,28 @@ export function isApplicable(decision: PlanDecision) {
   return decision.include && decision.idCategory !== null
 }
 
-export function buildApplyPayload(
-  idTarget: number,
-  rows: { athlete: PlannedAthlete; decision: PlanDecision }[],
-): ApplyPlanRequest {
+export function countApplicable(defaultApplicable: number, overrides: PlanOverride[]) {
+  return overrides.reduce(
+    (count, { athlete, patch }) =>
+      count +
+      Number(isApplicable(resolveDecision(athlete, patch))) -
+      Number(isApplicable(defaultDecision(athlete))),
+    defaultApplicable,
+  )
+}
+
+export function buildApplyPayload(idTarget: number, overrides: PlanOverride[]): ApplyPlanRequest {
   return {
     id_target_season: idTarget,
-    athletes: rows
-      .filter((row) => isApplicable(row.decision))
-      .map(({ athlete, decision }) => ({
+    overrides: overrides.map(({ athlete, patch }) => {
+      const decision = resolveDecision(athlete, patch)
+      return {
         id_user: athlete.id_user,
-        id_category: decision.idCategory as number,
-        id_promotion_category:
-          decision.promote && athlete.promotion_category
-            ? athlete.promotion_category.id_category
-            : null,
-        carry_objectives: decision.carry && athlete.open_objectives.length > 0,
-      })),
+        include: decision.include,
+        ...(decision.idCategory !== null ? { id_category: decision.idCategory } : {}),
+        promote: decision.promote,
+        carry: decision.carry,
+      }
+    }),
   }
 }

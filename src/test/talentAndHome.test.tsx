@@ -10,7 +10,7 @@ import { reportsService } from '@/services/reportsService'
 import { talentService } from '@/services/talentService'
 import { trainingService } from '@/services/trainingService'
 import { usersService } from '@/services/usersService'
-import { ACTIVE_SEASON, SUB15, primeAppDataMocks } from '@/test/appDataMocks'
+import { ACTIVE_SEASON, SUB15, listResult, primeAppDataMocks } from '@/test/appDataMocks'
 import { ADMIN_USER, ATHLETE_USER, COACH_USER } from '@/test/fixtures'
 import { inboxItem, mockOpenInbox } from '@/test/inboxMocks'
 import { renderAppAt } from '@/test/renderWithProviders'
@@ -74,11 +74,12 @@ vi.mock('@/services/reportsService', () => ({
     seasonSummary: vi.fn(),
     seasonComparison: vi.fn(),
     categoryEvolution: vi.fn(),
+    categoryEvolutionPage: vi.fn(),
   },
 }))
 vi.mock('@/services/talentService', () => ({
   talentService: {
-    listIndices: vi.fn(),
+    ranking: vi.fn(),
     recalculateSeason: vi.fn(),
     recalculateAthlete: vi.fn(),
     listFlags: vi.fn(),
@@ -183,30 +184,48 @@ beforeEach(() => {
       position: 'Delantero',
     },
   ])
-  vi.mocked(talentService.listIndices).mockResolvedValue([
-    {
-      id_index: 1,
-      id_user: ATHLETE_USER.id_user,
-      athlete_name: 'Ana María Pérez',
-      id_season: ACTIVE_SEASON.id_season,
-      physical_score: 70,
-      technical_score: 75,
-      tactical_score: 75,
-      participation_score: 80,
-      index_value: 74.5,
-    },
-    {
-      id_index: 2,
-      id_user: BRUNO.id_user,
-      athlete_name: 'Bruno Díaz',
-      id_season: ACTIVE_SEASON.id_season,
-      physical_score: 82,
-      technical_score: 80,
-      tactical_score: 80,
-      participation_score: 85,
-      index_value: 82.3,
-    },
-  ])
+  vi.mocked(talentService.ranking).mockResolvedValue({
+    entries: [
+      {
+        rank: 1,
+        athleteName: 'Bruno Díaz',
+        id_category: SUB15.id_category,
+        category_name: SUB15.name,
+        position: 'Delantero',
+        index: {
+          id_index: 2,
+          id_user: BRUNO.id_user,
+          athlete_name: 'Bruno Díaz',
+          id_season: ACTIVE_SEASON.id_season,
+          physical_score: 82,
+          technical_score: 80,
+          tactical_score: 80,
+          participation_score: 85,
+          index_value: 82.3,
+        },
+      },
+      {
+        rank: 2,
+        athleteName: 'Ana María Pérez',
+        id_category: SUB15.id_category,
+        category_name: SUB15.name,
+        position: 'Portero',
+        index: {
+          id_index: 1,
+          id_user: ATHLETE_USER.id_user,
+          athlete_name: 'Ana María Pérez',
+          id_season: ACTIVE_SEASON.id_season,
+          physical_score: 70,
+          technical_score: 75,
+          tactical_score: 75,
+          participation_score: 80,
+          index_value: 74.5,
+        },
+      },
+    ],
+    pagination: { total: 2, page: 1, limit: 10, totalPages: 1 },
+    missing: { total: 1, first: 'Carla Mora' },
+  })
   vi.mocked(talentService.listFlags).mockResolvedValue([FLAG])
   vi.mocked(talentService.countFlags).mockResolvedValue(3)
   vi.mocked(talentService.reviewFlag).mockResolvedValue(undefined)
@@ -241,7 +260,7 @@ beforeEach(() => {
 })
 
 describe('talento y progreso', () => {
-  it('ordena el ranking y recalcula el índice de un deportista', async () => {
+  it('muestra el ranking del backend y recalcula el índice de un deportista', async () => {
     signInAs(COACH_USER)
     const user = userEvent.setup()
     renderAppAt('/app/talento')
@@ -253,6 +272,13 @@ describe('talento y progreso', () => {
       'Ana María PérezSub-15 · Portero',
     ])
     expect(screen.queryByRole('button', { name: 'Recalcular temporada' })).not.toBeInTheDocument()
+    expect(screen.getByText(/Carla Mora aún no tiene índice/)).toBeInTheDocument()
+    expect(talentService.ranking).toHaveBeenCalledWith({
+      id_season: ACTIVE_SEASON.id_season,
+      id_category: undefined,
+      page: 1,
+      limit: 10,
+    })
 
     await user.click(screen.getByRole('button', { name: 'Recalcular el índice de Bruno Díaz' }))
     await waitFor(() =>
@@ -344,6 +370,12 @@ const PLAN: NextCyclePlan = {
         },
       ],
       planned_categories: [],
+      default_decision: {
+        include: true,
+        id_category: SUB15.id_category,
+        promote: false,
+        carry: true,
+      },
     },
     {
       ...BRUNO,
@@ -360,13 +392,21 @@ const PLAN: NextCyclePlan = {
       focus_score: 62,
       open_objectives: [],
       planned_categories: [],
+      default_decision: {
+        include: true,
+        id_category: SUB15.id_category,
+        promote: true,
+        carry: false,
+      },
     },
   ],
+  default_applicable: 3,
+  pagination: { total: 3, page: 1, limit: 15, totalPages: 1 },
 }
 
 describe('evolución por categoría', () => {
   it('muestra cómo cambia la categoría de una temporada a otra', async () => {
-    vi.mocked(reportsService.categoryEvolution).mockResolvedValue([
+    const points = [
       {
         id_season: 1,
         season_name: 'Temporada 2025',
@@ -399,12 +439,18 @@ describe('evolución por categoría', () => {
         talent_flags: 0,
         reviewed_talent_flags: 0,
       },
-    ])
+    ] as const
+    vi.mocked(reportsService.categoryEvolution).mockResolvedValue([...points])
+    vi.mocked(reportsService.categoryEvolutionPage).mockResolvedValue(listResult([...points]))
     signInAs(DT_USER)
     renderAppAt('/app/talento?tab=categorias')
 
     const table = await screen.findByRole('table', { name: `Temporadas de ${SUB15.name}` })
     expect(reportsService.categoryEvolution).toHaveBeenCalledWith(SUB15.id_category)
+    expect(reportsService.categoryEvolutionPage).toHaveBeenCalledWith(SUB15.id_category, {
+      page: 1,
+      limit: 10,
+    })
     const rows = within(table).getAllByRole('row').slice(1)
     expect(within(rows[0]).getByText('y 2 de categorías menores')).toBeInTheDocument()
     expect(within(rows[0]).getByText('1 revisadas de 3')).toBeInTheDocument()
@@ -436,25 +482,20 @@ describe('planificación del siguiente ciclo', () => {
     expect(within(table).getByText(/puede entrenar también en Sub-17/)).toBeInTheDocument()
 
     await user.click(within(table).getByRole('checkbox', { name: 'Llevar 1' }))
-    await user.click(screen.getByRole('button', { name: 'Aplicar plan (2)' }))
+    await user.click(screen.getByRole('button', { name: 'Aplicar plan (3)' }))
     const confirm = await screen.findByRole('alertdialog')
     await user.click(within(confirm).getByRole('button', { name: 'Aplicar plan' }))
 
     await waitFor(() =>
       expect(talentService.applyNextCyclePlan).toHaveBeenCalledWith(ACTIVE_SEASON.id_season, {
         id_target_season: NEXT_SEASON.id_season,
-        athletes: [
+        overrides: [
           {
             id_user: ATHLETE_USER.id_user,
+            include: true,
             id_category: SUB15.id_category,
-            id_promotion_category: null,
-            carry_objectives: false,
-          },
-          {
-            id_user: BRUNO.id_user,
-            id_category: SUB15.id_category,
-            id_promotion_category: SUB17.id_category,
-            carry_objectives: false,
+            promote: false,
+            carry: false,
           },
         ],
       }),

@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/apiClient'
-import { fetchAllPages } from '@/lib/listRequest'
+import { fetchAllPages, fetchList, type QueryParams } from '@/lib/listRequest'
 import type { ApiMessage } from '@/types/api'
 import type { CreateSeasonRequest, Season, UpdateSeasonRequest } from '@/types/club'
 
@@ -8,6 +8,10 @@ interface SeasonResponse {
 }
 
 export const seasonsService = {
+  list(filters: QueryParams) {
+    return fetchList<Season>('/seasons', 'seasons', filters)
+  },
+
   listAll(): Promise<Season[]> {
     return fetchAllPages<Season>('/seasons', 'seasons')
   },

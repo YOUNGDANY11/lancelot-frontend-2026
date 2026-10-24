@@ -4,10 +4,26 @@ import type {
   SeasonStatus,
   TalentFlagSource,
 } from '@/constants/enums'
+import type { Pagination } from '@/types/api'
 import type { ProgressIndex } from '@/types/athlete'
 
 export interface RankedIndex extends ProgressIndex {
   athlete_name?: string
+}
+
+export interface RankingEntry {
+  index: RankedIndex
+  rank: number
+  athleteName: string
+  id_category: number | null
+  category_name: string | null
+  position: string | null
+}
+
+export interface RankingPage {
+  entries: RankingEntry[]
+  pagination: Pagination
+  missing: { total: number; first: string | null }
 }
 
 export interface TalentFlag {
@@ -28,6 +44,7 @@ export interface TalentFlag {
 
 export interface FailedAthlete {
   id_user: number
+  athlete_name?: string
   mensaje: string
 }
 
@@ -104,6 +121,12 @@ export interface PlannedAthlete {
   focus_score: number | null
   open_objectives: PlanObjective[]
   planned_categories: string[]
+  default_decision: {
+    include: boolean
+    id_category: number | null
+    promote: boolean
+    carry: boolean
+  }
 }
 
 export interface NextCyclePlan {
@@ -111,18 +134,21 @@ export interface NextCyclePlan {
   target: PlanSeasonRef | null
   reference_year: number
   athletes: PlannedAthlete[]
+  default_applicable: number
+  pagination: Pagination
 }
 
-export interface ApplyPlanAthlete {
+export interface ApplyPlanOverride {
   id_user: number
-  id_category: number
-  id_promotion_category: number | null
-  carry_objectives: boolean
+  include: boolean
+  id_category?: number
+  promote: boolean
+  carry: boolean
 }
 
 export interface ApplyPlanRequest {
   id_target_season: number
-  athletes: ApplyPlanAthlete[]
+  overrides: ApplyPlanOverride[]
 }
 
 export interface ApplyPlanSummary {

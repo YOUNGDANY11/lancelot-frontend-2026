@@ -40,10 +40,22 @@ vi.mock('@/services/usersService', () => ({
   },
 }))
 vi.mock('@/services/seasonsService', () => ({
-  seasonsService: { listAll: vi.fn(), create: vi.fn(), update: vi.fn(), remove: vi.fn() },
+  seasonsService: {
+    list: vi.fn(),
+    listAll: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    remove: vi.fn(),
+  },
 }))
 vi.mock('@/services/categoriesService', () => ({
-  categoriesService: { listAll: vi.fn(), create: vi.fn(), update: vi.fn(), remove: vi.fn() },
+  categoriesService: {
+    list: vi.fn(),
+    listAll: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    remove: vi.fn(),
+  },
 }))
 vi.mock('@/services/athleteAssignmentsService', () => ({
   athleteAssignmentsService: {
@@ -83,10 +95,12 @@ vi.mock('@/services/competitionService', () => ({
 vi.mock('@/services/evaluationsService', () => ({
   evaluationsService: {
     listPhysical: vi.fn(),
+    listPhysicalPage: vi.fn(),
     createPhysical: vi.fn(),
     updatePhysical: vi.fn(),
     removePhysical: vi.fn(),
     listTechnical: vi.fn(),
+    listTechnicalPage: vi.fn(),
     technicalCatalog: vi.fn(),
     createTechnical: vi.fn(),
     updateTechnical: vi.fn(),
@@ -137,22 +151,26 @@ beforeEach(() => {
   vi.mocked(usersService.listAllAthletes).mockResolvedValue([ATHLETE_USER])
   vi.mocked(usersService.searchAthletes).mockResolvedValue(listResult([ATHLETE_USER]))
   vi.mocked(usersService.countAthletes).mockResolvedValue(1)
-  vi.mocked(athleteAssignmentsService.listAll).mockResolvedValue([
-    {
-      id_ath_cat: 30,
-      id_user: ATHLETE_USER.id_user,
-      id_category: SUB15.id_category,
-      category_name: SUB15.name,
-      name: ATHLETE_USER.name,
-      lastname: ATHLETE_USER.lastname,
-      id_season: ACTIVE_SEASON.id_season,
-      position: 'Portero',
-    },
-  ])
+  const assignment = {
+    id_ath_cat: 30,
+    id_user: ATHLETE_USER.id_user,
+    id_category: SUB15.id_category,
+    category_name: SUB15.name,
+    name: ATHLETE_USER.name,
+    lastname: ATHLETE_USER.lastname,
+    id_season: ACTIVE_SEASON.id_season,
+    position: 'Portero',
+  }
+  vi.mocked(athleteAssignmentsService.listAll).mockResolvedValue([assignment])
+  vi.mocked(athleteAssignmentsService.list).mockResolvedValue(listResult([assignment]))
+  vi.mocked(athleteAssignmentsService.count).mockResolvedValue(0)
   vi.mocked(competitionService.listCompetencies).mockResolvedValue([])
   vi.mocked(competitionService.listAllMatches).mockResolvedValue([])
+  vi.mocked(competitionService.listMatches).mockResolvedValue(listResult([]))
   vi.mocked(evaluationsService.listPhysical).mockResolvedValue([])
   vi.mocked(evaluationsService.listTechnical).mockResolvedValue([])
+  vi.mocked(evaluationsService.listPhysicalPage).mockResolvedValue(listResult([]))
+  vi.mocked(evaluationsService.listTechnicalPage).mockResolvedValue(listResult([]))
   vi.mocked(objectivesService.list).mockResolvedValue([])
   vi.mocked(loadMonitoringService.athleteSeries).mockResolvedValue({
     thresholds: { low_min: 0.8, low_max: 1.3, medium_max: 1.5 },
@@ -271,10 +289,52 @@ describe('módulo Club', () => {
         position: 'Portero',
       }),
     )
+    expect(athleteAssignmentsService.list).toHaveBeenCalledWith({
+      id_season: ACTIVE_SEASON.id_season,
+      id_category: undefined,
+      page: 1,
+      limit: 15,
+    })
   })
 })
 
 describe('módulo Deportistas', () => {
+  it('pagina en el backend la tabla de evaluaciones físicas y grafica todas', async () => {
+    const evaluation = (id_eval: number, eval_date: string) => ({
+      id_eval,
+      id_user: ATHLETE_USER.id_user,
+      id_season: ACTIVE_SEASON.id_season,
+      stage: 'pre' as const,
+      height_cm: 160,
+      weight_kg: 52,
+      eval_date,
+    })
+    vi.mocked(evaluationsService.listPhysical).mockResolvedValue([
+      evaluation(1, '2026-02-10'),
+      evaluation(2, '2026-04-10'),
+    ])
+    vi.mocked(evaluationsService.listPhysicalPage).mockImplementation((_idUser, { page }) =>
+      Promise.resolve({
+        items: [page === 1 ? evaluation(2, '2026-04-10') : evaluation(1, '2026-02-10')],
+        pagination: { total: 2, page, limit: 1, totalPages: 2 },
+      }),
+    )
+    signInAs(COACH_USER)
+    const user = userEvent.setup()
+    renderAppAt(`/app/deportistas/${ATHLETE_USER.id_user}?tab=fisico`)
+
+    const table = await screen.findByRole('table', { name: 'Evaluaciones físicas' })
+    expect(within(table).getAllByRole('row')).toHaveLength(2)
+    await user.click(screen.getByRole('button', { name: 'Página siguiente' }))
+
+    await waitFor(() =>
+      expect(evaluationsService.listPhysicalPage).toHaveBeenLastCalledWith(ATHLETE_USER.id_user, {
+        page: 2,
+        limit: 10,
+      }),
+    )
+  })
+
   it('lleva al deportista directo a su propia ficha', async () => {
     signInAs(ATHLETE_USER)
     const { router } = renderAppAt('/app/deportistas')

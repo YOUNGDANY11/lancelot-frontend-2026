@@ -11,6 +11,7 @@ import type {
 } from '@/types/competition'
 
 export interface MatchFilters extends QueryParams {
+  id_season?: number
   id_category?: number
   id_competency?: number
   page?: number
@@ -25,7 +26,18 @@ function normalizeCompetency(competency: Competency): Competency {
   }
 }
 
+export interface CompetencyFilters extends QueryParams {
+  id_season?: number
+  id_category?: number
+  page?: number
+  limit?: number
+}
+
 export const competitionService = {
+  listCompetenciesPage(filters: CompetencyFilters) {
+    return fetchList<Competency>('/competencies', 'competency', filters, normalizeCompetency)
+  },
+
   listCompetencies(idSeason?: number): Promise<Competency[]> {
     return fetchAllPages<Competency>(
       '/competencies',

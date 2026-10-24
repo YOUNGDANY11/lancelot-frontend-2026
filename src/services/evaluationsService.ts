@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/apiClient'
-import { fetchAllPages } from '@/lib/listRequest'
+import { fetchAllPages, fetchList } from '@/lib/listRequest'
 import type { ApiMessage } from '@/types/api'
 import type {
   EvaluationCatalogEntry,
@@ -40,6 +40,15 @@ export const evaluationsService = {
     return byDateAsc(items)
   },
 
+  listPhysicalPage(idUser: number, filters: { page: number; limit: number }) {
+    return fetchList<PhysicalEvaluation>(
+      '/physical-evaluations',
+      'evaluations',
+      { id_user: idUser, ...filters },
+      normalizePhysical,
+    )
+  },
+
   async createPhysical(payload: PhysicalEvaluationRequest): Promise<ApiMessage> {
     const { data } = await apiClient.http.post<ApiMessage>('/physical-evaluations', payload)
     return data
@@ -66,6 +75,15 @@ export const evaluationsService = {
       normalizeTechnical,
     )
     return byDateAsc(items)
+  },
+
+  listTechnicalPage(idUser: number, filters: { page: number; limit: number }) {
+    return fetchList<TechnicalEvaluation>(
+      '/technical-evaluations',
+      'evaluations',
+      { id_user: idUser, ...filters },
+      normalizeTechnical,
+    )
   },
 
   async technicalCatalog(): Promise<EvaluationCatalogEntry[]> {

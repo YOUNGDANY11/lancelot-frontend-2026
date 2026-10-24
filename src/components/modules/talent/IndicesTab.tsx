@@ -13,7 +13,6 @@ import { Button } from '@/components/ui/button'
 import { APP_MODULES } from '@/constants/navigation'
 import { useIndicesTabController } from '@/controllers/talent/useIndicesTabController'
 import { formatNumber } from '@/utils/formatNumber'
-import { fullName } from '@/utils/text'
 
 export function IndicesTab() {
   const controller = useIndicesTabController()
@@ -61,12 +60,12 @@ export function IndicesTab() {
         </div>
       )}
 
-      {controller.missing.length > 0 && !controller.isLoading && (
+      {controller.missing.total > 0 && !controller.isLoading && (
         <p className="flex items-start gap-2 rounded-lg border border-risk-medium/40 bg-risk-medium/10 p-3 text-sm">
           <TriangleAlert aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-risk-medium" />
-          {controller.missing.length === 1
-            ? `${fullName(controller.missing[0])} aún no tiene índice en esta temporada.`
-            : `${controller.missing.length} deportistas aún no tienen índice en esta temporada.`}{' '}
+          {controller.missing.total === 1 && controller.missing.first
+            ? `${controller.missing.first} aún no tiene índice en esta temporada.`
+            : `${controller.missing.total} deportistas aún no tienen índice en esta temporada.`}{' '}
           Necesitan posición, un perfil de pesos para su posición y categoría, y evaluaciones.
         </p>
       )}
@@ -113,6 +112,8 @@ export function IndicesTab() {
         caption="Índices de progreso"
         rows={controller.ranking}
         getRowKey={(entry) => entry.index.id_index}
+        pagination={controller.pagination}
+        onPageChange={controller.setPage}
         isLoading={controller.isLoading}
         errorMessage={controller.errorMessage}
         onRetry={controller.retry}
@@ -189,7 +190,7 @@ export function IndicesTab() {
                 disabled={controller.recalculatingUser === entry.index.id_user}
                 onClick={(event) => {
                   event.stopPropagation()
-                  controller.recalculateAthlete(entry.index.id_user)
+                  controller.recalculateAthlete(entry)
                 }}
                 aria-label={`Recalcular el índice de ${entry.athleteName}`}
               >
@@ -220,7 +221,7 @@ export function IndicesTab() {
         ]}
         failures={(controller.summary?.failed ?? []).map((failure) => ({
           ...failure,
-          name: controller.nameOf(failure.id_user),
+          name: controller.failureName(failure),
         }))}
         onClose={controller.closeSummary}
       />

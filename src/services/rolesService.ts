@@ -1,5 +1,5 @@
-import { apiClient } from '@/lib/apiClient'
 import { ROLE_CODES, type RoleCode } from '@/constants/roles'
+import { fetchAllPages, fetchList, type QueryParams } from '@/lib/listRequest'
 
 export interface RoleRecord {
   id_role: number
@@ -22,12 +22,15 @@ export function mapRoleIdsByCode(roles: RoleRecord[]): Partial<Record<RoleCode, 
 }
 
 export const rolesService = {
-  async list(): Promise<RoleRecord[]> {
-    const { data } = await apiClient.http.get<RoleRecord[]>('/roles')
-    return Array.isArray(data) ? data : []
+  list(filters: QueryParams) {
+    return fetchList<RoleRecord>('/roles', 'roles', filters)
+  },
+
+  listAll(): Promise<RoleRecord[]> {
+    return fetchAllPages<RoleRecord>('/roles', 'roles')
   },
 
   async idsByCode(): Promise<Partial<Record<RoleCode, number>>> {
-    return mapRoleIdsByCode(await rolesService.list())
+    return mapRoleIdsByCode(await rolesService.listAll())
   },
 }

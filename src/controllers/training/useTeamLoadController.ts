@@ -1,13 +1,16 @@
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { APP_MODULES } from '@/constants/navigation'
 import { useAppContext } from '@/hooks/useAppContext'
+import { usePagination } from '@/hooks/usePagination'
 import { queryKeys } from '@/lib/queryKeys'
 import { trainingService } from '@/services/trainingService'
 import type { TeamAcwrAthlete } from '@/types/training'
 import { todayApiDate } from '@/utils/formatDate'
 import { parseApiError } from '@/utils/parseApiError'
+
+const PAGE_SIZE = 15
 
 export function useTeamLoadController() {
   const { category, categories } = useAppContext()
@@ -20,6 +23,13 @@ export function useTeamLoadController() {
     queryKey: queryKeys.training.teamAcwr(idCategory ?? 0, date),
     queryFn: () => trainingService.categoryAcwr(idCategory ?? 0, date),
     enabled: idCategory !== null,
+  })
+  const { page, setPage } = usePagination(PAGE_SIZE, `${idCategory ?? ''}:${date}`)
+  const tableQuery = useQuery({
+    queryKey: queryKeys.training.teamAcwrPage(idCategory ?? 0, date, page),
+    queryFn: () => trainingService.categoryAcwr(idCategory ?? 0, date, { page, limit: PAGE_SIZE }),
+    enabled: idCategory !== null,
+    placeholderData: keepPreviousData,
   })
 
   const athletes = query.data?.athletes ?? []
@@ -40,6 +50,10 @@ export function useTeamLoadController() {
     retry: () => void query.refetch(),
     team: query.data,
     athletes,
+    tableRows: tableQuery.data?.athletes ?? [],
+    pagination: tableQuery.data?.pagination,
+    setPage,
+    isTableLoading: tableQuery.isPending,
     withAcwr: athletes.filter((athlete) => athlete.acwr !== null),
     withoutData: athletes.filter((athlete) => athlete.acwr === null).length,
     openAthlete: (athlete: TeamAcwrAthlete) =>

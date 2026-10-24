@@ -5,7 +5,7 @@ import { tooltipDatum, type TooltipRenderProps } from '@/components/charts/chart
 import { DataTableSimple } from '@/components/charts/DataTableSimple'
 import { ChartContainer, type ChartConfig } from '@/components/ui/chart'
 import { formatNumber } from '@/utils/formatNumber'
-import type { RankingEntry } from '@/utils/talentRanking'
+import type { RankingEntry } from '@/types/talent'
 
 const CONFIG = { value: { label: 'Índice', color: 'var(--chart-1)' } } satisfies ChartConfig
 const MAX_BARS = 15

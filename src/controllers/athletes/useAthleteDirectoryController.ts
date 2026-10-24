@@ -5,6 +5,7 @@ import { APP_MODULES } from '@/constants/navigation'
 import { useAppContext } from '@/hooks/useAppContext'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useDisclosure } from '@/hooks/useDisclosure'
+import { usePagination } from '@/hooks/usePagination'
 import { useRole } from '@/hooks/useRole'
 import { queryKeys } from '@/lib/queryKeys'
 import { athleteAssignmentsService } from '@/services/athleteAssignmentsService'
@@ -23,10 +24,10 @@ export function useAthleteDirectoryController() {
   const [viewMode, setViewMode] = useState<ViewMode>('cards')
   const debouncedSearch = useDebounce(search, 250)
   const idSeason = season?.id_season
-  const scope = `${idSeason ?? ''}:${category?.id_category ?? ''}`
-  const [pageState, setPageState] = useState({ scope, page: 1 })
-  const page = pageState.scope === scope ? pageState.page : 1
-  const setPage = (next: number) => setPageState({ scope, page: next })
+  const { page, setPage } = usePagination(
+    PAGE_SIZE,
+    `${idSeason ?? ''}:${category?.id_category ?? ''}`,
+  )
 
   const filters = {
     page,

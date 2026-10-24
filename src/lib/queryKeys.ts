@@ -15,15 +15,18 @@ export const queryKeys = {
   seasons: {
     all: ['seasons'] as const,
     list: () => [...queryKeys.seasons.all, 'list'] as const,
+    page: (filters: QueryParams) => [...queryKeys.seasons.all, 'page', filters] as const,
   },
   categories: {
     all: ['categories'] as const,
     list: () => [...queryKeys.categories.all, 'list'] as const,
+    page: (filters: QueryParams) => [...queryKeys.categories.all, 'page', filters] as const,
   },
   competencies: {
     all: ['competencies'] as const,
     list: (idSeason: number | undefined) =>
       [...queryKeys.competencies.all, 'list', idSeason] as const,
+    page: (filters: QueryParams) => [...queryKeys.competencies.all, 'page', filters] as const,
   },
   matches: {
     all: ['matches'] as const,
@@ -42,6 +45,7 @@ export const queryKeys = {
   weightProfiles: {
     all: ['position-weight-profiles'] as const,
     list: () => [...queryKeys.weightProfiles.all, 'list'] as const,
+    page: (filters: QueryParams) => [...queryKeys.weightProfiles.all, 'page', filters] as const,
   },
   parentalConsents: {
     all: ['parental-consents'] as const,
@@ -56,13 +60,15 @@ export const queryKeys = {
   },
   talent: {
     all: ['talent'] as const,
-    indices: (idSeason: number) => [...queryKeys.talent.all, 'indices', idSeason] as const,
+    ranking: (filters: QueryParams) => [...queryKeys.talent.all, 'ranking', filters] as const,
     flags: (filters: QueryParams) => [...queryKeys.talent.all, 'flags', filters] as const,
     flagCount: (filters: QueryParams) => [...queryKeys.talent.all, 'flag-count', filters] as const,
     categoryEvolution: (idCategory: number) =>
       [...queryKeys.talent.all, 'category-evolution', idCategory] as const,
-    plan: (idSeason: number, idTarget: number | null) =>
-      [...queryKeys.talent.all, 'plan', idSeason, idTarget] as const,
+    categoryEvolutionPage: (idCategory: number, page: number) =>
+      [...queryKeys.talent.all, 'category-evolution', idCategory, 'page', page] as const,
+    plan: (idSeason: number, idTarget: number | null, page = 1) =>
+      [...queryKeys.talent.all, 'plan', idSeason, idTarget, page] as const,
   },
   ml: {
     all: ['ml'] as const,
@@ -83,6 +89,7 @@ export const queryKeys = {
   roles: {
     all: ['roles'] as const,
     list: () => [...queryKeys.roles.all, 'list'] as const,
+    page: (filters: QueryParams) => [...queryKeys.roles.all, 'page', filters] as const,
   },
   health: {
     all: ['health'] as const,
@@ -100,6 +107,8 @@ export const queryKeys = {
     matchStats: (idMatch: number) => [...queryKeys.training.all, 'match-stats', idMatch] as const,
     teamAcwr: (idCategory: number, date: string) =>
       [...queryKeys.training.all, 'team-acwr', idCategory, date] as const,
+    teamAcwrPage: (idCategory: number, date: string, page: number) =>
+      [...queryKeys.training.all, 'team-acwr', idCategory, date, 'page', page] as const,
     myLoads: (idUser: number) => [...queryKeys.training.all, 'my-loads', idUser] as const,
   },
   evaluationCatalog: () => ['evaluation-catalog'] as const,
@@ -107,7 +116,11 @@ export const queryKeys = {
     root: ['athlete'] as const,
     all: (idUser: number) => ['athlete', idUser] as const,
     physical: (idUser: number) => [...queryKeys.athlete.all(idUser), 'physical'] as const,
+    physicalPage: (idUser: number, page: number) =>
+      [...queryKeys.athlete.all(idUser), 'physical', 'page', page] as const,
     technical: (idUser: number) => [...queryKeys.athlete.all(idUser), 'technical'] as const,
+    technicalPage: (idUser: number, page: number) =>
+      [...queryKeys.athlete.all(idUser), 'technical', 'page', page] as const,
     objectives: (idUser: number) => [...queryKeys.athlete.all(idUser), 'objectives'] as const,
     acwr: (idUser: number, range: string) =>
       [...queryKeys.athlete.all(idUser), 'acwr', range] as const,

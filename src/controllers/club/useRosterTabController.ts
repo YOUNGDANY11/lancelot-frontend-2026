@@ -1,8 +1,8 @@
-import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useResourceMutation } from '@/controllers/shared/useResourceMutation'
 import { useAppContext } from '@/hooks/useAppContext'
 import { useCrudDialogs } from '@/hooks/useCrudDialogs'
+import { usePagination } from '@/hooks/usePagination'
 import { useRole } from '@/hooks/useRole'
 import { queryKeys } from '@/lib/queryKeys'
 import { athleteAssignmentsService } from '@/services/athleteAssignmentsService'
@@ -16,24 +16,27 @@ export function useRosterTabController() {
   const { season, category } = useAppContext()
   const { can } = useRole()
   const dialogs = useCrudDialogs<AthleteAssignment>()
-  const [page, setPage] = useState(1)
   const idSeason = season?.id_season
+  const idCategory = category?.id_category
+  const { page, setPage, afterRemoval } = usePagination(
+    PAGE_SIZE,
+    `${idSeason ?? ''}:${idCategory ?? ''}`,
+  )
 
+  const scope = { id_season: idSeason, id_category: idCategory }
+  const filters = { ...scope, page, limit: PAGE_SIZE }
   const query = useQuery({
-    queryKey: queryKeys.assignments.list({ id_season: idSeason, scope: 'all' }),
-    queryFn: () => athleteAssignmentsService.listAll({ id_season: idSeason }),
+    queryKey: queryKeys.assignments.list(filters),
+    queryFn: () => athleteAssignmentsService.list(filters),
+    enabled: idSeason !== undefined,
+    placeholderData: keepPreviousData,
+  })
+  const missingQuery = useQuery({
+    queryKey: queryKeys.assignments.list({ ...scope, missing_position: true, scope: 'count' }),
+    queryFn: () => athleteAssignmentsService.count({ ...scope, missing_position: true }),
     enabled: idSeason !== undefined,
   })
-
-  const roster = (query.data ?? [])
-    .filter((item) => !category || item.id_category === category.id_category)
-    .sort((first, second) =>
-      `${first.category_name ?? ''}${fullName(first)}`.localeCompare(
-        `${second.category_name ?? ''}${fullName(second)}`,
-      ),
-    )
-  const totalPages = Math.max(1, Math.ceil(roster.length / PAGE_SIZE))
-  const currentPage = Math.min(page, totalPages)
+  const roster = query.data?.items ?? []
 
   const removeMutation = useResourceMutation({
     mutationFn: (assignment: AthleteAssignment) =>
@@ -41,17 +44,20 @@ export function useRosterTabController() {
     invalidate: [queryKeys.assignments.all, queryKeys.users.all],
     successMessage: (assignment) =>
       `${fullName(assignment)} salió de la plantilla de esta temporada.`,
-    onSuccess: dialogs.close,
+    onSuccess: () => {
+      dialogs.close()
+      afterRemoval(roster.length)
+    },
   })
 
   return {
     season,
     hasSeason: idSeason !== undefined,
     categoryFilterName: category?.name,
-    roster: roster.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
-    pagination: { page: currentPage, limit: PAGE_SIZE, total: roster.length, totalPages },
+    roster,
+    pagination: query.data?.pagination,
     setPage,
-    missingPositions: roster.filter((item) => !item.position).length,
+    missingPositions: missingQuery.data ?? 0,
     isLoading: idSeason !== undefined && query.isPending,
     errorMessage: query.isError ? parseApiError(query.error) : undefined,
     retry: () => void query.refetch(),

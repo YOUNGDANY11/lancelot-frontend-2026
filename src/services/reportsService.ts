@@ -1,4 +1,5 @@
 import { apiClient } from '@/lib/apiClient'
+import type { Pagination } from '@/types/api'
 import type { ProgressIndex, SeasonComparisonPoint, SeasonSummary } from '@/types/athlete'
 import type { CategoryEvolutionPoint } from '@/types/talent'
 import { getApiErrorStatus } from '@/utils/parseApiError'
@@ -40,6 +41,17 @@ export const reportsService = {
       `/reports/category-evolution/${idCategory}`,
     )
     return data.evolution.map((point) => withNumbers(point, [...SCORE_KEYS]))
+  },
+
+  async categoryEvolutionPage(idCategory: number, page: { page: number; limit: number }) {
+    const { data } = await apiClient.http.get<{
+      evolution: CategoryEvolutionPoint[]
+      pagination: Pagination
+    }>(`/reports/category-evolution/${idCategory}`, { params: page })
+    return {
+      items: data.evolution.map((point) => withNumbers(point, [...SCORE_KEYS])),
+      pagination: data.pagination,
+    }
   },
 
   async seasonComparison(idUser: number): Promise<SeasonComparisonPoint[]> {

@@ -16,6 +16,8 @@ export function RolesTab() {
       <DataTable
         caption="Roles"
         rows={controller.roles}
+        pagination={controller.pagination}
+        onPageChange={controller.setPage}
         getRowKey={(role) => role.id_role}
         isLoading={controller.isLoading}
         errorMessage={controller.errorMessage}

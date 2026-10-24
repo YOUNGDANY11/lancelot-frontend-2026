@@ -1,4 +1,5 @@
 import type { RiskLevelValue, TrainingSessionType } from '@/constants/enums'
+import type { Pagination } from '@/types/api'
 import type { AcwrThresholds } from '@/types/athlete'
 
 export interface TrainingSession {
@@ -78,6 +79,7 @@ export interface TeamAcwrAthlete {
 }
 
 export interface TeamAcwr {
+  pagination?: Pagination
   category: { id_category: number; name: string }
   season: { id_season: number; name: string } | null
   date: string

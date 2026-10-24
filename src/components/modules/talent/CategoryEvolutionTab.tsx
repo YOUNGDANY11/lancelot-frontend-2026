@@ -50,6 +50,8 @@ export function CategoryEvolutionTab() {
       <DataTable
         caption={`Temporadas de ${controller.categoryName}`}
         rows={controller.evolution}
+        pagination={controller.pagination}
+        onPageChange={controller.setPage}
         getRowKey={(point) => point.id_season}
         isLoading={controller.isLoading}
         errorMessage={controller.errorMessage}

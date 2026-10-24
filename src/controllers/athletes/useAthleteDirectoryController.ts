@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import type { ViewMode } from '@/components/common/ViewModeToggle'
 import { APP_MODULES } from '@/constants/navigation'
@@ -9,7 +9,7 @@ import { useRole } from '@/hooks/useRole'
 import { queryKeys } from '@/lib/queryKeys'
 import { athleteAssignmentsService } from '@/services/athleteAssignmentsService'
 import { usersService } from '@/services/usersService'
-import { buildAthleteDirectory, filterAthleteDirectory } from '@/utils/athleteDirectory'
+import { buildAthleteDirectory } from '@/utils/athleteDirectory'
 import { parseApiError } from '@/utils/parseApiError'
 
 const PAGE_SIZE = 12
@@ -21,13 +21,34 @@ export function useAthleteDirectoryController() {
   const [search, setSearch] = useState('')
   const [onlyUnassigned, setOnlyUnassigned] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('cards')
-  const [page, setPage] = useState(1)
   const debouncedSearch = useDebounce(search, 250)
   const idSeason = season?.id_season
+  const scope = `${idSeason ?? ''}:${category?.id_category ?? ''}`
+  const [pageState, setPageState] = useState({ scope, page: 1 })
+  const page = pageState.scope === scope ? pageState.page : 1
+  const setPage = (next: number) => setPageState({ scope, page: next })
 
+  const filters = {
+    page,
+    limit: PAGE_SIZE,
+    search: debouncedSearch.trim() || undefined,
+    id_season: idSeason,
+    id_category: onlyUnassigned ? undefined : category?.id_category,
+    unassigned: onlyUnassigned && idSeason !== undefined ? true : undefined,
+  }
   const athletesQuery = useQuery({
-    queryKey: queryKeys.users.athletes(),
-    queryFn: usersService.listAllAthletes,
+    queryKey: queryKeys.users.athleteSearch(filters),
+    queryFn: () => usersService.searchAthletes(filters),
+    placeholderData: keepPreviousData,
+  })
+  const totalQuery = useQuery({
+    queryKey: queryKeys.users.athleteCount({}),
+    queryFn: () => usersService.countAthletes(),
+  })
+  const unassignedQuery = useQuery({
+    queryKey: queryKeys.users.athleteCount({ id_season: idSeason, unassigned: true }),
+    queryFn: () => usersService.countAthletes({ id_season: idSeason, unassigned: true }),
+    enabled: idSeason !== undefined,
   })
   const assignmentsQuery = useQuery({
     queryKey: queryKeys.assignments.list({ id_season: idSeason, scope: 'all' }),
@@ -40,27 +61,21 @@ export function useAthleteDirectoryController() {
       item.max_age !== undefined ? [[item.id_category, item.max_age] as const] : [],
     ),
   )
-  const directory = buildAthleteDirectory(
-    athletesQuery.data ?? [],
+  const entries = buildAthleteDirectory(
+    athletesQuery.data?.items ?? [],
     assignmentsQuery.data ?? [],
     maxAgeById,
   )
-  const filtered = filterAthleteDirectory(directory, {
-    search: debouncedSearch,
-    idCategory: category?.id_category ?? null,
-    onlyUnassigned,
-  })
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
-  const currentPage = Math.min(page, totalPages)
+  const totalAthletes = totalQuery.data ?? 0
   const failed = athletesQuery.isError ? athletesQuery.error : assignmentsQuery.error
 
   return {
     season,
     categoryName: category?.name,
-    entries: filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
-    totalAthletes: directory.length,
-    unassignedCount: directory.filter((entry) => entry.id_category === null).length,
-    pagination: { page: currentPage, limit: PAGE_SIZE, total: filtered.length, totalPages },
+    entries,
+    totalAthletes,
+    unassignedCount: idSeason === undefined ? totalAthletes : (unassignedQuery.data ?? 0),
+    pagination: athletesQuery.data?.pagination,
     setPage,
     search,
     setSearch: (value: string) => {
@@ -69,7 +84,7 @@ export function useAthleteDirectoryController() {
     },
     onlyUnassigned,
     toggleUnassigned: () => {
-      setOnlyUnassigned((current) => !current)
+      setOnlyUnassigned(!onlyUnassigned)
       setPage(1)
     },
     viewMode,

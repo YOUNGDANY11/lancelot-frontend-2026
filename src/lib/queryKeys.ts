@@ -6,8 +6,11 @@ export const queryKeys = {
     me: () => [...queryKeys.users.all, 'me'] as const,
     list: () => [...queryKeys.users.all, 'list'] as const,
     athletes: () => [...queryKeys.users.all, 'athletes'] as const,
+    page: (filters: QueryParams) => [...queryKeys.users.all, 'page', filters] as const,
     athleteSearch: (filters: QueryParams) =>
       [...queryKeys.users.all, 'athletes', 'search', filters] as const,
+    athleteCount: (filters: QueryParams) =>
+      [...queryKeys.users.all, 'athletes', 'count', filters] as const,
   },
   seasons: {
     all: ['seasons'] as const,

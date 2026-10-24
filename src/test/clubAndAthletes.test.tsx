@@ -12,7 +12,7 @@ import { objectivesService } from '@/services/objectivesService'
 import { reportsService } from '@/services/reportsService'
 import { seasonsService } from '@/services/seasonsService'
 import { usersService } from '@/services/usersService'
-import { ACTIVE_SEASON, SUB15, primeAppDataMocks } from '@/test/appDataMocks'
+import { ACTIVE_SEASON, SUB15, primeAppDataMocks, listResult } from '@/test/appDataMocks'
 import { ADMIN_USER, ATHLETE_USER, COACH_USER } from '@/test/fixtures'
 import { renderAppAt } from '@/test/renderWithProviders'
 import type { User } from '@/types/user'
@@ -35,6 +35,7 @@ vi.mock('@/services/usersService', () => ({
     listAll: vi.fn(),
     listAllAthletes: vi.fn(),
     searchAthletes: vi.fn(),
+    countAthletes: vi.fn(),
     createByAdmin: vi.fn(),
   },
 }))
@@ -134,6 +135,8 @@ beforeAll(async () => {
 beforeEach(() => {
   primeAppDataMocks({ categories: [SUB15, SUB17] })
   vi.mocked(usersService.listAllAthletes).mockResolvedValue([ATHLETE_USER])
+  vi.mocked(usersService.searchAthletes).mockResolvedValue(listResult([ATHLETE_USER]))
+  vi.mocked(usersService.countAthletes).mockResolvedValue(1)
   vi.mocked(athleteAssignmentsService.listAll).mockResolvedValue([
     {
       id_ath_cat: 30,
@@ -340,10 +343,16 @@ describe('módulo Deportistas', () => {
   })
 
   it('busca deportistas en el directorio', async () => {
-    vi.mocked(usersService.listAllAthletes).mockResolvedValue([
-      ATHLETE_USER,
-      { ...ATHLETE_USER, id_user: 8, name: 'José', lastname: 'Gómez', email: 'jose@club.com' },
-    ])
+    const jose = {
+      ...ATHLETE_USER,
+      id_user: 8,
+      name: 'José',
+      lastname: 'Gómez',
+      email: 'jose@club.com',
+    }
+    vi.mocked(usersService.searchAthletes).mockImplementation((filters) =>
+      Promise.resolve(listResult(filters.search ? [jose] : [ATHLETE_USER, jose])),
+    )
     signInAs(COACH_USER)
     const user = userEvent.setup()
     renderAppAt('/app/deportistas')
@@ -353,6 +362,9 @@ describe('módulo Deportistas', () => {
 
     await waitFor(() => expect(screen.queryByText('Ana María Pérez')).not.toBeInTheDocument())
     expect(screen.getByText('José Gómez')).toBeInTheDocument()
+    expect(usersService.searchAthletes).toHaveBeenLastCalledWith(
+      expect.objectContaining({ search: 'jose', page: 1, id_season: ACTIVE_SEASON.id_season }),
+    )
   })
 })
 

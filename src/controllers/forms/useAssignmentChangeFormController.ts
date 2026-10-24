@@ -55,7 +55,11 @@ export function useAssignmentChangeFormController({
         id_category: Number(values.id_category),
         position: values.position,
       }),
-    invalidate: [queryKeys.assignments.all, queryKeys.athlete.all(assignment.id_user)],
+    invalidate: [
+      queryKeys.assignments.all,
+      queryKeys.users.all,
+      queryKeys.athlete.all(assignment.id_user),
+    ],
     successMessage: (values) => {
       const target = categories.find((item) => item.id_category === Number(values.id_category))
       return `${fullName(assignment)} quedó en ${target?.name ?? 'la nueva categoría'}.`

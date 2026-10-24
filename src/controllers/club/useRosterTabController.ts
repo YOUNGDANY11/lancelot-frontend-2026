@@ -38,7 +38,7 @@ export function useRosterTabController() {
   const removeMutation = useResourceMutation({
     mutationFn: (assignment: AthleteAssignment) =>
       athleteAssignmentsService.remove(assignment.id_ath_cat),
-    invalidate: [queryKeys.assignments.all],
+    invalidate: [queryKeys.assignments.all, queryKeys.users.all],
     successMessage: (assignment) =>
       `${fullName(assignment)} salió de la plantilla de esta temporada.`,
     onSuccess: dialogs.close,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildAthleteDirectory, filterAthleteDirectory } from '@/utils/athleteDirectory'
+import { buildAthleteDirectory } from '@/utils/athleteDirectory'
 import {
   checkEligibility,
   eligibleCategories,
@@ -47,7 +47,7 @@ describe('elegibilidad por edad', () => {
 })
 
 describe('directorio con varias categorías', () => {
-  it('muestra todas las categorías y filtra por cualquiera de ellas', () => {
+  it('muestra todas las categorías del deportista', () => {
     const maxAge = new Map(CATEGORIES.map((category) => [category.id_category, category.max_age]))
     const directory = buildAthleteDirectory(
       [
@@ -73,8 +73,5 @@ describe('directorio con varias categorías', () => {
       category_ids: [3, 4],
       position: 'Volante',
     })
-    expect(
-      filterAthleteDirectory(directory, { search: '', idCategory: 4, onlyUnassigned: false }),
-    ).toHaveLength(1)
   })
 })

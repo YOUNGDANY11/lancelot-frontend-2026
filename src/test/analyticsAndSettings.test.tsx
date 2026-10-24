@@ -8,7 +8,7 @@ import { mlService } from '@/services/mlService'
 import { rolesService } from '@/services/rolesService'
 import { usersService } from '@/services/usersService'
 import { createApiError } from '@/test/apiErrors'
-import { SUB15, primeAppDataMocks } from '@/test/appDataMocks'
+import { SUB15, primeAppDataMocks, listResult } from '@/test/appDataMocks'
 import { ADMIN_USER, ATHLETE_USER, COACH_USER } from '@/test/fixtures'
 import { renderAppAt } from '@/test/renderWithProviders'
 import type { MlModel, ValidationReport } from '@/types/ml'
@@ -30,6 +30,7 @@ vi.mock('@/services/usersService', () => ({
     updateMe: vi.fn(),
     changeMyPassword: vi.fn(),
     listAll: vi.fn(),
+    listUsers: vi.fn(),
     listAllAthletes: vi.fn(),
     searchAthletes: vi.fn(),
     createByAdmin: vi.fn(),
@@ -437,7 +438,7 @@ describe('configuración', () => {
   })
 
   it('permite al administrador cambiar el rol de una cuenta', async () => {
-    vi.mocked(usersService.listAll).mockResolvedValue([ADMIN_USER, COACH_USER])
+    vi.mocked(usersService.listUsers).mockResolvedValue(listResult([ADMIN_USER, COACH_USER]))
     vi.mocked(rolesService.idsByCode).mockResolvedValue({
       ADMIN: 1,
       ENTRENADOR: 2,
@@ -472,7 +473,9 @@ describe('configuración', () => {
   })
 
   it('advierte que eliminar a un deportista borra todo su historial y muestra si el sistema lo impide', async () => {
-    vi.mocked(usersService.listAll).mockResolvedValue([ADMIN_USER, COACH_USER, ATHLETE_USER])
+    vi.mocked(usersService.listUsers).mockResolvedValue(
+      listResult([ADMIN_USER, COACH_USER, ATHLETE_USER]),
+    )
     vi.mocked(usersService.remove).mockRejectedValue(
       createApiError(409, {
         status: 'Error',
@@ -501,7 +504,7 @@ describe('configuración', () => {
   })
 
   it('aclara que al eliminar a alguien del cuerpo técnico se conservan sus registros', async () => {
-    vi.mocked(usersService.listAll).mockResolvedValue([ADMIN_USER, COACH_USER])
+    vi.mocked(usersService.listUsers).mockResolvedValue(listResult([ADMIN_USER, COACH_USER]))
     signInAs(ADMIN_USER)
     const user = userEvent.setup()
     renderAppAt('/app/configuracion?tab=usuarios')

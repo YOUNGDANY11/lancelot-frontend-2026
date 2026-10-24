@@ -17,6 +17,7 @@ import { fullName } from '@/utils/text'
 
 function DirectoryContent() {
   const controller = useAthleteDirectoryController()
+  const { pagination } = controller
   const emptyState = (
     <EmptyState
       icon={Users}
@@ -129,29 +130,28 @@ function DirectoryContent() {
               </li>
             ))}
           </ul>
-          {controller.pagination.totalPages > 1 && (
+          {pagination && pagination.totalPages > 1 && (
             <nav
               aria-label="Paginación de deportistas"
               className="flex items-center justify-between text-sm text-muted-foreground"
             >
               <span>
-                Página {controller.pagination.page} de {controller.pagination.totalPages} ·{' '}
-                {controller.pagination.total} deportistas
+                Página {pagination.page} de {pagination.totalPages} · {pagination.total} deportistas
               </span>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={controller.pagination.page <= 1}
-                  onClick={() => controller.setPage(controller.pagination.page - 1)}
+                  disabled={pagination.page <= 1}
+                  onClick={() => controller.setPage(pagination.page - 1)}
                 >
                   Anterior
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={controller.pagination.page >= controller.pagination.totalPages}
-                  onClick={() => controller.setPage(controller.pagination.page + 1)}
+                  disabled={pagination.page >= pagination.totalPages}
+                  onClick={() => controller.setPage(pagination.page + 1)}
                 >
                   Siguiente
                 </Button>

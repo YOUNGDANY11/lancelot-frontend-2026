@@ -1,5 +1,6 @@
 import { apiClient } from '@/lib/apiClient'
-import { fetchAllPages, fetchList, type QueryParams } from '@/lib/listRequest'
+import type { RoleCode } from '@/constants/roles'
+import { fetchAllPages, fetchList, fetchTotal, type QueryParams } from '@/lib/listRequest'
 import type { ApiMessage } from '@/types/api'
 import type {
   AdminCreateUserRequest,
@@ -11,6 +12,11 @@ import type {
 } from '@/types/user'
 
 export interface UserSearchFilters extends QueryParams {
+  search?: string
+  role?: RoleCode
+  id_season?: number
+  id_category?: number
+  unassigned?: boolean
   name?: string
   lastname?: string
   email?: string
@@ -45,8 +51,16 @@ export const usersService = {
     return fetchAllPages<User>('/users', 'users')
   },
 
+  listUsers(filters: UserSearchFilters) {
+    return fetchList<User>('/users', 'users', filters)
+  },
+
   searchAthletes(filters: UserSearchFilters) {
     return fetchList<User>('/users/athletes', 'users', filters)
+  },
+
+  countAthletes(filters: UserSearchFilters = {}): Promise<number> {
+    return fetchTotal('/users/athletes', filters)
   },
 
   listAllAthletes(): Promise<User[]> {

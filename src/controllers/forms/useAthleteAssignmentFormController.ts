@@ -106,7 +106,10 @@ export function useAthleteAssignmentFormController({
       return athleteAssignmentsService.create(toCreateAthleteAssignmentRequest(values, idSeason))
     },
     onSuccess: async (_response, values) => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.assignments.all })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.assignments.all }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.users.all }),
+      ])
       const athlete = athleteOptions.find((option) => option.id === values.id_user)
       const category = categories.find((item) => item.id_category === Number(values.id_category))
       toast.success(

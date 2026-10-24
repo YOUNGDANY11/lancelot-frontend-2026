@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { ROLE_CODES, ROLE_LABELS, type RoleCode } from '@/constants/roles'
 import { useResourceMutation } from '@/controllers/shared/useResourceMutation'
@@ -11,7 +11,7 @@ import { usersService } from '@/services/usersService'
 import type { User } from '@/types/user'
 import { parseApiError } from '@/utils/parseApiError'
 import { resolveRoleCode } from '@/utils/role'
-import { fullName, matchesSearch } from '@/utils/text'
+import { fullName } from '@/utils/text'
 
 const PAGE_SIZE = 12
 const ALL = 'all'
@@ -25,36 +25,32 @@ export function useUsersTabController() {
   const [page, setPage] = useState(1)
   const debouncedSearch = useDebounce(search, 250)
 
-  const query = useQuery({ queryKey: queryKeys.users.list(), queryFn: usersService.listAll })
+  const filters = {
+    page,
+    limit: PAGE_SIZE,
+    search: debouncedSearch.trim() || undefined,
+    role: role === ALL ? undefined : role,
+  }
+  const query = useQuery({
+    queryKey: queryKeys.users.page(filters),
+    queryFn: () => usersService.listUsers(filters),
+    placeholderData: keepPreviousData,
+  })
+  const rows = query.data?.items ?? []
 
   const deleteMutation = useResourceMutation({
     mutationFn: (account: User) => usersService.remove(account.id_user),
     invalidate: [queryKeys.users.all],
     successMessage: (account) => `Cuenta de ${fullName(account)} eliminada.`,
-    onSuccess: dialogs.close,
+    onSuccess: () => {
+      dialogs.close()
+      if (rows.length === 1 && page > 1) setPage(page - 1)
+    },
   })
 
-  const filtered = (query.data ?? [])
-    .map((account) => ({ account, role: resolveRoleCode(account.role_name, account.id_role) }))
-    .filter(
-      (entry) =>
-        (role === ALL || entry.role === role) &&
-        matchesSearch(`${fullName(entry.account)} ${entry.account.email}`, debouncedSearch),
-    )
-    .sort((first, second) =>
-      `${first.account.lastname} ${first.account.name}`.localeCompare(
-        `${second.account.lastname} ${second.account.name}`,
-        'es',
-      ),
-    )
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
-  const currentPage = Math.min(page, totalPages)
-
   return {
-    rows: filtered
-      .slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
-      .map((entry) => entry.account),
-    pagination: { page: currentPage, limit: PAGE_SIZE, total: filtered.length, totalPages },
+    rows,
+    pagination: query.data?.pagination,
     setPage,
     isLoading: query.isPending,
     errorMessage: query.isError ? parseApiError(query.error) : undefined,

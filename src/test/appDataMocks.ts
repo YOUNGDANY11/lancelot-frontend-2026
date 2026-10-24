@@ -29,3 +29,10 @@ export function primeAppDataMocks(overrides: { seasons?: Season[]; categories?: 
   vi.mocked(usersService.listAll).mockResolvedValue([])
   vi.mocked(usersService.listAllAthletes).mockResolvedValue([])
 }
+
+export function listResult<T>(items: T[]) {
+  return {
+    items,
+    pagination: { total: items.length, page: 1, limit: 12, totalPages: items.length ? 1 : 0 },
+  }
+}

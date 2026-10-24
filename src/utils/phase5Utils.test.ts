@@ -3,7 +3,7 @@ import { athleteTabsForRole } from '@/constants/athleteProfile'
 import { hasPermission } from '@/constants/permissions'
 import type { AcwrSeriesPoint, TechnicalEvaluation } from '@/types/athlete'
 import type { User } from '@/types/user'
-import { buildAthleteDirectory, filterAthleteDirectory } from '@/utils/athleteDirectory'
+import { buildAthleteDirectory } from '@/utils/athleteDirectory'
 import { buildHeatmapWeeks } from '@/utils/loadHeatmap'
 import { summarizeIndicators } from '@/utils/technicalScores'
 import { withNumbers } from '@/utils/toNumber'
@@ -31,30 +31,10 @@ describe('directorio de deportistas', () => {
     { id_ath_cat: 11, id_user: 2, id_category: 5, category_name: 'Sub-17', position: null },
   ])
 
-  it('ordena por apellido y une la categoría de la temporada', () => {
-    expect(directory.map((entry) => entry.lastname)).toEqual(['Álvarez', 'Mora', 'Ruiz'])
+  it('conserva el orden del backend y une la categoría de la temporada', () => {
+    expect(directory.map((entry) => entry.lastname)).toEqual(['Ruiz', 'Álvarez', 'Mora'])
     expect(directory.find((entry) => entry.id_user === 1)?.category_name).toBe('Sub-15')
     expect(directory.find((entry) => entry.id_user === 3)?.id_category).toBeNull()
-  })
-
-  it('filtra por categoría, por nombre sin tildes y por deportistas sin categoría', () => {
-    expect(
-      filterAthleteDirectory(directory, { search: '', idCategory: 4, onlyUnassigned: false }).map(
-        (entry) => entry.id_user,
-      ),
-    ).toEqual([1])
-    expect(
-      filterAthleteDirectory(directory, {
-        search: 'jose alvarez',
-        idCategory: null,
-        onlyUnassigned: false,
-      }),
-    ).toHaveLength(1)
-    expect(
-      filterAthleteDirectory(directory, { search: '', idCategory: 4, onlyUnassigned: true }).map(
-        (entry) => entry.id_user,
-      ),
-    ).toEqual([3])
   })
 })
 
